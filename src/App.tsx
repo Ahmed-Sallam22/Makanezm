@@ -6,6 +6,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { store } from "./store";
 import Layout from "./components/Layout";
+import TopLoader from "./components/TopLoader";
+import ScrollToTop from "./components/ScrollToTop";
 import "./i18n";
 
 // Lazy load pages for better performance
@@ -31,6 +33,8 @@ function App() {
   return (
     <Provider store={store}>
       <Router>
+        <TopLoader />
+        <ScrollToTop />
         <AnimatePresence mode="wait">
           <Suspense fallback={<PageLoader />}>
             <Routes>

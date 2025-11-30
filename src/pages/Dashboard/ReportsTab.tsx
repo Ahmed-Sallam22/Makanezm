@@ -20,8 +20,12 @@ const ReportsTab = () => {
   const orders = useAppSelector((state) => state.orders.orders);
   const products = useAppSelector((state) => state.products.products);
 
-  const [dateRange, setDateRange] = useState<"week" | "month" | "year">("month");
-  const [selectedChart, setSelectedChart] = useState<"revenue" | "orders" | "products">("revenue");
+  const [dateRange, setDateRange] = useState<"week" | "month" | "year">(
+    "month"
+  );
+  const [selectedChart, setSelectedChart] = useState<
+    "revenue" | "orders" | "products"
+  >("revenue");
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -39,8 +43,14 @@ const ReportsTab = () => {
         new Date(o.createdAt) <= endOfLastMonth
     );
 
-    const thisMonthRevenue = thisMonthOrders.reduce((sum, o) => sum + o.finalTotal, 0);
-    const lastMonthRevenue = lastMonthOrders.reduce((sum, o) => sum + o.finalTotal, 0);
+    const thisMonthRevenue = thisMonthOrders.reduce(
+      (sum, o) => sum + o.finalTotal,
+      0
+    );
+    const lastMonthRevenue = lastMonthOrders.reduce(
+      (sum, o) => sum + o.finalTotal,
+      0
+    );
 
     const revenueGrowth =
       lastMonthRevenue > 0
@@ -49,19 +59,28 @@ const ReportsTab = () => {
 
     const ordersGrowth =
       lastMonthOrders.length > 0
-        ? ((thisMonthOrders.length - lastMonthOrders.length) / lastMonthOrders.length) * 100
+        ? ((thisMonthOrders.length - lastMonthOrders.length) /
+            lastMonthOrders.length) *
+          100
         : 100;
 
-    const deliveredOrders = orders.filter((o) => o.status === "delivered").length;
+    const deliveredOrders = orders.filter(
+      (o) => o.status === "delivered"
+    ).length;
     const pendingOrders = orders.filter((o) => o.status === "pending").length;
-    const processingOrders = orders.filter((o) => o.status === "processing").length;
+    const processingOrders = orders.filter(
+      (o) => o.status === "processing"
+    ).length;
 
     const cashOrders = orders.filter((o) => o.paymentType === "cash");
-    const installmentOrders = orders.filter((o) => o.paymentType === "installment");
+    const installmentOrders = orders.filter(
+      (o) => o.paymentType === "installment"
+    );
 
-    const avgOrderValue = orders.length > 0
-      ? orders.reduce((sum, o) => sum + o.finalTotal, 0) / orders.length
-      : 0;
+    const avgOrderValue =
+      orders.length > 0
+        ? orders.reduce((sum, o) => sum + o.finalTotal, 0) / orders.length
+        : 0;
 
     return {
       totalRevenue: orders.reduce((sum, o) => sum + o.finalTotal, 0),
@@ -75,11 +94,16 @@ const ReportsTab = () => {
       pendingOrders,
       processingOrders,
       totalProducts: products.length,
-      activeProducts: products.filter((p) => p.isVisible && p.approvalStatus === "approved").length,
+      activeProducts: products.filter(
+        (p) => p.isVisible && p.approvalStatus === "approved"
+      ).length,
       cashOrders: cashOrders.length,
       installmentOrders: installmentOrders.length,
       cashRevenue: cashOrders.reduce((sum, o) => sum + o.finalTotal, 0),
-      installmentRevenue: installmentOrders.reduce((sum, o) => sum + o.finalTotal, 0),
+      installmentRevenue: installmentOrders.reduce(
+        (sum, o) => sum + o.finalTotal,
+        0
+      ),
       avgOrderValue,
     };
   }, [orders, products]);
@@ -172,7 +196,9 @@ const ReportsTab = () => {
           <p className="text-blue-100 text-sm mb-1">
             {t("dashboard.reports.totalRevenue")}
           </p>
-          <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+          <p className="text-3xl font-bold">
+            ${stats.totalRevenue.toLocaleString()}
+          </p>
         </motion.div>
 
         {/* Total Orders */}
@@ -222,7 +248,9 @@ const ReportsTab = () => {
           <p className="text-purple-100 text-sm mb-1">
             {t("dashboard.reports.avgOrderValue")}
           </p>
-          <p className="text-3xl font-bold">${stats.avgOrderValue.toFixed(0)}</p>
+          <p className="text-3xl font-bold">
+            ${stats.avgOrderValue.toFixed(0)}
+          </p>
         </motion.div>
 
         {/* Active Products */}
@@ -286,12 +314,17 @@ const ReportsTab = () => {
           {/* Bar Chart */}
           <div className="flex items-end justify-between h-64 gap-4 px-4">
             {weeklyData.map((data, index) => {
-              const value = selectedChart === "revenue" ? data.revenue : data.orders * 100;
-              const maxValue = selectedChart === "revenue" ? maxRevenue : 22 * 100;
+              const value =
+                selectedChart === "revenue" ? data.revenue : data.orders * 100;
+              const maxValue =
+                selectedChart === "revenue" ? maxRevenue : 22 * 100;
               const height = (value / maxValue) * 100;
 
               return (
-                <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                <div
+                  key={index}
+                  className="flex-1 flex flex-col items-center gap-2"
+                >
                   <motion.div
                     initial={{ height: 0 }}
                     animate={{ height: `${height}%` }}
@@ -302,7 +335,9 @@ const ReportsTab = () => {
                         : "bg-gradient-to-t from-green-500 to-green-400"
                     }`}
                   />
-                  <span className="text-xs text-gray-500 font-medium">{data.day}</span>
+                  <span className="text-xs text-gray-500 font-medium">
+                    {data.day}
+                  </span>
                 </div>
               );
             })}
@@ -312,11 +347,15 @@ const ReportsTab = () => {
           <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full" />
-              <span className="text-sm text-gray-600">{t("dashboard.reports.revenue")}</span>
+              <span className="text-sm text-gray-600">
+                {t("dashboard.reports.revenue")}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded-full" />
-              <span className="text-sm text-gray-600">{t("dashboard.reports.orders")}</span>
+              <span className="text-sm text-gray-600">
+                {t("dashboard.reports.orders")}
+              </span>
             </div>
           </div>
         </motion.div>
@@ -376,8 +415,12 @@ const ReportsTab = () => {
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-3xl font-bold text-gray-800">{stats.totalOrders}</p>
-                <p className="text-sm text-gray-500">{t("dashboard.reports.orders")}</p>
+                <p className="text-3xl font-bold text-gray-800">
+                  {stats.totalOrders}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {t("dashboard.reports.orders")}
+                </p>
               </div>
             </div>
           </div>
@@ -387,21 +430,27 @@ const ReportsTab = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full" />
-                <span className="text-sm text-gray-600">{t("dashboard.status.delivered")}</span>
+                <span className="text-sm text-gray-600">
+                  {t("dashboard.status.delivered")}
+                </span>
               </div>
               <span className="font-semibold">{stats.deliveredOrders}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                <span className="text-sm text-gray-600">{t("dashboard.status.processing")}</span>
+                <span className="text-sm text-gray-600">
+                  {t("dashboard.status.processing")}
+                </span>
               </div>
               <span className="font-semibold">{stats.processingOrders}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-                <span className="text-sm text-gray-600">{t("dashboard.status.pending")}</span>
+                <span className="text-sm text-gray-600">
+                  {t("dashboard.status.pending")}
+                </span>
               </div>
               <span className="font-semibold">{stats.pendingOrders}</span>
             </div>
@@ -427,9 +476,12 @@ const ReportsTab = () => {
             {/* Cash */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-600">{t("dashboard.reports.cash")}</span>
+                <span className="text-gray-600">
+                  {t("dashboard.reports.cash")}
+                </span>
                 <span className="font-semibold">
-                  ${stats.cashRevenue.toLocaleString()} ({stats.cashOrders} {t("dashboard.reports.orders")})
+                  ${stats.cashRevenue.toLocaleString()} ({stats.cashOrders}{" "}
+                  {t("dashboard.reports.orders")})
                 </span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -447,9 +499,12 @@ const ReportsTab = () => {
             {/* Installment */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-600">{t("dashboard.reports.installment")}</span>
+                <span className="text-gray-600">
+                  {t("dashboard.reports.installment")}
+                </span>
                 <span className="font-semibold">
-                  ${stats.installmentRevenue.toLocaleString()} ({stats.installmentOrders} {t("dashboard.reports.orders")})
+                  ${stats.installmentRevenue.toLocaleString()} (
+                  {stats.installmentOrders} {t("dashboard.reports.orders")})
                 </span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -480,23 +535,33 @@ const ReportsTab = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">{t("dashboard.reports.thisMonth")}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                {t("dashboard.reports.thisMonth")}
+              </p>
               <p className="text-2xl font-bold text-blue-600">
                 ${stats.thisMonthRevenue.toLocaleString()}
               </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">{t("dashboard.reports.lastMonth")}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                {t("dashboard.reports.lastMonth")}
+              </p>
               <p className="text-2xl font-bold text-gray-600">
                 ${stats.lastMonthRevenue.toLocaleString()}
               </p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">{t("dashboard.reports.monthlyOrders")}</p>
-              <p className="text-2xl font-bold text-green-600">{stats.thisMonthOrders}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                {t("dashboard.reports.monthlyOrders")}
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.thisMonthOrders}
+              </p>
             </div>
             <div className="p-4 bg-purple-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">{t("dashboard.reports.growth")}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                {t("dashboard.reports.growth")}
+              </p>
               <p
                 className={`text-2xl font-bold ${
                   stats.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"

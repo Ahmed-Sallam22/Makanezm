@@ -2,27 +2,29 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
-  Globe,
-  Bell,
-  Shield,
+//   Globe,
+//   Bell,
+//   Shield,
   Eye,
   EyeOff,
-  Moon,
-  Sun,
-  Smartphone,
-  Mail,
+//   Moon,
+//   Sun,
+//   Smartphone,
+//   Mail,
   Lock,
   Save,
-  Check,
+//   Check,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
 const SettingsTab = () => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
+//   const isRTL = i18n.language === "ar";
 
   // Settings state
-  const [settings, setSettings] = useState({
+    const [settings,
+        // setSettings
+    ] = useState({
     // Language
     language: i18n.language,
     // Theme
@@ -46,14 +48,14 @@ const SettingsTab = () => {
     confirmPassword: "",
   });
 
-  const handleLanguageChange = (lang: string) => {
-    setSettings({ ...settings, language: lang });
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    toast.success(
-      lang === "ar" ? "تم تغيير اللغة للعربية" : "Language changed to English"
-    );
-  };
+//   const handleLanguageChange = (lang: string) => {
+//     setSettings({ ...settings, language: lang });
+//     i18n.changeLanguage(lang);
+//     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+//     toast.success(
+//       lang === "ar" ? "تم تغيير اللغة للعربية" : "Language changed to English"
+//     );
+//   };
 
   const handleSaveSettings = () => {
     // In a real app, save to backend
@@ -73,7 +75,11 @@ const SettingsTab = () => {
     }
     // In a real app, send to backend
     toast.success(t("dashboard.settings.passwordChanged"));
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
   };
 
   const cardVariants = {
@@ -105,7 +111,7 @@ const SettingsTab = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Language Settings */}
-        <motion.div
+        {/* <motion.div
           custom={0}
           variants={cardVariants}
           initial="hidden"
@@ -155,10 +161,10 @@ const SettingsTab = () => {
               )}
             </button>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Theme Settings */}
-        <motion.div
+        {/* <motion.div
           custom={1}
           variants={cardVariants}
           initial="hidden"
@@ -181,10 +187,14 @@ const SettingsTab = () => {
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
               <Sun className="w-5 h-5 text-yellow-500" />
-              <span className="font-medium">{t("dashboard.settings.lightMode")}</span>
+              <span className="font-medium">
+                {t("dashboard.settings.lightMode")}
+              </span>
             </div>
             <button
-              onClick={() => setSettings({ ...settings, darkMode: !settings.darkMode })}
+              onClick={() =>
+                setSettings({ ...settings, darkMode: !settings.darkMode })
+              }
               className={`relative w-14 h-7 rounded-full transition-all ${
                 settings.darkMode ? "bg-[#384B97]" : "bg-gray-300"
               }`}
@@ -196,7 +206,9 @@ const SettingsTab = () => {
               />
             </button>
             <div className="flex items-center gap-3">
-              <span className="font-medium">{t("dashboard.settings.darkMode")}</span>
+              <span className="font-medium">
+                {t("dashboard.settings.darkMode")}
+              </span>
               <Moon className="w-5 h-5 text-gray-600" />
             </div>
           </div>
@@ -204,10 +216,10 @@ const SettingsTab = () => {
           <p className="text-sm text-gray-500 mt-3">
             {t("dashboard.settings.themeNote")}
           </p>
-        </motion.div>
+        </motion.div> */}
 
         {/* Notification Settings */}
-        <motion.div
+        {/* <motion.div
           custom={2}
           variants={cardVariants}
           initial="hidden"
@@ -225,10 +237,26 @@ const SettingsTab = () => {
 
           <div className="space-y-4">
             {[
-              { key: "emailNotifications", icon: Mail, label: t("dashboard.settings.emailNotifications") },
-              { key: "pushNotifications", icon: Smartphone, label: t("dashboard.settings.pushNotifications") },
-              { key: "orderUpdates", icon: ShoppingBag, label: t("dashboard.settings.orderUpdates") },
-              { key: "promotions", icon: Bell, label: t("dashboard.settings.promotions") },
+              {
+                key: "emailNotifications",
+                icon: Mail,
+                label: t("dashboard.settings.emailNotifications"),
+              },
+              {
+                key: "pushNotifications",
+                icon: Smartphone,
+                label: t("dashboard.settings.pushNotifications"),
+              },
+              {
+                key: "orderUpdates",
+                icon: ShoppingBag,
+                label: t("dashboard.settings.orderUpdates"),
+              },
+              {
+                key: "promotions",
+                icon: Bell,
+                label: t("dashboard.settings.promotions"),
+              },
             ].map((item) => (
               <div
                 key={item.key}
@@ -236,7 +264,9 @@ const SettingsTab = () => {
               >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-5 h-5 text-gray-500" />
-                  <span className="font-medium text-gray-700">{item.label}</span>
+                  <span className="font-medium text-gray-700">
+                    {item.label}
+                  </span>
                 </div>
                 <button
                   onClick={() =>
@@ -254,18 +284,22 @@ const SettingsTab = () => {
                   <div
                     className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
                       settings[item.key as keyof typeof settings]
-                        ? isRTL ? "left-0.5" : "right-0.5"
-                        : isRTL ? "right-0.5" : "left-0.5"
+                        ? isRTL
+                          ? "left-0.5"
+                          : "right-0.5"
+                        : isRTL
+                          ? "right-0.5"
+                          : "left-0.5"
                     }`}
                   />
                 </button>
               </div>
             ))}
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Privacy Settings */}
-        <motion.div
+        {/* <motion.div
           custom={3}
           variants={cardVariants}
           initial="hidden"
@@ -291,7 +325,10 @@ const SettingsTab = () => {
               </div>
               <button
                 onClick={() =>
-                  setSettings({ ...settings, showProfile: !settings.showProfile })
+                  setSettings({
+                    ...settings,
+                    showProfile: !settings.showProfile,
+                  })
                 }
                 className={`relative w-12 h-6 rounded-full transition-all ${
                   settings.showProfile ? "bg-green-500" : "bg-gray-300"
@@ -300,8 +337,12 @@ const SettingsTab = () => {
                 <div
                   className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
                     settings.showProfile
-                      ? isRTL ? "left-0.5" : "right-0.5"
-                      : isRTL ? "right-0.5" : "left-0.5"
+                      ? isRTL
+                        ? "left-0.5"
+                        : "right-0.5"
+                      : isRTL
+                        ? "right-0.5"
+                        : "left-0.5"
                   }`}
                 />
               </button>
@@ -316,7 +357,10 @@ const SettingsTab = () => {
               </div>
               <button
                 onClick={() =>
-                  setSettings({ ...settings, twoFactorAuth: !settings.twoFactorAuth })
+                  setSettings({
+                    ...settings,
+                    twoFactorAuth: !settings.twoFactorAuth,
+                  })
                 }
                 className={`relative w-12 h-6 rounded-full transition-all ${
                   settings.twoFactorAuth ? "bg-green-500" : "bg-gray-300"
@@ -325,14 +369,18 @@ const SettingsTab = () => {
                 <div
                   className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
                     settings.twoFactorAuth
-                      ? isRTL ? "left-0.5" : "right-0.5"
-                      : isRTL ? "right-0.5" : "left-0.5"
+                      ? isRTL
+                        ? "left-0.5"
+                        : "right-0.5"
+                      : isRTL
+                        ? "right-0.5"
+                        : "left-0.5"
                   }`}
                 />
               </button>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Change Password */}
         <motion.div
@@ -351,7 +399,10 @@ const SettingsTab = () => {
             </h3>
           </div>
 
-          <form onSubmit={handlePasswordChange} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <form
+            onSubmit={handlePasswordChange}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("dashboard.settings.currentPassword")}
@@ -361,7 +412,10 @@ const SettingsTab = () => {
                   type={showPassword ? "text" : "password"}
                   value={passwordData.currentPassword}
                   onChange={(e) =>
-                    setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                    setPasswordData({
+                      ...passwordData,
+                      currentPassword: e.target.value,
+                    })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
                   placeholder="••••••••"
@@ -377,7 +431,10 @@ const SettingsTab = () => {
                 type={showPassword ? "text" : "password"}
                 value={passwordData.newPassword}
                 onChange={(e) =>
-                  setPasswordData({ ...passwordData, newPassword: e.target.value })
+                  setPasswordData({
+                    ...passwordData,
+                    newPassword: e.target.value,
+                  })
                 }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
                 placeholder="••••••••"
@@ -393,7 +450,10 @@ const SettingsTab = () => {
                   type={showPassword ? "text" : "password"}
                   value={passwordData.confirmPassword}
                   onChange={(e) =>
-                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                    setPasswordData({
+                      ...passwordData,
+                      confirmPassword: e.target.value,
+                    })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
                   placeholder="••••••••"
@@ -430,6 +490,6 @@ const SettingsTab = () => {
 };
 
 // Need to import ShoppingBag for notifications section
-import { ShoppingBag } from "lucide-react";
+// import { ShoppingBag } from "lucide-react";
 
 export default SettingsTab;
