@@ -1,11 +1,25 @@
 import { useState, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Check,
+  Eye,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import { useAppDispatch } from "../../../../store/hooks";
+import { addToCart } from "../../../../store/slices/cartSlice";
 import test1 from "../../../../assets/images/test1.png";
+
 interface Product {
   id: number;
   name: string;
+  nameEn: string;
+  description: string;
+  descriptionEn: string;
   price: number;
   installmentPrice: number;
   expectedProfit: number;
@@ -16,15 +30,47 @@ interface Product {
 const ProductsHome = () => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const navigate = useNavigate();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [addedProducts, setAddedProducts] = useState<number[]>([]);
+  const dispatch = useAppDispatch();
+
+  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(
+      addToCart({ id: product.id, name: product.name, price: product.price })
+    );
+    setAddedProducts((prev) => [...prev, product.id]);
+
+    setTimeout(() => {
+      setAddedProducts((prev) => prev.filter((id) => id !== product.id));
+    }, 2000);
+
+    toast.success(
+      t("products.addedToCart", {
+        name: isRTL ? product.name : product.nameEn,
+      }),
+      {
+        position: "top-right",
+        autoClose: 2000,
+      }
+    );
+  };
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
 
   // Sample products data - replace with actual data
   const products: Product[] = [
     {
       id: 1,
       name: "وجبة سمك",
+      nameEn: "Fish Meal",
+      description: "وجبة سمك طازجة مع الأرز والسلطة",
+      descriptionEn: "Fresh fish meal with rice and salad",
       price: 50,
       installmentPrice: 70,
       expectedProfit: 20,
@@ -34,6 +80,9 @@ const ProductsHome = () => {
     {
       id: 2,
       name: "وجبة دجاج",
+      nameEn: "Chicken Meal",
+      description: "دجاج مشوي طري مع البطاطس",
+      descriptionEn: "Tender grilled chicken with potatoes",
       price: 30,
       installmentPrice: 40,
       expectedProfit: 10,
@@ -42,7 +91,10 @@ const ProductsHome = () => {
     },
     {
       id: 3,
-      name: "وجبة سمك",
+      name: "وجبة لحوم",
+      nameEn: "Meat Meal",
+      description: "لحم بقري فاخر مع صوص خاص",
+      descriptionEn: "Premium beef with special sauce",
       price: 50,
       installmentPrice: 70,
       expectedProfit: 20,
@@ -52,6 +104,9 @@ const ProductsHome = () => {
     {
       id: 4,
       name: "وجبة سمك",
+      nameEn: "Fish Meal",
+      description: "وجبة سمك طازجة مع الأرز والسلطة",
+      descriptionEn: "Fresh fish meal with rice and salad",
       price: 50,
       installmentPrice: 70,
       expectedProfit: 20,
@@ -60,7 +115,10 @@ const ProductsHome = () => {
     },
     {
       id: 5,
-      name: "sوجبة سمك",
+      name: "وجبة مشوية",
+      nameEn: "Grilled Meal",
+      description: "تشكيلة مشويات متنوعة شهية",
+      descriptionEn: "Delicious assorted grilled items",
       price: 50,
       installmentPrice: 70,
       expectedProfit: 20,
@@ -155,20 +213,69 @@ const ProductsHome = () => {
                       duration: 0.5,
                       delay: 0.3 + index * 0.1,
                     }}
-                    whileHover={{ y: -5 }}
-                    className="col-span-1 md:col-span-1 lg:col-span-4 bg-white rounded-xl shadow-lg  overflow-hidden transition-all"
+                    onClick={() => handleProductClick(product.id)}
+                    className="col-span-1 md:col-span-1 lg:col-span-4 bg-white rounded-xl shadow-lg overflow-hidden transition-all group cursor-pointer"
                   >
-                    {/* Product Image */}
-                    <div className="w-full  flex items-center justify-center">
+                    {/* Product Image with Hover Overlay */}
+                    <div className="w-full flex items-center justify-center relative overflow-hidden">
                       <img
                         src={product.image}
-                        alt={product.name}
-                        className="w-[50%] h-full object-cover"
+                        alt={isRTL ? product.name : product.nameEn}
+                        className="w-[50%] h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = "none";
                         }}
                       />
+
+                      {/* Hover Overlay */}
+                      <motion.div className="absolute inset-0 bg-linear-to-t from-[#384B97]/95 via-[#384B97]/70 to-transparent flex flex-col items-center justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        {/* Description */}
+                        <p className="text-white text-center text-sm mb-3 leading-relaxed">
+                          {isRTL ? product.description : product.descriptionEn}
+                        </p>
+
+                        {/* Quick Add Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => handleAddToCart(product, e)}
+                          className="flex items-center gap-2 bg-[#F65331] text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-[#e54525] transition-all text-sm"
+                        >
+                          <AnimatePresence mode="wait">
+                            {addedProducts.includes(product.id) ? (
+                              <motion.div
+                                key="check"
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                exit={{ scale: 0, rotate: 180 }}
+                                className="flex items-center gap-2"
+                              >
+                                <Check className="w-4 h-4" />
+                                <span>{isRTL ? "تمت الإضافة!" : "Added!"}</span>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="cart"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                className="flex items-center gap-2"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                                <span>
+                                  {isRTL ? "أضف للسلة" : "Add to Cart"}
+                                </span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.button>
+                      </motion.div>
+
+                      {/* View Icon Badge */}
+                      <div className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <Eye className="w-4 h-4 text-[#384B97]" />
+                      </div>
                     </div>
 
                     {/* Product Info */}
@@ -176,7 +283,7 @@ const ProductsHome = () => {
                       <div className="flex items-center justify-between">
                         {/* Product Name */}
                         <h3 className="text-lg md:text-xl font-bold text-black mb-2">
-                          {product.name}
+                          {isRTL ? product.name : product.nameEn}
                         </h3>
 
                         {/* Price */}

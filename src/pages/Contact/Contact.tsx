@@ -18,7 +18,7 @@ const Contact = () => {
     e.preventDefault();
 
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error(t("contact.errors.fillAllFields") || "يرجى ملء جميع الحقول");
+      toast.error(t("contactPage.errors.fillAllFields"));
       return;
     }
 
@@ -26,7 +26,7 @@ const Contact = () => {
 
     // Simulate API call
     setTimeout(() => {
-      toast.success(t("contact.success") || "تم إرسال رسالتك بنجاح!");
+      toast.success(t("contactPage.success"));
       setFormData({ name: "", email: "", message: "" });
       setIsSubmitting(false);
     }, 1500);
@@ -57,7 +57,7 @@ const Contact = () => {
             {/* Title with Icon */}
             <div className="flex items-center justify-start gap-3 mb-8">
               <h1 className="text-3xl md:text-4xl font-bold text-[#384B97]">
-                تواصل معنا في ميكانيزم بريدج
+                {t("contactPage.title")}
               </h1>
               <svg
                 width="50"
@@ -86,16 +86,8 @@ const Contact = () => {
 
             {/* Description Text */}
             <div className="text-gray-700 leading-relaxed text-lg space-y-4">
-              <p>
-                نهدف من خلال تواصلكم معنا إلى توفير وسيلة سهلة وسريعة للتواصل مع
-                فريق الدعم وخدمة العملاء. يمكنك من خلالها إرسال استفساراتك،
-                اقتراحاتك أو طلبات المساعدة في أي وقت، وسيتم الرد عليك بأسرع ما
-                يمكن.
-              </p>
-              <p>
-                نحن هنا دائمًا لضمان حصولك على أفضل تجربة ممكنة أثناء تصفحك
-                للموقع أو شراؤك لمنتجاتنا.
-              </p>
+              <p>{t("contactPage.description1")}</p>
+              <p>{t("contactPage.description2")}</p>
             </div>
           </motion.div>
           {/* Left Side - Contact Form */}
@@ -108,7 +100,7 @@ const Contact = () => {
               {/* Name Field */}
               <div>
                 <label className="block text-gray-800 font-bold mb-3 text-right text-lg">
-                  الاسم
+                  {t("contactPage.form.name")}
                 </label>
                 <input
                   type="text"
@@ -116,7 +108,7 @@ const Contact = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="الاسم بالكامل"
+                  placeholder={t("contactPage.form.namePlaceholder")}
                   className="w-full px-5 py-4 rounded-xl border-2 border-[#F65331] bg-gray-50 text-right placeholder:text-gray-400 focus:bg-white focus:outline-none transition-all"
                   required
                   disabled={isSubmitting}
@@ -126,7 +118,7 @@ const Contact = () => {
               {/* Email Field */}
               <div>
                 <label className="block text-gray-800 font-bold mb-3 text-right text-lg">
-                  البريد الإلكتروني
+                  {t("contactPage.form.email")}
                 </label>
                 <input
                   type="email"
@@ -134,7 +126,7 @@ const Contact = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  placeholder="example@gmail.com"
+                  placeholder={t("contactPage.form.emailPlaceholder")}
                   className="w-full px-5 py-4 rounded-xl border-2 border-[#F65331] bg-gray-50 text-right placeholder:text-gray-400 focus:bg-white focus:outline-none transition-all"
                   required
                   disabled={isSubmitting}
@@ -144,7 +136,7 @@ const Contact = () => {
               {/* Message Field */}
               <div>
                 <label className="block text-gray-800 font-bold mb-3 text-right text-lg">
-                  اترك تعليقك
+                  {t("contactPage.form.message")}
                 </label>
                 <textarea
                   value={formData.message}
@@ -152,7 +144,7 @@ const Contact = () => {
                     setFormData({ ...formData, message: e.target.value })
                   }
                   rows={8}
-                  placeholder="علق بأي شئ"
+                  placeholder={t("contactPage.form.messagePlaceholder")}
                   className="w-full px-5 py-4 rounded-xl border-2 border-[#F65331] bg-gray-50 text-right placeholder:text-gray-400 focus:bg-white focus:outline-none transition-all resize-none"
                   required
                   disabled={isSubmitting}
@@ -171,7 +163,9 @@ const Contact = () => {
                     : "bg-[#F65331] hover:bg-[#e54525]"
                 }`}
               >
-                {isSubmitting ? "جاري الإرسال..." : "إرسال"}
+                {isSubmitting
+                  ? t("contactPage.form.submitting")
+                  : t("contactPage.form.submit")}
               </motion.button>
             </form>
           </motion.div>

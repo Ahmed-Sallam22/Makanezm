@@ -1,10 +1,24 @@
+import type { PaymentType, InstallmentTier } from './product';
+
 export interface OrderItem {
   id: number;
   productId: number;
   productName: string;
   quantity: number;
-  price: number;
+  price: number; // Base cash price
   image?: string;
+  merchantId?: string;
+}
+
+// Installment payment details
+export interface InstallmentDetails {
+  tier: InstallmentTier;
+  totalAmount: number; // Price with installment fee
+  monthlyPayment: number;
+  monthsPaid: number;
+  nextPaymentDate: string;
+  remainingPayments: number;
+  profit: number; // Merchant's profit from installment
 }
 
 export interface Order {
@@ -13,9 +27,16 @@ export interface Order {
   items: OrderItem[];
   total: number;
   discountAmount: number;
-  finalTotal: number;
+  finalTotal: number; // Cash total or installment total
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentType: 'credit' | 'cash';
+  paymentType: PaymentType; // 'cash' | 'installment'
+  
+  // Installment-specific fields
+  installmentDetails?: InstallmentDetails;
+  
+  // Merchant info
+  merchantId?: string;
+  
   createdAt: string;
   updatedAt: string;
   deliveryLink?: string;

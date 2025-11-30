@@ -11,6 +11,7 @@ import "./i18n";
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
 const Products = lazy(() => import("./pages/Products"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
 const About = lazy(() => import("./pages/About"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -36,6 +37,7 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="products" element={<Products />} />
+                <Route path="products/:id" element={<ProductDetails />} />
                 <Route path="about" element={<About />} />
                 <Route path="faq" element={<FAQ />} />
                 <Route path="privacy" element={<Privacy />} />

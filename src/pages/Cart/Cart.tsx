@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Plus, Minus, CreditCard, Banknote } from "lucide-react";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,10 +8,12 @@ import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import {
   removeFromCart,
   updateQuantity,
+  setItemInstallment,
   clearCart,
 } from "../../store/slices/cartSlice";
 import { addOrder } from "../../store/slices/ordersSlice";
 import type { Order } from "../../types/order";
+import type { InstallmentTier } from "../../types/product";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import test1 from "../../assets/images/test1.png";
@@ -22,8 +24,17 @@ const Cart = () => {
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart.items);
   const total = useAppSelector((state) => state.cart.total);
+  const installmentTotal = useAppSelector(
+    (state) => state.cart.installmentTotal
+  );
   const [discountCode, setDiscountCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+
+  // Check if any item has installment selected
+  const hasInstallmentItems = cartItems.some(
+    (item) => item.selectedInstallment
+  );
+  const installmentFee = installmentTotal - total;
 
   const handleRemoveItem = (id: number, name: string) => {
     dispatch(removeFromCart(id));
@@ -64,8 +75,10 @@ const Cart = () => {
     }
   };
 
-  const discountAmount = (total * discountPercent) / 100;
-  const finalTotal = total - discountAmount;
+  // Calculate final amounts considering installments
+  const effectiveTotal = hasInstallmentItems ? installmentTotal : total;
+  const discountAmount = (effectiveTotal * discountPercent) / 100;
+  const finalTotal = effectiveTotal - discountAmount;
 
   // Modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -185,84 +198,162 @@ const Cart = () => {
           <div className="space-y-6">
             {/* Cart Items */}
             <div className="space-y-4">
-              {cartItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl shadow-md p-6"
-                >
-                  <div className="flex items-center gap-6">
-                    {/* Product Image - Right Side */}
-                    <div className="w-24 h-24 flex-shrink-0">
-                      <img
-                        src={test1}
-                        alt={item.name}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+              {cartItems.map((item, index) => {
+                const hasInstallment =
+                  item.allowInstallment &&
+                  item.installmentOptions &&
+                  item.installmentOptions.length > 0;
+                const itemTotal = item.price * item.quantity;
+                const installmentTotal = item.selectedInstallment
+                  ? itemTotal * (1 + item.selectedInstallment.percentage / 100)
+                  : itemTotal;
 
-                    {/* Product Info - Center */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 text-right">
-                        {item.name}
-                      </h3>
-                      {/* Progress Bar */}
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-semibold text-[#384B97]">
-                          {item.progress || 50}%
-                        </span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                          <div
-                            className="bg-[#384B97] h-2.5 rounded-full"
-                            style={{ width: `${item.progress || 50}%` }}
-                          />
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-2xl shadow-md p-6"
+                  >
+                    <div className="flex items-center gap-6">
+                      {/* Product Image - Right Side */}
+                      <div className="w-24 h-24 shrink-0">
+                        <img
+                          src={item.image || test1}
+                          alt={item.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+
+                      {/* Product Info - Center */}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2 text-right">
+                          {item.name}
+                        </h3>
+
+                        {/* Installment Options */}
+                        {hasInstallment && (
+                          <div className="mb-3">
+                            <div className="flex flex-wrap gap-2 justify-end">
+                              {/* Cash option */}
+                              <button
+                                onClick={() =>
+                                  dispatch(
+                                    setItemInstallment({
+                                      id: item.id,
+                                      installment: null,
+                                    })
+                                  )
+                                }
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                                  !item.selectedInstallment
+                                    ? "bg-[#384B97] text-white"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                              >
+                                <Banknote className="w-4 h-4" />
+                                {t("cart.cash")}
+                              </button>
+
+                              {/* Installment options */}
+                              {item.installmentOptions?.map(
+                                (tier: InstallmentTier) => (
+                                  <button
+                                    key={tier.months}
+                                    onClick={() =>
+                                      dispatch(
+                                        setItemInstallment({
+                                          id: item.id,
+                                          installment: tier,
+                                        })
+                                      )
+                                    }
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                                      item.selectedInstallment?.months ===
+                                      tier.months
+                                        ? "bg-[#F65331] text-white"
+                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                    }`}
+                                  >
+                                    <CreditCard className="w-4 h-4" />
+                                    {tier.months} {t("cart.months")}
+                                  </button>
+                                )
+                              )}
+                            </div>
+
+                            {/* Show installment details */}
+                            {item.selectedInstallment && (
+                              <div className="mt-2 text-right text-sm text-[#384B97]">
+                                <span className="font-semibold">
+                                  {Math.round(
+                                    installmentTotal /
+                                      item.selectedInstallment.months
+                                  )}{" "}
+                                  {t("cart.riyal")}/{t("cart.month")}
+                                </span>
+                                <span className="text-gray-500 mx-2">•</span>
+                                <span className="text-gray-600">
+                                  {t("cart.totalWithInstallment")}:{" "}
+                                  {Math.round(installmentTotal)}{" "}
+                                  {t("cart.riyal")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Price and Quantity - Left Side */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="text-center">
+                          <span className="text-2xl font-bold text-gray-800">
+                            {item.selectedInstallment
+                              ? Math.round(installmentTotal)
+                              : itemTotal}
+                          </span>
+                          <span className="text-gray-600 mr-1">
+                            {t("cart.riyal")}
+                          </span>
+                          {item.selectedInstallment && (
+                            <div className="text-xs text-gray-500 line-through">
+                              {itemTotal} {t("cart.riyal")}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-4 py-2">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() =>
+                              handleUpdateQuantity(item.id, item.quantity, 1)
+                            }
+                            className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </motion.button>
+                          <span className="text-lg font-bold w-8 text-center">
+                            {item.quantity}
+                          </span>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() =>
+                              handleUpdateQuantity(item.id, item.quantity, -1)
+                            }
+                            className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </motion.button>
                         </div>
                       </div>
                     </div>
-
-                    {/* Price and Quantity - Left Side */}
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="text-center">
-                        <span className="text-2xl font-bold text-gray-800">
-                          {item.price}
-                        </span>
-                        <span className="text-gray-600 mr-1">
-                          {t("cart.riyal")}
-                        </span>
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-4 py-2">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            handleUpdateQuantity(item.id, item.quantity, 1)
-                          }
-                          className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </motion.button>
-                        <span className="text-lg font-bold w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            handleUpdateQuantity(item.id, item.quantity, -1)
-                          }
-                          className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Summary Card */}
@@ -292,13 +383,25 @@ const Cart = () => {
               </div>
 
               <div className="border-t-2 border-gray-200 pt-4 mb-4">
-                {/* Subtotal */}
+                {/* Base Subtotal */}
                 <div className="flex justify-between text-gray-700 mb-3">
                   <span className="font-semibold">
                     {total} {t("cart.riyal")}
                   </span>
                   <span className="font-semibold">{t("cart.subtotal")}</span>
                 </div>
+
+                {/* Installment Fee (if any) */}
+                {hasInstallmentItems && installmentFee > 0 && (
+                  <div className="flex justify-between text-[#384B97] mb-3">
+                    <span className="font-semibold">
+                      +{Math.round(installmentFee)} {t("cart.riyal")}
+                    </span>
+                    <span className="font-semibold">
+                      {t("cart.installmentFee")}
+                    </span>
+                  </div>
+                )}
 
                 {/* Discount */}
                 {discountPercent > 0 && (
@@ -352,7 +455,7 @@ const Cart = () => {
 
         {/* Payment & Invoice Modal */}
         {showPaymentModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -449,7 +552,7 @@ const Cart = () => {
 
         {/* Order Status Verification Modal */}
         {showOrderStatusModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -539,7 +642,7 @@ const Cart = () => {
 
         {/* Delivery Link Modal */}
         {showDeliveryLinkModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

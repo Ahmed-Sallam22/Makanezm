@@ -26,6 +26,9 @@ import {
   AlertCircle,
   Users,
   Image,
+  Shield,
+  Settings,
+  BarChart3,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { updateUser } from "../../store/slices/authSlice";
@@ -33,6 +36,10 @@ import SEO from "../../components/SEO";
 import { toast } from "react-toastify";
 import ProductsTab from "./ProductsTab";
 import SliderTab from "./SliderTab";
+import AdminProductsTab from "./AdminProductsTab";
+import MerchantOrdersTab from "./MerchantOrdersTab";
+import SettingsTab from "./SettingsTab";
+import ReportsTab from "./ReportsTab";
 
 type TabType =
   | "overview"
@@ -44,7 +51,11 @@ type TabType =
   | "deferred"
   | "products"
   | "users"
-  | "sliders";
+  | "sliders"
+  | "adminProducts"
+  | "merchantOrders"
+  | "settings"
+  | "reports";
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -98,6 +109,12 @@ const Dashboard = () => {
     },
     { id: "orders", icon: ShoppingBag, label: t("dashboard.tabs.orders") },
     { id: "products", icon: Package, label: t("dashboard.tabs.products") },
+    {
+      id: "merchantOrders",
+      icon: DollarSign,
+      label: t("dashboard.tabs.merchantOrders"),
+    },
+    { id: "reports", icon: BarChart3, label: t("dashboard.tabs.reports") },
     { id: "profile", icon: User, label: t("dashboard.tabs.profile") },
     { id: "merchant", icon: Building2, label: t("dashboard.tabs.merchant") },
     {
@@ -107,10 +124,16 @@ const Dashboard = () => {
     },
     { id: "seasonal", icon: Calendar, label: t("dashboard.tabs.seasonal") },
     { id: "deferred", icon: DollarSign, label: t("dashboard.tabs.deferred") },
+    { id: "settings", icon: Settings, label: t("dashboard.tabs.settings") },
   ];
 
   // Admin-only tabs
   if (user?.role === "admin") {
+    tabs.push({
+      id: "adminProducts",
+      icon: Shield,
+      label: t("dashboard.tabs.adminProducts"),
+    });
     tabs.push({
       id: "users",
       icon: Users,
@@ -980,6 +1003,14 @@ const Dashboard = () => {
             {/* Products Tab */}
             {activeTab === "products" && <ProductsTab />}
 
+            {/* Merchant Orders Tab */}
+            {activeTab === "merchantOrders" && <MerchantOrdersTab />}
+
+            {/* Admin Products Tab (Admin Only) */}
+            {activeTab === "adminProducts" && user?.role === "admin" && (
+              <AdminProductsTab />
+            )}
+
             {/* Users Tab (Admin Only) */}
             {activeTab === "users" && user?.role === "admin" && (
               <div className="space-y-6">
@@ -1078,6 +1109,12 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+
+            {/* Settings Tab */}
+            {activeTab === "settings" && <SettingsTab />}
+
+            {/* Reports Tab */}
+            {activeTab === "reports" && <ReportsTab />}
           </motion.div>
         </div>
       </div>
