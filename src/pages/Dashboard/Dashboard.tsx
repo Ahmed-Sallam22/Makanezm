@@ -374,6 +374,8 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+            {/* Sliders Tab (Admin Only) */}
+            {activeTab === "sliders" && user?.role === "admin" && <SliderTab />}
 
             {/* Orders Tab */}
             {activeTab === "orders" && (
@@ -1076,9 +1078,6 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
-
-            {/* Sliders Tab (Admin Only) */}
-            {activeTab === "sliders" && user?.role === "admin" && <SliderTab />}
           </motion.div>
         </div>
       </div>

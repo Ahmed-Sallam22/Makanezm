@@ -8,7 +8,7 @@ const HeroSlider = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const sliders = useAppSelector((state) => state.sliders.sliders);
-  
+
   // Filter only active sliders and sort by order
   const activeSliders = sliders
     .filter((s) => s.isActive)
@@ -24,7 +24,9 @@ const HeroSlider = () => {
 
   const prevSlide = useCallback(() => {
     if (activeSliders.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + activeSliders.length) % activeSliders.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + activeSliders.length) % activeSliders.length
+    );
   }, [activeSliders.length]);
 
   const goToSlide = (index: number) => {
@@ -37,7 +39,7 @@ const HeroSlider = () => {
   // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying || activeSliders.length <= 1) return;
-    
+
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, nextSlide, activeSliders.length]);
@@ -72,11 +74,12 @@ const HeroSlider = () => {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${currentSlider.image})` }}
           >
-            {/* Gradient Overlay - Similar to the attached image */}
-            <div 
+            {/* Gradient Overlay - Blue and Orange theme */}
+            <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(135deg, rgba(200, 180, 100, 0.85) 0%, rgba(72, 175, 160, 0.85) 50%, rgba(60, 150, 140, 0.85) 100%)"
+                background:
+                  "linear-gradient(135deg, rgba(56, 75, 151, 0.9) 0%, rgba(100, 120, 180, 0.85) 40%, rgba(246, 83, 49, 0.85) 100%)",
               }}
             />
           </div>
@@ -87,7 +90,7 @@ const HeroSlider = () => {
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-sm sm:text-base md:text-lg font-bold text-[#5a3d2b] uppercase tracking-wider mb-2 sm:mb-4"
+              className="text-sm sm:text-base md:text-lg font-bold text-white/90 uppercase tracking-wider mb-2 sm:mb-4"
             >
               {isRTL ? currentSlider.titleAr : currentSlider.title}
             </motion.h2>
@@ -98,18 +101,18 @@ const HeroSlider = () => {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white mb-4 sm:mb-6"
               style={{
-                textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
+                textShadow: "3px 3px 6px rgba(0,0,0,0.3)",
                 fontFamily: "'Impact', 'Arial Black', sans-serif",
               }}
             >
-              {isRTL ? "خصم 20% على الكل!" : "20% OFF SITEWIDE!"}
+              {isRTL ? currentSlider.titleAr : currentSlider.title}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
-              className="text-sm sm:text-base md:text-lg lg:text-xl text-[#2d4a47] font-medium italic max-w-2xl px-4"
+              className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium italic max-w-2xl px-4"
             >
               {isRTL ? currentSlider.descriptionAr : currentSlider.description}
             </motion.p>
@@ -130,7 +133,7 @@ const HeroSlider = () => {
               setIsAutoPlaying(false);
               setTimeout(() => setIsAutoPlaying(true), 10000);
             }}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full transition-all duration-300 group"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-[#384B97]/30 hover:bg-[#F65331]/80 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full transition-all duration-300 group"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
@@ -145,7 +148,7 @@ const HeroSlider = () => {
               setIsAutoPlaying(false);
               setTimeout(() => setIsAutoPlaying(true), 10000);
             }}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full transition-all duration-300 group"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-[#384B97]/30 hover:bg-[#F65331]/80 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full transition-all duration-300 group"
             aria-label="Next slide"
           >
             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
@@ -162,7 +165,7 @@ const HeroSlider = () => {
               onClick={() => goToSlide(index)}
               className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? "bg-white w-6 sm:w-8"
+                  ? "bg-[#F65331] w-6 sm:w-8"
                   : "bg-white/50 hover:bg-white/80"
               }`}
               aria-label={`Go to slide ${index + 1}`}
@@ -173,10 +176,10 @@ const HeroSlider = () => {
 
       {/* Progress Bar */}
       {isAutoPlaying && activeSliders.length > 1 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-20">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#384B97]/30 z-20">
           <motion.div
             key={currentIndex}
-            className="h-full bg-white"
+            className="h-full bg-[#F65331]"
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
             transition={{ duration: 5, ease: "linear" }}

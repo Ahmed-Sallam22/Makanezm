@@ -76,7 +76,11 @@ const SliderTab = () => {
     e.preventDefault();
 
     if (!formData.title || !formData.titleAr || !formData.image) {
-      toast.error(isRTL ? "يرجى ملء جميع الحقول المطلوبة" : "Please fill all required fields");
+      toast.error(
+        isRTL
+          ? "يرجى ملء جميع الحقول المطلوبة"
+          : "Please fill all required fields"
+      );
       return;
     }
 
@@ -87,19 +91,31 @@ const SliderTab = () => {
           ...formData,
         })
       );
-      toast.success(isRTL ? "تم تحديث السلايدر بنجاح" : "Slider updated successfully");
+      toast.success(
+        isRTL ? "تم تحديث السلايدر بنجاح" : "Slider updated successfully"
+      );
     } else {
       dispatch(addSlider(formData));
-      toast.success(isRTL ? "تم إضافة السلايدر بنجاح" : "Slider added successfully");
+      toast.success(
+        isRTL ? "تم إضافة السلايدر بنجاح" : "Slider added successfully"
+      );
     }
 
     setIsModalOpen(false);
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm(isRTL ? "هل أنت متأكد من حذف هذا السلايدر؟" : "Are you sure you want to delete this slider?")) {
+    if (
+      window.confirm(
+        isRTL
+          ? "هل أنت متأكد من حذف هذا السلايدر؟"
+          : "Are you sure you want to delete this slider?"
+      )
+    ) {
       dispatch(deleteSlider(id));
-      toast.success(isRTL ? "تم حذف السلايدر بنجاح" : "Slider deleted successfully");
+      toast.success(
+        isRTL ? "تم حذف السلايدر بنجاح" : "Slider deleted successfully"
+      );
     }
   };
 
@@ -115,7 +131,10 @@ const SliderTab = () => {
 
     // Swap orders
     const temp = newSliders[index].order;
-    newSliders[index] = { ...newSliders[index], order: newSliders[targetIndex].order };
+    newSliders[index] = {
+      ...newSliders[index],
+      order: newSliders[targetIndex].order,
+    };
     newSliders[targetIndex] = { ...newSliders[targetIndex], order: temp };
 
     dispatch(reorderSliders(newSliders));
@@ -155,7 +174,9 @@ const SliderTab = () => {
               {isRTL ? "لا توجد سلايدرات حتى الآن" : "No sliders yet"}
             </p>
             <p className="text-gray-400">
-              {isRTL ? "اضغط على إضافة سلايدر لإنشاء أول سلايدر" : "Click Add Slider to create your first slider"}
+              {isRTL
+                ? "اضغط على إضافة سلايدر لإنشاء أول سلايدر"
+                : "Click Add Slider to create your first slider"}
             </p>
           </div>
         ) : (
@@ -202,8 +223,8 @@ const SliderTab = () => {
                               ? "نشط"
                               : "Active"
                             : isRTL
-                            ? "غير نشط"
-                            : "Inactive"}
+                              ? "غير نشط"
+                              : "Inactive"}
                         </span>
                       </div>
                       <h3 className="text-xl font-bold text-gray-800 mb-1">
@@ -213,7 +234,8 @@ const SliderTab = () => {
                         {isRTL ? slider.descriptionAr : slider.description}
                       </p>
                       <p className="text-gray-400 text-xs">
-                        {isRTL ? "العنوان بالإنجليزية:" : "English Title:"} {slider.title}
+                        {isRTL ? "العنوان بالإنجليزية:" : "English Title:"}{" "}
+                        {slider.title}
                       </p>
                     </div>
 
@@ -242,9 +264,21 @@ const SliderTab = () => {
                             ? "bg-green-100 hover:bg-green-200 text-green-600"
                             : "bg-gray-100 hover:bg-gray-200 text-gray-600"
                         }`}
-                        title={slider.isActive ? (isRTL ? "إخفاء" : "Hide") : (isRTL ? "إظهار" : "Show")}
+                        title={
+                          slider.isActive
+                            ? isRTL
+                              ? "إخفاء"
+                              : "Hide"
+                            : isRTL
+                              ? "إظهار"
+                              : "Show"
+                        }
                       >
-                        {slider.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        {slider.isActive ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
                       </button>
                       <button
                         onClick={() => openEditModal(slider)}
@@ -293,8 +327,8 @@ const SliderTab = () => {
                       ? "تعديل السلايدر"
                       : "Edit Slider"
                     : isRTL
-                    ? "إضافة سلايدر جديد"
-                    : "Add New Slider"}
+                      ? "إضافة سلايدر جديد"
+                      : "Add New Slider"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -313,7 +347,9 @@ const SliderTab = () => {
                   <input
                     type="url"
                     value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
                     placeholder="https://example.com/image.jpg"
                     required
@@ -341,7 +377,9 @@ const SliderTab = () => {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
                     placeholder="Black Friday Sale"
                     required
@@ -356,7 +394,9 @@ const SliderTab = () => {
                   <input
                     type="text"
                     value={formData.titleAr}
-                    onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, titleAr: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors text-right"
                     placeholder="تخفيضات الجمعة السوداء"
                     dir="rtl"
@@ -371,7 +411,9 @@ const SliderTab = () => {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none"
                     rows={2}
                     placeholder="20% OFF SITEWIDE! Promotion valid through..."
@@ -385,7 +427,12 @@ const SliderTab = () => {
                   </label>
                   <textarea
                     value={formData.descriptionAr}
-                    onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        descriptionAr: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none text-right"
                     rows={2}
                     placeholder="خصم 20% على كل المنتجات..."
@@ -403,7 +450,12 @@ const SliderTab = () => {
                       type="number"
                       min="1"
                       value={formData.order}
-                      onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          order: parseInt(e.target.value) || 1,
+                        })
+                      }
                       className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
                     />
                   </div>
@@ -412,7 +464,12 @@ const SliderTab = () => {
                       <input
                         type="checkbox"
                         checked={formData.isActive}
-                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isActive: e.target.checked,
+                          })
+                        }
                         className="w-5 h-5 rounded text-[#384B97] focus:ring-[#384B97]"
                       />
                       <span className="font-semibold text-gray-700">
@@ -443,8 +500,8 @@ const SliderTab = () => {
                         ? "حفظ التعديلات"
                         : "Save Changes"
                       : isRTL
-                      ? "إضافة السلايدر"
-                      : "Add Slider"}
+                        ? "إضافة السلايدر"
+                        : "Add Slider"}
                   </motion.button>
                 </div>
               </form>
