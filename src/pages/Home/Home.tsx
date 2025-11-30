@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
+import HeroSlider from "../../components/HeroSlider";
 import Hero from "./sections/Hero";
 import OverviewStats from "./sections/OverviewStats";
 import ServiceImage from "./sections/ServiceImage";
@@ -22,6 +23,7 @@ const Home = () => {
         transition={{ duration: 0.5 }}
         className="mx-auto"
       >
+        <HeroSlider />
         <Hero />
         <OverviewStats />
         <ServiceImage />

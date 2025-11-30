@@ -25,12 +25,14 @@ import {
   Send,
   AlertCircle,
   Users,
+  Image,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { updateUser } from "../../store/slices/authSlice";
 import SEO from "../../components/SEO";
 import { toast } from "react-toastify";
 import ProductsTab from "./ProductsTab";
+import SliderTab from "./SliderTab";
 
 type TabType =
   | "overview"
@@ -41,7 +43,8 @@ type TabType =
   | "seasonal"
   | "deferred"
   | "products"
-  | "users";
+  | "users"
+  | "sliders";
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -112,6 +115,11 @@ const Dashboard = () => {
       id: "users",
       icon: Users,
       label: t("dashboard.tabs.users"),
+    });
+    tabs.push({
+      id: "sliders",
+      icon: Image,
+      label: t("dashboard.tabs.sliders"),
     });
   }
 
@@ -1068,6 +1076,9 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+
+            {/* Sliders Tab (Admin Only) */}
+            {activeTab === "sliders" && user?.role === "admin" && <SliderTab />}
           </motion.div>
         </div>
       </div>

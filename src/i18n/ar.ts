@@ -247,6 +247,7 @@ export default {
           deferred: "البيع الآجل",
           products: "المنتجات",
           users: "إدارة المستخدمين",
+          sliders: "سلايدر الرئيسية",
         },
         stats: {
           totalOrders: "إجمالي الطلبات",

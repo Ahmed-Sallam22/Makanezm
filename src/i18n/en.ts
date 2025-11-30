@@ -249,6 +249,7 @@ export default {
           deferred: "Deferred Payment",
           products: "Products",
           users: "Users Management",
+          sliders: "Hero Slider",
         },
         stats: {
           totalOrders: "Total Orders",
