@@ -14,6 +14,28 @@ import { useAppDispatch } from "../../../../store/hooks";
 import { addToCart } from "../../../../store/slices/cartSlice";
 import test1 from "../../../../assets/images/test1.png";
 
+// Currency SVG Component
+const CurrencyIcon = ({
+  color = "black",
+  size = 30,
+}: {
+  color?: string;
+  size?: number;
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 35 35"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M16.0417 24.7916H18.9584V27.7083H16.0417V24.7916ZM20.4167 24.7916H23.3334V27.7083H20.4167V24.7916ZM13.125 5.83325H16.0417V21.8749C16.0417 23.422 15.4271 24.9057 14.3331 25.9997C13.2392 27.0937 11.7554 27.7083 10.2084 27.7083H7.29169C6.13136 27.7083 5.01857 27.2473 4.19809 26.4268C3.37762 25.6064 2.91669 24.4936 2.91669 23.3333V17.4999H5.83335V23.3333C5.83335 23.72 5.987 24.091 6.26049 24.3645C6.53398 24.6379 6.90491 24.7916 7.29169 24.7916H10.2084C11.8271 24.7916 13.125 23.4937 13.125 21.8749V5.83325ZM17.5 5.83325H20.4167V18.9583H24.7917V11.6666H27.7084V18.9583C27.7084 20.577 26.4104 21.8749 24.7917 21.8749H20.4167C18.7979 21.8749 17.5 20.577 17.5 18.9583V5.83325ZM29.1667 14.5833H32.0834V24.7916C32.0834 25.9519 31.6224 27.0647 30.8019 27.8852C29.9815 28.7057 28.8687 29.1666 27.7084 29.1666H24.7917V26.2499H27.7084C28.0951 26.2499 28.4661 26.0963 28.7396 25.8228C29.013 25.5493 29.1667 25.1784 29.1667 24.7916V14.5833Z"
+      fill={color}
+    />
+  </svg>
+);
+
 interface Product {
   id: number;
   name: string;
@@ -35,6 +57,7 @@ const ProductsHome = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [addedProducts, setAddedProducts] = useState<number[]>([]);
+  const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const dispatch = useAppDispatch();
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -200,6 +223,7 @@ const ProductsHome = () => {
             >
               {getCurrentSlideProducts().map((product, index) => {
                 const originalIndex = currentIndex * productsPerSlide + index;
+                const isFlipped = flippedCards.includes(product.id);
                 return (
                   <motion.div
                     key={product.id}
@@ -213,165 +237,189 @@ const ProductsHome = () => {
                       duration: 0.5,
                       delay: 0.3 + index * 0.1,
                     }}
-                    onClick={() => handleProductClick(product.id)}
-                    className="col-span-1 md:col-span-1 lg:col-span-4 bg-white rounded-xl shadow-lg overflow-hidden transition-all group cursor-pointer"
+                    className="col-span-1 md:col-span-1 lg:col-span-4 perspective-1000"
+                    onMouseEnter={() =>
+                      setFlippedCards((prev) => [...prev, product.id])
+                    }
+                    onMouseLeave={() =>
+                      setFlippedCards((prev) =>
+                        prev.filter((id) => id !== product.id)
+                      )
+                    }
                   >
-                    {/* Product Image with Hover Overlay */}
-                    <div className="w-full flex items-center justify-center relative overflow-hidden">
-                      <img
-                        src={product.image}
-                        alt={isRTL ? product.name : product.nameEn}
-                        className="w-[50%] h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                        }}
-                      />
+                    {/* Flip Card Container */}
+                    <div
+                      className="relative w-full h-[450px] transition-transform duration-700 cursor-pointer"
+                      style={{
+                        transformStyle: "preserve-3d",
+                        transform: isFlipped
+                          ? "rotateY(180deg)"
+                          : "rotateY(0deg)",
+                      }}
+                    >
+                      {/* Front Side */}
+                      <div
+                        className="absolute inset-0 w-full h-full bg-white rounded-xl shadow-lg overflow-hidden"
+                        style={{ backfaceVisibility: "hidden" }}
+                      >
+                        {/* Product Image */}
+                        <div className="w-full h-48 flex items-center justify-center bg-gray-50">
+                          <img
+                            src={product.image}
+                            alt={isRTL ? product.name : product.nameEn}
+                            className="w-[60%] h-full object-contain"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                            }}
+                          />
+                        </div>
 
-                      {/* Hover Overlay */}
-                      <motion.div className="absolute inset-0 bg-linear-to-t from-[#384B97]/95 via-[#384B97]/70 to-transparent flex flex-col items-center justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        {/* Description */}
-                        <p className="text-white text-center text-sm mb-3 leading-relaxed">
-                          {isRTL ? product.description : product.descriptionEn}
-                        </p>
-
-                        {/* Quick Add Button */}
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => handleAddToCart(product, e)}
-                          className="flex items-center gap-2 bg-[#F65331] text-white px-5 py-2 rounded-full font-bold shadow-lg hover:bg-[#e54525] transition-all text-sm"
-                        >
-                          <AnimatePresence mode="wait">
-                            {addedProducts.includes(product.id) ? (
-                              <motion.div
-                                key="check"
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                className="flex items-center gap-2"
-                              >
-                                <Check className="w-4 h-4" />
-                                <span>{isRTL ? "تمت الإضافة!" : "Added!"}</span>
-                              </motion.div>
-                            ) : (
-                              <motion.div
-                                key="cart"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                className="flex items-center gap-2"
-                              >
-                                <ShoppingCart className="w-4 h-4" />
-                                <span>
-                                  {isRTL ? "أضف للسلة" : "Add to Cart"}
-                                </span>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.button>
-                      </motion.div>
-
-                      {/* View Icon Badge */}
-                      <div className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        <Eye className="w-4 h-4 text-[#384B97]" />
-                      </div>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="p-4 md:p-6">
-                      <div className="flex items-center justify-between">
-                        {/* Product Name */}
-                        <h3 className="text-lg md:text-xl font-bold text-black mb-2">
-                          {isRTL ? product.name : product.nameEn}
-                        </h3>
-
-                        {/* Price */}
-                        <p className="text-xl md:text-2xl font-bold text-black mb-4 flex  items-center gap-2 ">
-                          {product.price}{" "}
-                          <svg
-                            width="30"
-                            height="30"
-                            viewBox="0 0 35 35"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M16.0417 24.7916H18.9584V27.7083H16.0417V24.7916ZM20.4167 24.7916H23.3334V27.7083H20.4167V24.7916ZM13.125 5.83325H16.0417V21.8749C16.0417 23.422 15.4271 24.9057 14.3331 25.9997C13.2392 27.0937 11.7554 27.7083 10.2084 27.7083H7.29169C6.13136 27.7083 5.01857 27.2473 4.19809 26.4268C3.37762 25.6064 2.91669 24.4936 2.91669 23.3333V17.4999H5.83335V23.3333C5.83335 23.72 5.987 24.091 6.26049 24.3645C6.53398 24.6379 6.90491 24.7916 7.29169 24.7916H10.2084C11.8271 24.7916 13.125 23.4937 13.125 21.8749V5.83325ZM17.5 5.83325H20.4167V18.9583H24.7917V11.6666H27.7084V18.9583C27.7084 20.577 26.4104 21.8749 24.7917 21.8749H20.4167C18.7979 21.8749 17.5 20.577 17.5 18.9583V5.83325ZM29.1667 14.5833H32.0834V24.7916C32.0834 25.9519 31.6224 27.0647 30.8019 27.8852C29.9815 28.7057 28.8687 29.1666 27.7084 29.1666H24.7917V26.2499H27.7084C28.0951 26.2499 28.4661 26.0963 28.7396 25.8228C29.013 25.5493 29.1667 25.1784 29.1667 24.7916V14.5833Z"
-                              fill="black"
-                            />
-                          </svg>
-                        </p>
-                      </div>
-
-                      {/* Buttons Container */}
-                      <div className="flex flex-col gap-3 mb-4">
-                        <div className="flex items-center justify-between gap-5">
-                          {/* Installment Sale Button */}
-                          <div className="bg-secondary text-white p-3 rounded-lg w-1/2 text-center">
-                            <p className="text-sm font-semibold mb-1">
-                              {t("home.productsHome.installmentSale")}
-                            </p>
-                            <p className="text-base font-bold flex items-center justify-center gap-2">
-                              {product.installmentPrice}{" "}
-                              <svg
-                                width="25"
-                                height="25"
-                                viewBox="0 0 35 35"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M16.0417 24.7916H18.9584V27.7083H16.0417V24.7916ZM20.4167 24.7916H23.3334V27.7083H20.4167V24.7916ZM13.125 5.83325H16.0417V21.8749C16.0417 23.422 15.4271 24.9057 14.3331 25.9997C13.2392 27.0937 11.7554 27.7083 10.2084 27.7083H7.29169C6.13136 27.7083 5.01857 27.2473 4.19809 26.4268C3.37762 25.6064 2.91669 24.4936 2.91669 23.3333V17.4999H5.83335V23.3333C5.83335 23.72 5.987 24.091 6.26049 24.3645C6.53398 24.6379 6.90491 24.7916 7.29169 24.7916H10.2084C11.8271 24.7916 13.125 23.4937 13.125 21.8749V5.83325ZM17.5 5.83325H20.4167V18.9583H24.7917V11.6666H27.7084V18.9583C27.7084 20.577 26.4104 21.8749 24.7917 21.8749H20.4167C18.7979 21.8749 17.5 20.577 17.5 18.9583V5.83325ZM29.1667 14.5833H32.0834V24.7916C32.0834 25.9519 31.6224 27.0647 30.8019 27.8852C29.9815 28.7057 28.8687 29.1666 27.7084 29.1666H24.7917V26.2499H27.7084C28.0951 26.2499 28.4661 26.0963 28.7396 25.8228C29.013 25.5493 29.1667 25.1784 29.1667 24.7916V14.5833Z"
-                                  fill="white"
-                                />
-                              </svg>
+                        {/* Product Info */}
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-bold text-black">
+                              {isRTL ? product.name : product.nameEn}
+                            </h3>
+                            <p className="text-xl font-bold text-black flex items-center gap-1">
+                              {product.price}
+                              <CurrencyIcon size={25} />
                             </p>
                           </div>
 
-                          {/* Expected Profit Button */}
-                          <div className="bg-secondary text-white p-3 rounded-lg w-1/2 text-center">
-                            <p className="text-sm font-semibold mb-1">
-                              {t("home.productsHome.expectedProfit")}
+                          {/* Price Buttons */}
+                          <div className="flex gap-3 mb-3">
+                            <div className="bg-secondary text-white p-2 rounded-lg flex-1 text-center">
+                              <p className="text-xs font-semibold mb-1">
+                                {t("home.productsHome.installmentSale")}
+                              </p>
+                              <p className="text-sm font-bold flex items-center justify-center gap-1">
+                                {product.installmentPrice}
+                                <CurrencyIcon color="white" size={20} />
+                              </p>
+                            </div>
+                            <div className="bg-secondary text-white p-2 rounded-lg flex-1 text-center">
+                              <p className="text-xs font-semibold mb-1">
+                                {t("home.productsHome.expectedProfit")}
+                              </p>
+                              <p className="text-sm font-bold flex items-center justify-center gap-1">
+                                {product.expectedProfit}
+                                <CurrencyIcon color="white" size={20} />
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Savings Indicator */}
+                          <div>
+                            <p className="text-xs font-semibold text-gray-700 mb-1">
+                              {t("home.productsHome.savingsIndicator")}
                             </p>
-                            <p className="text-base font-bold flex items-center justify-center gap-2">
-                              {product.expectedProfit}{" "}
-                              <svg
-                                width="25"
-                                height="25"
-                                viewBox="0 0 35 35"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M16.0417 24.7916H18.9584V27.7083H16.0417V24.7916ZM20.4167 24.7916H23.3334V27.7083H20.4167V24.7916ZM13.125 5.83325H16.0417V21.8749C16.0417 23.422 15.4271 24.9057 14.3331 25.9997C13.2392 27.0937 11.7554 27.7083 10.2084 27.7083H7.29169C6.13136 27.7083 5.01857 27.2473 4.19809 26.4268C3.37762 25.6064 2.91669 24.4936 2.91669 23.3333V17.4999H5.83335V23.3333C5.83335 23.72 5.987 24.091 6.26049 24.3645C6.53398 24.6379 6.90491 24.7916 7.29169 24.7916H10.2084C11.8271 24.7916 13.125 23.4937 13.125 21.8749V5.83325ZM17.5 5.83325H20.4167V18.9583H24.7917V11.6666H27.7084V18.9583C27.7084 20.577 26.4104 21.8749 24.7917 21.8749H20.4167C18.7979 21.8749 17.5 20.577 17.5 18.9583V5.83325ZM29.1667 14.5833H32.0834V24.7916C32.0834 25.9519 31.6224 27.0647 30.8019 27.8852C29.9815 28.7057 28.8687 29.1666 27.7084 29.1666H24.7917V26.2499H27.7084C28.0951 26.2499 28.4661 26.0963 28.7396 25.8228C29.013 25.5493 29.1667 25.1784 29.1667 24.7916V14.5833Z"
-                                  fill="white"
-                                />
-                              </svg>
+                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={
+                                  isInView
+                                    ? { width: `${product.savingsPercentage}%` }
+                                    : { width: 0 }
+                                }
+                                transition={{
+                                  duration: 1,
+                                  delay: 0.5 + originalIndex * 0.1,
+                                }}
+                                className="h-full bg-[#384B97] rounded-full"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Flip Hint */}
+                          <div className="mt-3 text-center">
+                            <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              {isRTL ? "مرر للمزيد" : "Hover for more"}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Savings Indicator */}
-                      <div>
-                        <p className="text-sm font-semibold text-gray-700 mb-2">
-                          {t("home.productsHome.savingsIndicator")}
+                      {/* Back Side */}
+                      <div
+                        className="absolute inset-0 w-full h-full bg-linear-to-br from-[#384B97] to-[#2a3a75] rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6"
+                        style={{
+                          backfaceVisibility: "hidden",
+                          transform: "rotateY(180deg)",
+                        }}
+                      >
+                        {/* Product Name */}
+                        <h3 className="text-2xl font-bold text-white mb-4 text-center">
+                          {isRTL ? product.name : product.nameEn}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-white/90 text-center text-sm mb-6 leading-relaxed">
+                          {isRTL ? product.description : product.descriptionEn}
                         </p>
-                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={
-                              isInView
-                                ? { width: `${product.savingsPercentage}%` }
-                                : { width: 0 }
-                            }
-                            transition={{
-                              duration: 1,
-                              delay: 0.5 + originalIndex * 0.1,
+
+                        {/* Price */}
+                        <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 mb-6 w-full">
+                          <div className="flex items-center justify-center gap-2 text-white">
+                            <span className="text-3xl font-bold">
+                              {product.price}
+                            </span>
+                            <CurrencyIcon color="white" size={30} />
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-3 w-full">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleProductClick(product.id);
                             }}
-                            className="h-full bg-[#384B97] rounded-full"
-                          />
+                            className="flex items-center justify-center gap-2 bg-white text-[#384B97] px-5 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all"
+                          >
+                            <Eye className="w-5 h-5" />
+                            {isRTL ? "عرض التفاصيل" : "View Details"}
+                          </motion.button>
+
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => handleAddToCart(product, e)}
+                            className="flex items-center justify-center gap-2 bg-[#F65331] text-white px-5 py-3 rounded-full font-bold shadow-lg hover:bg-[#e54525] transition-all"
+                          >
+                            <AnimatePresence mode="wait">
+                              {addedProducts.includes(product.id) ? (
+                                <motion.div
+                                  key="check"
+                                  initial={{ scale: 0, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  exit={{ scale: 0, rotate: 180 }}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Check className="w-5 h-5" />
+                                  <span>
+                                    {isRTL ? "تمت الإضافة!" : "Added!"}
+                                  </span>
+                                </motion.div>
+                              ) : (
+                                <motion.div
+                                  key="cart"
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  exit={{ scale: 0 }}
+                                  className="flex items-center gap-2"
+                                >
+                                  <ShoppingCart className="w-5 h-5" />
+                                  <span>
+                                    {isRTL ? "أضف للسلة" : "Add to Cart"}
+                                  </span>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.button>
                         </div>
                       </div>
                     </div>

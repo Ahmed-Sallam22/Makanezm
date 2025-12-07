@@ -72,7 +72,7 @@ const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white shadow-sm"
+      className="bg-[#F65331]  shadow-sm sticky top-0 z-50"
     >
       <div className="w-[95%] mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-between h-16 sm:h-20">
@@ -99,14 +99,14 @@ const Header = () => {
                     onClick={() => setShowDropdown(!showDropdown)}
                     className={`flex items-center gap-2 transition-all rounded-full ${
                       isLoginPage
-                        ? "text-[#F65331] p-2"
-                        : "text-secondary hover:text-primary"
+                        ? "text-white hover:text-primary  p-2"
+                        : "text-white hover:text-primary "
                     }`}
                     title={user?.name || user?.email}
                   >
                     <User
                       className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                        !isLoginPage ? "fill-secondary" : ""
+                        !isLoginPage ? "fill-white" : ""
                       }`}
                     />
                     <ChevronDown className="w-4 h-4" />
@@ -160,11 +160,7 @@ const Header = () => {
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`transition-all rounded-full ${
-                      isLoginPage
-                        ? "text-[#F65331] p-2"
-                        : "text-primary hover:text-secondary"
-                    }`}
+                    className="transition-all rounded-full text-white hover:text-primary"
                     title={t("common.login")}
                   >
                     <User className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -178,11 +174,11 @@ const Header = () => {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative text-primary hover:text-secondary transition-all"
+                className="relative text-white hover:text-primary transition-all"
               >
                 <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-secondary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -194,7 +190,7 @@ const Header = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleLanguage}
-              className="flex items-center gap-1 sm:gap-2 text-primary hover:text-secondary transition-all"
+              className="flex items-center gap-1 sm:gap-2 text-white hover:text-primary transition-all"
               title={currentLang === "ar" ? "English" : "العربية"}
             >
               <Globe className="w-5 h-5 sm:w-6 sm:h-6" />

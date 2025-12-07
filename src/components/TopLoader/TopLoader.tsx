@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 
 const TopLoader = () => {
   const location = useLocation();
@@ -7,43 +7,43 @@ const TopLoader = () => {
   const progressRef = useRef<HTMLDivElement>(null);
   const spinnerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const animateProgress = useCallback(() => {
     const progressBar = progressRef.current;
     const spinner = spinnerRef.current;
     const container = containerRef.current;
-    
+
     if (!progressBar || !container) return;
-    
+
     // Show container
-    container.style.opacity = '1';
-    if (spinner) spinner.style.opacity = '1';
-    
+    container.style.opacity = "1";
+    if (spinner) spinner.style.opacity = "1";
+
     // Animate progress
-    progressBar.style.transition = 'width 100ms ease-out';
-    progressBar.style.width = '30%';
-    
+    progressBar.style.transition = "width 100ms ease-out";
+    progressBar.style.width = "30%";
+
     setTimeout(() => {
-      progressBar.style.width = '50%';
+      progressBar.style.width = "50%";
     }, 100);
-    
+
     setTimeout(() => {
-      progressBar.style.width = '70%';
+      progressBar.style.width = "70%";
     }, 200);
-    
+
     setTimeout(() => {
-      progressBar.style.width = '90%';
+      progressBar.style.width = "90%";
     }, 300);
-    
+
     setTimeout(() => {
-      progressBar.style.width = '100%';
-      if (spinner) spinner.style.opacity = '0';
-      
+      progressBar.style.width = "100%";
+      if (spinner) spinner.style.opacity = "0";
+
       setTimeout(() => {
-        container.style.opacity = '0';
+        container.style.opacity = "0";
         setTimeout(() => {
-          progressBar.style.width = '0%';
-          progressBar.style.transition = 'none';
+          progressBar.style.width = "0%";
+          progressBar.style.transition = "none";
         }, 200);
       }, 200);
     }, 400);
@@ -54,7 +54,7 @@ const TopLoader = () => {
     if (previousLocation.current === location.pathname) {
       return;
     }
-    
+
     previousLocation.current = location.pathname;
     animateProgress();
   }, [location.pathname, animateProgress]);
@@ -63,27 +63,27 @@ const TopLoader = () => {
     <div
       ref={containerRef}
       className="fixed top-0 left-0 right-0 z-9999 h-[3px] opacity-0 transition-opacity duration-200"
-      style={{ direction: 'ltr' }}
+      style={{ direction: "ltr" }}
     >
       {/* Progress bar */}
       <div
         ref={progressRef}
         className="h-full"
         style={{
-          width: '0%',
-          background: 'linear-gradient(90deg, #384B97, #F65331)',
-          boxShadow: '0 0 10px #384B97, 0 0 5px #F65331',
+          width: "0%",
+          background: "linear-gradient(90deg, #384B97, #F65331)",
+          boxShadow: "0 0 10px #384B97, 0 0 5px #F65331",
         }}
       />
-      
+
       {/* Spinner at the end */}
       <div
         ref={spinnerRef}
         className="absolute top-1.5 right-4 opacity-0 transition-opacity duration-200"
       >
-        <div 
+        <div
           className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: '#384B97', borderTopColor: 'transparent' }}
+          style={{ borderColor: "#384B97", borderTopColor: "transparent" }}
         />
       </div>
     </div>
