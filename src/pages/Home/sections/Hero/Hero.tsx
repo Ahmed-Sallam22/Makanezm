@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import heroImage from "../../../../assets/images/Home.png";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -22,13 +23,15 @@ const Hero = () => {
         <p className="text-justify sm:text-lg md:text-xl text-black">
           {t("home.heroDescription2")}
         </p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-secondary text-base sm:text-lg md:text-xl text-white mt-6 sm:mt-8 md:mt-10 py-3 sm:py-4 md:py-5 w-full sm:w-[80%] md:w-[70%] lg:w-[60%] mx-auto rounded-xl font-semibold hover:bg-opacity-90 transition-all shadow-lg"
-        >
-          {t("home.registerButton")}
-        </motion.button>
+        <Link to="/login">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-secondary text-base sm:text-lg md:text-xl text-white mt-6 sm:mt-8 md:mt-10 py-3 sm:py-4 md:py-5 w-full sm:w-[80%] md:w-[70%] lg:w-[60%] mx-auto rounded-xl font-semibold hover:bg-opacity-90 transition-all shadow-lg"
+          >
+            {t("home.registerButton")}
+          </motion.button>
+        </Link>
       </div>
       <div className="order-1 md:order-2">
         <img
