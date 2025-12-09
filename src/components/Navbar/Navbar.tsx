@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -65,6 +65,15 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+    const currentLang = i18n.language;
+
+  const toggleLanguage = () => {
+    const newLang = currentLang === "ar" ? "en" : "ar";
+    i18n.changeLanguage(newLang);
+    document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = newLang;
+  };
+
   return (
     <>
       <motion.nav
@@ -117,7 +126,19 @@ const Navbar = () => {
                 );
               })}
             </div>
-
+            {/* Language Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleLanguage}
+              className="flex items-center gap-1 sm:gap-2 text-white hover:text-primary transition-all"
+              title={currentLang === "ar" ? "English" : "العربية"}
+            >
+              <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
+              <span className="text-xs sm:text-sm font-bold hidden sm:inline">
+                {currentLang === "ar" ? "EN" : "ع"}
+              </span>
+            </motion.button>
             {/* Burger Menu Button - Visible on mobile/tablet */}
             <motion.button
               onClick={toggleMenu}
