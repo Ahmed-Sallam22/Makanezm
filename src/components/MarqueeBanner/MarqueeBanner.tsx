@@ -9,15 +9,13 @@ interface MarqueeItem {
 
 const MarqueeBanner = () => {
   const bannerText = "subscribe & save 15%";
-  const separator = " • ";
-  const fullText = `${bannerText}${separator}`;
   const repetitions = 7;
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<MarqueeItem[]>([]);
   const [itemWidth, setItemWidth] = useState(0);
+  const animationRef = useRef<number | null>(null);
   const speedRef = useRef(1); // pixels per frame
-  const animationRef = useRef<number>();
 
   // Measure item width and initialize positions
   useEffect(() => {
@@ -51,8 +49,6 @@ const MarqueeBanner = () => {
   useEffect(() => {
     if (itemWidth === 0 || items.length === 0) return;
 
-    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
-    const totalWidth = items.length * itemWidth;
 
     const animate = () => {
       setItems(prevItems => {
