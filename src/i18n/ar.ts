@@ -259,6 +259,7 @@ export default {
           merchantOrders: "طلباتي",
           settings: "الإعدادات",
           reports: "التقارير",
+          marquee: "الشريط المتحرك",
         },
         stats: {
           totalOrders: "إجمالي الطلبات",

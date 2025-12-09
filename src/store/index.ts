@@ -4,6 +4,7 @@ import authReducer from "./slices/authSlice";
 import ordersReducer from "./slices/ordersSlice";
 import productsReducer from "./slices/productsSlice";
 import sliderReducer from "./slices/sliderSlice";
+import marqueeReducer from "./slices/marqueeSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     orders: ordersReducer,
     products: productsReducer,
     sliders: sliderReducer,
+    marquee: marqueeReducer,
   },
 });
 

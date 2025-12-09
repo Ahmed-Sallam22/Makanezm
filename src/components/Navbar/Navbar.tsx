@@ -71,7 +71,7 @@ const Navbar = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-primary text-white shadow-md sticky top-16 sm:top-20 z-40"
+        className="bg-primary text-white shadow-md "
       >
         <div className="w-[95%] mx-auto px-4">
           <div className="flex items-center justify-between py-4 gap-6">

@@ -261,6 +261,7 @@ export default {
           merchantOrders: "My Orders",
           settings: "Settings",
           reports: "Reports",
+          marquee: "Marquee Banner",
         },
         stats: {
           totalOrders: "Total Orders",

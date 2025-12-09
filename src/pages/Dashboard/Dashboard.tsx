@@ -29,6 +29,7 @@ import {
   Shield,
   Settings,
   BarChart3,
+  Type,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { updateUser } from "../../store/slices/authSlice";
@@ -40,6 +41,7 @@ import AdminProductsTab from "./AdminProductsTab";
 import MerchantOrdersTab from "./MerchantOrdersTab";
 import SettingsTab from "./SettingsTab";
 import ReportsTab from "./ReportsTab";
+import MarqueeTab from "./MarqueeTab";
 
 type TabType =
   | "overview"
@@ -55,7 +57,8 @@ type TabType =
   | "adminProducts"
   | "merchantOrders"
   | "settings"
-  | "reports";
+  | "reports"
+  | "marquee";
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -143,6 +146,11 @@ const Dashboard = () => {
       id: "sliders",
       icon: Image,
       label: t("dashboard.tabs.sliders"),
+    });
+    tabs.push({
+      id: "marquee",
+      icon: Type,
+      label: t("dashboard.tabs.marquee"),
     });
   }
 
@@ -399,6 +407,11 @@ const Dashboard = () => {
             )}
             {/* Sliders Tab (Admin Only) */}
             {activeTab === "sliders" && user?.role === "admin" && <SliderTab />}
+
+            {/* Marquee Tab (Admin Only) */}
+            {activeTab === "marquee" && user?.role === "admin" && (
+              <MarqueeTab />
+            )}
 
             {/* Orders Tab */}
             {activeTab === "orders" && (
