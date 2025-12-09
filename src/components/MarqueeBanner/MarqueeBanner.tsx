@@ -1,35 +1,113 @@
-import { useAppSelector } from "../../store/hooks";
+import { useEffect, useRef, useState } from "react";
 import "./MarqueeBanner.css";
 
-const MarqueeBanner = () => {
-  const marquees = useAppSelector((state) => state.marquee.marquees);
-  const activeMarquees = marquees.filter((m) => m.isActive);
+interface MarqueeItem {
+  id: number;
+  text: string;
+  position: number;
+}
 
-  if (activeMarquees.length === 0) {
-    return null;
-  }
+const MarqueeBanner = () => {
+  const bannerText = "subscribe & save 15%";
+  const separator = " • ";
+  const fullText = `${bannerText}${separator}`;
+  const repetitions = 7;
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<MarqueeItem[]>([]);
+  const [itemWidth, setItemWidth] = useState(0);
+  const speedRef = useRef(1); // pixels per frame
+  const animationRef = useRef<number>();
+
+  // Measure item width and initialize positions
+  useEffect(() => {
+    const measureElement = document.createElement('span');
+    measureElement.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:14px;font-weight:600;';
+    measureElement.textContent = bannerText;
+    document.body.appendChild(measureElement);
+    const textWidth = measureElement.offsetWidth;
+    document.body.removeChild(measureElement);
+    
+    // Total width = text width + bullet margins (72px * 2) + bullet width (~8px)
+    const width = textWidth + 144 + 8;
+    setItemWidth(width);
+
+    // Create initial items positioned across the screen
+    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+    const totalItems = Math.ceil(containerWidth / width) + repetitions + 2;
+    
+    const initialItems: MarqueeItem[] = [];
+    for (let i = 0; i < totalItems; i++) {
+      initialItems.push({
+        id: i,
+        text: bannerText,
+        position: i * width,
+      });
+    }
+    setItems(initialItems);
+  }, []);
+
+  // Animation loop - circular buffer logic
+  useEffect(() => {
+    if (itemWidth === 0 || items.length === 0) return;
+
+    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+    const totalWidth = items.length * itemWidth;
+
+    const animate = () => {
+      setItems(prevItems => {
+        return prevItems.map(item => {
+          let newPosition = item.position - speedRef.current;
+          
+          // If item moves completely off the left edge, wrap it to the right
+          if (newPosition < -itemWidth) {
+            // Find the rightmost item position and place this item after it
+            const maxPosition = Math.max(...prevItems.map(i => i.position));
+            newPosition = maxPosition + itemWidth;
+          }
+          
+          return {
+            ...item,
+            position: newPosition,
+          };
+        });
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [itemWidth, items.length]);
 
   return (
-    <div className="marquee-wrapper py-2" style={{ backgroundColor: '#F65331' }}>
-      <div className="marquee-track">
-        {/* Render multiple copies to ensure seamless infinite loop */}
-        {[...Array(10)].map((_, copyIndex) => (
-          <div key={`copy-${copyIndex}`} className="marquee-content">
-            {activeMarquees.map((marquee, index) => (
-              <div
-                key={`${copyIndex}-${marquee.id}-${index}`}
-                className="inline-flex items-center px-8"
-              >
-                <span className="text-sm md:text-base font-semibold text-white">
-                  {marquee.text}
-                </span>
-                <span className="mx-6 text-white/80">•</span>
-              </div>
-            ))}
+    <div 
+      ref={containerRef}
+      className="marquee-wrapper py-2" 
+      style={{ backgroundColor: '#F65331' }}
+    >
+      <div className="marquee-track-js">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="marquee-item"
+            style={{
+              transform: `translateX(${item.position}px) translateY(-50%)`,
+            }}
+          >
+            <span className="text-sm md:text-base font-semibold text-white" style={{ whiteSpace: 'nowrap' }}>
+              {item.text}
+            </span>
+            <span className="text-white/80" style={{ margin: '0 72px', whiteSpace: 'nowrap' }}>•</span>
           </div>
         ))}
       </div>
-    </div>
+      </div>
   );
 };
 
