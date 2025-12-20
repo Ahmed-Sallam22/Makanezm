@@ -1,15 +1,37 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Menu, X } from "lucide-react";
+import {
+  Search,
+  Menu,
+  X,
+  Globe,
+  User,
+  ShoppingCart,
+  LogOut,
+  UserCircle,
+  ChevronDown,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { logout } from "../../store/slices/authSlice";
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const isRTL = i18n.language === "ar";
+
+  // Get auth and cart state
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const user = useAppSelector((state) => state.auth.user);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -65,6 +87,41 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  const currentLang = i18n.language;
+
+  const toggleLanguage = () => {
+    const newLang = currentLang === "ar" ? "en" : "ar";
+    i18n.changeLanguage(newLang);
+    document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = newLang;
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setShowDropdown(false);
+    navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    setShowDropdown(false);
+    navigate("/dashboard");
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <>
       <motion.nav
@@ -116,6 +173,111 @@ const Navbar = () => {
                   </motion.div>
                 );
               })}
+            </div>
+
+            {/* Right Side Icons */}
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* User/Login with Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                {isAuthenticated ? (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="flex items-center gap-2 text-white hover:text-secondary transition-all"
+                      title={user?.name || user?.email}
+                    >
+                      <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <ChevronDown className="w-4 h-4 hidden sm:block" />
+                    </motion.button>
+
+                    {/* Dropdown Menu */}
+                    <AnimatePresence>
+                      {showDropdown && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50"
+                        >
+                          {/* User Info */}
+                          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                            <p className="text-sm font-bold text-gray-800 truncate">
+                              {user?.name || "User"}
+                            </p>
+                            <p className="text-xs text-gray-600 truncate">
+                              {user?.email}
+                            </p>
+                          </div>
+
+                          {/* Menu Items */}
+                          <button
+                            onClick={handleProfileClick}
+                            className="w-full px-4 py-3 text-right flex items-center gap-3 hover:bg-gray-50 transition-all"
+                          >
+                            <UserCircle className="w-5 h-5 text-primary" />
+                            <span className="font-semibold text-gray-800">
+                              {t("common.profile")}
+                            </span>
+                          </button>
+
+                          <button
+                            onClick={handleLogout}
+                            className="w-full px-4 py-3 text-right flex items-center gap-3 hover:bg-red-50 transition-all border-t border-gray-100"
+                          >
+                            <LogOut className="w-5 h-5 text-red-600" />
+                            <span className="font-semibold text-red-600">
+                              {t("common.logout")}
+                            </span>
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                ) : (
+                  <Link to="/login">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-white hover:text-secondary transition-all"
+                      title={t("common.login")}
+                    >
+                      <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </motion.div>
+                  </Link>
+                )}
+              </div>
+
+              {/* Cart */}
+              <Link to="/cart">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative text-white hover:text-secondary transition-all"
+                >
+                  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-secondary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </motion.div>
+              </Link>
+
+              {/* Language Toggle */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleLanguage}
+                className="flex items-center gap-1 sm:gap-2 text-white hover:text-secondary transition-all"
+                title={currentLang === "ar" ? "English" : "العربية"}
+              >
+                <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="text-xs sm:text-sm font-bold hidden sm:inline">
+                  {currentLang === "ar" ? "EN" : "ع"}
+                </span>
+              </motion.button>
             </div>
 
             {/* Burger Menu Button - Visible on mobile/tablet */}
