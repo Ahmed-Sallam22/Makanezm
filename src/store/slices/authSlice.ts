@@ -1,25 +1,42 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+interface UserMobile {
+  mobile: string;
+  label: string;
+  is_primary: boolean;
+}
+
 interface User {
-  id: string;
+  id: number | string;
   email: string;
   name: string;
-  phone?: string;
+  role: 'USER' | 'ADMIN' | 'customer' | 'merchant' | 'admin';
   city?: string;
+  national_id?: string;
+  national_id_type?: string;
+  bank_iban?: string;
+  bank_name?: string;
+  mobiles?: UserMobile[];
+  // Legacy fields for backwards compatibility
+  phone?: string;
   businessType?: 'credit' | 'selfPickup' | 'onlineStore' | 'mixed';
   companyName?: string;
   address?: string;
   profileImage?: string;
-  role: 'customer' | 'merchant' | 'admin';
 }
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
 }
 
+// Check for existing token on app load
+const storedToken = localStorage.getItem('auth_token');
+
 const initialState: AuthState = {
   user: null,
+  token: storedToken,
   isAuthenticated: false,
 };
 
@@ -27,21 +44,29 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+    login: (state, action: PayloadAction<{ user: User; token: string }>) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
       state.isAuthenticated = true;
+      localStorage.setItem('auth_token', action.payload.token);
     },
     logout: (state) => {
       state.user = null;
+      state.token = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('auth_token');
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
       }
     },
+    setToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+      localStorage.setItem('auth_token', action.payload);
+    },
   },
 });
 
-export const { login, logout, updateUser } = authSlice.actions;
+export const { login, logout, updateUser, setToken } = authSlice.actions;
 export default authSlice.reducer;

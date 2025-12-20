@@ -1,6 +1,6 @@
 // Installment pricing tier
 export interface InstallmentTier {
-  months: 3 | 6 | 12;
+  months: number;
   percentage: number; // Extra percentage to add to the base price
 }
 
@@ -17,8 +17,8 @@ export interface Product {
   description: string;
   descriptionAr: string;
   price: number; // Base price (cash price)
-  image: string;
-  category: 'meat' | 'chicken' | 'fish' | 'other';
+  image?: string | null;
+  category: string;
   stock: number;
   userId?: string; // Owner of the product (merchant ID)
   

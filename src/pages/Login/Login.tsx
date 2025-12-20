@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { UserPlus, ChevronDown, LogIn, Lock, Mail } from "lucide-react";
+import { UserPlus, ChevronDown, LogIn, Lock, Mail, CreditCard, Building2, Phone, User, IdCard } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -8,6 +8,8 @@ import { useAppDispatch } from "../../store/hooks";
 import { login } from "../../store/slices/authSlice";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
+import { loginUser, registerUser, type RegisterData, type LoginCredentials } from "../../services/authService";
+import type { AxiosError } from "axios";
 
 const Login = () => {
   const { t } = useTranslation();
@@ -15,19 +17,23 @@ const Login = () => {
   const dispatch = useAppDispatch();
 
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [loginData, setLoginData] = useState({
+  const [loginData, setLoginData] = useState<LoginCredentials>({
     email: "",
     password: "",
   });
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phoneNumber: "",
-    city: "",
+  const [formData, setFormData] = useState<RegisterData>({
+    name: "",
     email: "",
     password: "",
-    businessType: "",
+    city: "",
+    national_id: "",
+    national_id_type: "Saudi Arabian",
+    bank_iban: "",
+    bank_name: "",
+    primary_mobile: "",
   });
 
   const cities = [
@@ -46,7 +52,20 @@ const Login = () => {
     "جازان",
   ];
 
-  const handleLogin = (e: React.FormEvent) => {
+  const banks = [
+    "البنك الأهلي السعودي",
+    "مصرف الراجحي",
+    "بنك الرياض",
+    "البنك السعودي الفرنسي",
+    "البنك السعودي البريطاني (ساب)",
+    "البنك العربي الوطني",
+    "بنك الجزيرة",
+    "البنك السعودي للاستثمار",
+    "بنك البلاد",
+    "الإنماء",
+  ];
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!loginData.email || !loginData.password) {
@@ -56,37 +75,55 @@ const Login = () => {
       return;
     }
 
-    // Admin login
-    if (
-      loginData.email === "admin@gmail.com" &&
-      loginData.password === "admin123"
-    ) {
+    setIsLoading(true);
+
+    try {
+      const response = await loginUser(loginData);
+      
+      // Map backend role to frontend role format
+      const roleMapping: Record<string, 'customer' | 'merchant' | 'admin' | 'ADMIN'> = {
+        'USER': 'customer',
+        'ADMIN': 'ADMIN',
+        'MERCHANT': 'merchant',
+      };
+
       dispatch(
         login({
-          id: "admin",
-          email: "admin@gmail.com",
-          name: "Administrator",
-          role: "admin",
+          user: {
+            id: response.data.user.id,
+            email: response.data.user.email,
+            name: response.data.user.name,
+            role: (roleMapping[response.data.user.role] || response.data.user.role) as 'customer' | 'merchant' | 'admin' | 'ADMIN',
+          },
+          token: response.data.token,
         })
       );
-      toast.success("مرحباً أدمن!");
+      
+      toast.success(t("loginPage.loginSuccess") || "تم تسجيل الدخول بنجاح!");
       setTimeout(() => navigate("/dashboard"), 1000);
-      return;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string; errors?: Record<string, string[]> }>;
+      const errorMessage = axiosError.response?.data?.message || 
+        t("loginPage.errors.invalidCredentials") || 
+        "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Regular user login (simulate - in real app, verify against backend)
-    toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
-      !formData.fullName ||
-      !formData.phoneNumber ||
+      !formData.name ||
+      !formData.primary_mobile ||
       !formData.city ||
       !formData.email ||
-      !formData.businessType
+      !formData.password ||
+      !formData.national_id ||
+      !formData.bank_iban ||
+      !formData.bank_name
     ) {
       toast.error(
         t("loginPage.errors.fillAllFields") || "يرجى ملء جميع الحقول"
@@ -94,28 +131,54 @@ const Login = () => {
       return;
     }
 
-    // Simulate registration/login with full user data
-    dispatch(
-      login({
-        id: `user-${Date.now()}`,
-        email: formData.email,
-        name: formData.fullName,
-        phone: formData.phoneNumber,
-        city: formData.city,
-        businessType: formData.businessType as
-          | "credit"
-          | "selfPickup"
-          | "onlineStore"
-          | "mixed",
-        role: "merchant",
-      })
-    );
-    toast.success(t("loginPage.success") || "تم التسجيل بنجاح!");
+    setIsLoading(true);
 
-    // Redirect to dashboard after 1 second
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1000);
+    try {
+      const response = await registerUser(formData);
+      
+      // Map backend role to frontend role format
+      const roleMapping: Record<string, 'customer' | 'merchant' | 'admin'> = {
+        'USER': 'customer',
+        'ADMIN': 'admin',
+        'MERCHANT': 'merchant',
+      };
+
+      dispatch(
+        login({
+          user: {
+            id: response.data.user.id,
+            email: response.data.user.email,
+            name: response.data.user.name,
+            role: roleMapping[response.data.user.role] || response.data.user.role as 'customer' | 'merchant' | 'admin',
+            city: response.data.user.city,
+            national_id: response.data.user.national_id,
+            bank_iban: response.data.user.bank_iban,
+            bank_name: response.data.user.bank_name,
+            mobiles: response.data.user.mobiles,
+          },
+          token: response.data.token,
+        })
+      );
+      
+      toast.success(t("loginPage.success") || "تم التسجيل بنجاح!");
+      setTimeout(() => navigate("/dashboard"), 1000);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string; errors?: Record<string, string[]> }>;
+      
+      // Show first validation error if available
+      if (axiosError.response?.data?.errors) {
+        const firstError = Object.values(axiosError.response.data.errors)[0]?.[0];
+        toast.error(firstError || t("loginPage.errors.registrationFailed"));
+      } else {
+        toast.error(
+          axiosError.response?.data?.message || 
+          t("loginPage.errors.registrationFailed") || 
+          "فشل في التسجيل، يرجى المحاولة مرة أخرى"
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -216,9 +279,10 @@ const Login = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all"
+                disabled={isLoading}
+                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t("loginPage.loginButton")}
+                {isLoading ? "..." : t("loginPage.loginButton")}
               </motion.button>
 
               <p className="text-center text-sm text-gray-600">
@@ -243,43 +307,48 @@ const Login = () => {
                 </p>
               </div>
 
+              {/* Row 1: Full Name & Phone */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2 text-right">
-                    {t("loginPage.phoneNumber")}*
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phoneNumber}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phoneNumber: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
-                    placeholder="05XXXXXXXX"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <User className="w-4 h-4 inline ml-2" />
                     {t("loginPage.fullName")}*
                   </label>
                   <input
                     type="text"
-                    value={formData.fullName}
+                    value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
+                      setFormData({ ...formData, name: e.target.value })
                     }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
                     placeholder={t("loginPage.fullName")}
                     required
                   />
                 </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <Phone className="w-4 h-4 inline ml-2" />
+                    {t("loginPage.phoneNumber")}*
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.primary_mobile}
+                    onChange={(e) =>
+                      setFormData({ ...formData, primary_mobile: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
+                    placeholder="05XXXXXXXX"
+                    required
+                  />
+                </div>
               </div>
 
+              {/* Row 2: Email & Password */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <Mail className="w-4 h-4 inline ml-2" />
                     {t("loginPage.email")}*
                   </label>
                   <input
@@ -307,80 +376,98 @@ const Login = () => {
                     }
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
                     placeholder="••••••••"
+                    minLength={8}
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-right">
-                  {t("loginPage.city")}*
-                </label>
-                <div className="relative">
-                  <select
-                    value={formData.city}
+              {/* Row 3: National ID & City */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <IdCard className="w-4 h-4 inline ml-2" />
+                    {t("loginPage.nationalId")}*
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.national_id}
                     onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
+                      setFormData({ ...formData, national_id: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all appearance-none text-right cursor-pointer"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
+                    placeholder="1XXXXXXXXX"
                     required
-                  >
-                    <option value="">{t("loginPage.selectCity")}</option>
-                    {cities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary pointer-events-none" />
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    {t("loginPage.city")}*
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all appearance-none text-right cursor-pointer"
+                      required
+                    >
+                      <option value="">{t("loginPage.selectCity")}</option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-4 text-right">
-                  {t("loginPage.businessType")}*
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    {
-                      value: "credit",
-                      label: t("loginPage.businessTypes.credit"),
-                    },
-                    {
-                      value: "selfPickup",
-                      label: t("loginPage.businessTypes.selfPickup"),
-                    },
-                    {
-                      value: "onlineStore",
-                      label: t("loginPage.businessTypes.onlineStore"),
-                    },
-                    {
-                      value: "mixed",
-                      label: t("loginPage.businessTypes.mixed"),
-                    },
-                  ].map((type) => (
-                    <label
-                      key={type.value}
-                      className="flex items-center justify-end gap-3 cursor-pointer group"
+              {/* Row 4: Bank IBAN & Bank Name */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <CreditCard className="w-4 h-4 inline ml-2" />
+                    {t("loginPage.bankIban")}*
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bank_iban}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bank_iban: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all text-right"
+                    placeholder="SA XXXXXXXXXXXXXXXXXXXXXX"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2 text-right">
+                    <Building2 className="w-4 h-4 inline ml-2" />
+                    {t("loginPage.bankName")}*
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={formData.bank_name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bank_name: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 focus:border-secondary focus:bg-white focus:outline-none transition-all appearance-none text-right cursor-pointer"
+                      required
                     >
-                      <input
-                        type="radio"
-                        name="businessType"
-                        value={type.value}
-                        checked={formData.businessType === type.value}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            businessType: e.target.value,
-                          })
-                        }
-                        className="w-5 h-5 text-secondary cursor-pointer"
-                      />
-                      <span className="text-gray-700 font-medium group-hover:text-secondary transition-colors">
-                        {type.label}
-                      </span>
-                    </label>
-                  ))}
+                      <option value="">{t("loginPage.selectBank")}</option>
+                      {banks.map((bank) => (
+                        <option key={bank} value={bank}>
+                          {bank}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
@@ -388,9 +475,10 @@ const Login = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all"
+                disabled={isLoading}
+                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t("loginPage.registerButton")}
+                {isLoading ? "..." : t("loginPage.registerButton")}
               </motion.button>
             </motion.form>
           )}

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { motion, useInView } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -10,6 +10,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Loader2 } from "lucide-react";
+import { getPublicSalesReport, type SalesDayData } from "../../../../services/salesReportService";
 
 interface SalesData {
   day: string;
@@ -17,9 +19,12 @@ interface SalesData {
   merchantSales: number;
 }
 
-// Format currency for tooltip
+// Format currency for tooltip (handles both small and large values)
 const formatCurrency = (value: number) => {
-  return `${(value / 1000).toFixed(0)}K ر.س`;
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K ر.س`;
+  }
+  return `${value.toLocaleString()} ر.س`;
 };
 
 // Tooltip payload type
@@ -57,44 +62,87 @@ const SalesReport = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Sample sales data for the week
-  const salesData: SalesData[] = [
-    {
-      day: t("home.salesReport.days.saturday"),
-      storeSales: 250000,
-      merchantSales: 0,
-    },
-    {
-      day: t("home.salesReport.days.sunday"),
-      storeSales: 50000,
-      merchantSales: 400000,
-    },
-    {
-      day: t("home.salesReport.days.monday"),
-      storeSales: 466000,
-      merchantSales: 450000,
-    },
-    {
-      day: t("home.salesReport.days.tuesday"),
-      storeSales: 50000,
-      merchantSales: 350000,
-    },
-    {
-      day: t("home.salesReport.days.wednesday"),
-      storeSales: 300000,
-      merchantSales: 480000,
-    },
-    {
-      day: t("home.salesReport.days.thursday"),
-      storeSales: 450000,
-      merchantSales: 200000,
-    },
-    {
-      day: t("home.salesReport.days.friday"),
-      storeSales: 150000,
-      merchantSales: 250000,
-    },
-  ];
+  // API state
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch sales data from API
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getPublicSalesReport();
+
+        // Transform API data to chart format
+        const transformedData: SalesData[] = response.data.sales_data.map((item: SalesDayData) => ({
+          day: isRTL ? t(`home.salesReport.days.${item.day.toLowerCase()}`) : item.day,
+          storeSales: item.storeSales,
+          merchantSales: item.merchantSales,
+        }));
+
+        setSalesData(transformedData);
+      } catch (err) {
+        console.error("Error fetching sales data:", err);
+        setError(isRTL ? "فشل في تحميل بيانات المبيعات" : "Failed to load sales data");
+
+        // Fallback to sample data if API fails
+        setSalesData([
+          { day: t("home.salesReport.days.saturday"), storeSales: 250000, merchantSales: 0 },
+          { day: t("home.salesReport.days.sunday"), storeSales: 50000, merchantSales: 400000 },
+          { day: t("home.salesReport.days.monday"), storeSales: 466000, merchantSales: 450000 },
+          { day: t("home.salesReport.days.tuesday"), storeSales: 50000, merchantSales: 350000 },
+          { day: t("home.salesReport.days.wednesday"), storeSales: 300000, merchantSales: 480000 },
+          { day: t("home.salesReport.days.thursday"), storeSales: 450000, merchantSales: 200000 },
+          { day: t("home.salesReport.days.friday"), storeSales: 150000, merchantSales: 250000 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSalesData();
+  }, [isRTL, t]);
+
+  // Calculate dynamic Y-axis domain based on actual data
+  const { maxValue, yAxisTicks, formatYAxisValue } = useMemo(() => {
+    if (salesData.length === 0) {
+      return { maxValue: 1000, yAxisTicks: [0, 250, 500, 750, 1000], formatYAxisValue: (v: number) => `${v}` };
+    }
+
+    // Find the maximum value in the data
+    const allValues = salesData.flatMap(d => [d.storeSales, d.merchantSales]);
+    const dataMax = Math.max(...allValues, 0);
+
+    // Add 20% padding to the max for better visualization
+    let calculatedMax = dataMax * 1.2;
+
+    // Round up to a nice number
+    const magnitude = Math.pow(10, Math.floor(Math.log10(calculatedMax || 1)));
+    calculatedMax = Math.ceil(calculatedMax / magnitude) * magnitude;
+
+    // Ensure minimum scale for visibility
+    if (calculatedMax < 100) calculatedMax = 100;
+    if (calculatedMax === 0) calculatedMax = 1000;
+
+    // Generate nice tick values (5 ticks)
+    const tickStep = calculatedMax / 4;
+    const ticks = [0, tickStep, tickStep * 2, tickStep * 3, calculatedMax];
+
+    // Format function based on the magnitude
+    const formatValue = (value: number): string => {
+      if (calculatedMax >= 100000) {
+        return `${(value / 1000).toFixed(0)}K`;
+      } else if (calculatedMax >= 1000) {
+        return `${value.toLocaleString()}`;
+      } else {
+        return `${value}`;
+      }
+    };
+
+    return { maxValue: calculatedMax, yAxisTicks: ticks, formatYAxisValue: formatValue };
+  }, [salesData]);
 
   return (
     <motion.section
@@ -139,47 +187,62 @@ const SalesReport = () => {
             <h3 className="text-2xl md:text-3xl font-bold text-[#384B97] mb-6 text-center lg:text-right">
               {t("home.salesReport.chartTitle")}
             </h3>
-            <div className="rounded-xl shadow-xl mx-auto p-3">
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={salesData}
+            <div className="rounded-xl shadow-xl mx-auto p-3 min-h-[400px]">
+              {loading ? (
+                <div className="flex justify-center items-center h-[400px]">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Loader2 className="w-12 h-12 text-[#384B97]" />
+                  </motion.div>
+                </div>
+              ) : error && salesData.length === 0 ? (
+                <div className="flex justify-center items-center h-[400px]">
+                  <p className="text-gray-500 text-lg">{error}</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart
+                    data={salesData}
                   //   margin={{ top: 20, right: 30, left: 50, bottom: 80 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fill: "#666", fontSize: 12 }}
-                    angle={45}
-                    textAnchor="end"
-                    // height={80}
-                    padding={{ left: 10, right: 10 }}
-                  />
-                  <YAxis
-                    tick={{ fill: "#666", fontSize: 12 }}
-                    label={{
-                      value: "ر.س",
-                      style: { textAnchor: "middle", fill: "#666" },
-                    }}
-                    domain={[0, 500000]}
-                    ticks={[0, 100000, 200000, 300000, 400000, 500000]}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: "#666", fontSize: 12 }}
+                      angle={45}
+                      textAnchor="end"
+                      // height={80}
+                      padding={{ left: 10, right: 10 }}
+                    />
+                    <YAxis
+                      tick={{ fill: "#666", fontSize: 12 }}
+                      label={{
+                        value: "ر.س",
+                        style: { textAnchor: "middle", fill: "#666" },
+                      }}
+                      domain={[0, maxValue]}
+                      ticks={yAxisTicks}
+                      tickFormatter={formatYAxisValue}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
 
-                  <Bar
-                    dataKey="storeSales"
-                    fill="#F65331"
-                    radius={[4, 4, 0, 0]}
-                    name={t("home.salesReport.storeSales")}
-                  />
-                  <Bar
-                    dataKey="merchantSales"
-                    fill="#384B97"
-                    radius={[4, 4, 0, 0]}
-                    name={t("home.salesReport.merchantSales")}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+                    <Bar
+                      dataKey="storeSales"
+                      fill="#F65331"
+                      radius={[4, 4, 0, 0]}
+                      name={t("home.salesReport.storeSales")}
+                    />
+                    <Bar
+                      dataKey="merchantSales"
+                      fill="#384B97"
+                      radius={[4, 4, 0, 0]}
+                      name={t("home.salesReport.merchantSales")}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </motion.div>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
@@ -20,8 +20,9 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import { addToCart } from "../../store/slices/cartSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { addToCart, addToCartAsync } from "../../store/slices/cartSlice";
+import { getPublicProduct, getPublicProducts, toggleProductFavorite, type PublicProduct } from "../../services/productService";
 import type { InstallmentTier } from "../../types/product";
 import SEO from "../../components/SEO";
 import test1 from "../../assets/images/test1.png";
@@ -32,11 +33,13 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const isRTL = i18n.language === "ar";
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const products = useAppSelector((state) => state.products.products);
-  const product = useMemo(() => {
-    return products.find((p) => p.id === Number(id));
-  }, [products, id]);
+  // State for API data
+  const [product, setProduct] = useState<PublicProduct | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<PublicProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedInstallment, setSelectedInstallment] =
@@ -44,6 +47,42 @@ const ProductDetails = () => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+
+  // Fetch product from API
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getPublicProduct(Number(id));
+        setProduct(response.data);
+        // Initialize favorite status from API response
+        setIsWishlisted(response.data.is_favorited ?? false);
+        
+        // Fetch related products (same category)
+        if (response.data.category) {
+          const relatedResponse = await getPublicProducts({
+            category: response.data.category,
+            per_page: 5,
+          });
+          // Filter out current product
+          setRelatedProducts(
+            relatedResponse.data.filter((p) => p.id !== Number(id)).slice(0, 4)
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError(isRTL ? "فشل في تحميل المنتج" : "Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, isRTL]);
 
   // Calculate prices
   const baseTotal = product ? product.price * quantity : 0;
@@ -54,66 +93,53 @@ const ProductDetails = () => {
     ? installmentTotal / selectedInstallment.months
     : 0;
 
-  // Get related products
-  const relatedProducts = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter(
-        (p) =>
-          p.id !== product.id &&
-          p.category === product.category &&
-          p.approvalStatus === "approved" &&
-          p.isVisible
-      )
-      .slice(0, 4);
-  }, [products, product]);
-
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
+    
+    const productName = isRTL ? product.nameAr : product.name;
 
-    dispatch(
-      addToCart({
-        id: product.id,
-        name: isRTL ? product.nameAr : product.name,
-        price: product.price,
-        progress:
-          product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
-        image: product.image,
-        allowInstallment: product.allowInstallment,
-        installmentOptions: product.installmentOptions,
-      })
-    );
-
-    // Add multiple times based on quantity
-    for (let i = 1; i < quantity; i++) {
-      dispatch(
-        addToCart({
-          id: product.id,
-          name: isRTL ? product.nameAr : product.name,
-          price: product.price,
-          progress:
-            product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
-          image: product.image,
-          allowInstallment: product.allowInstallment,
-          installmentOptions: product.installmentOptions,
-        })
-      );
-    }
-
-    setIsAddedToCart(true);
-    toast.success(
-      t("products.addedToCart", {
-        name: isRTL ? product.nameAr : product.name,
-      }),
-      {
-        position: "top-right",
-        autoClose: 2000,
+    if (isAuthenticated) {
+      try {
+        await dispatch(addToCartAsync({ productId: product.id, quantity })).unwrap();
+        setIsAddedToCart(true);
+        toast.success(t("products.addedToCart", { name: productName }), {
+          position: isRTL ? "top-left" : "top-right",
+          autoClose: 2000,
+        });
+        
+        setTimeout(() => {
+          setIsAddedToCart(false);
+        }, 2000);
+      } catch (error) {
+        toast.error(String(error));
       }
-    );
+    } else {
+      // For unauthenticated users, add locally
+      for (let i = 0; i < quantity; i++) {
+        dispatch(
+          addToCart({
+            id: product.id,
+            name: productName,
+            price: product.price,
+            progress:
+              product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
+            image: product.image ?? undefined,
+            allowInstallment: product.allowInstallment,
+            installmentOptions: product.installmentOptions,
+          })
+        );
+      }
 
-    setTimeout(() => {
-      setIsAddedToCart(false);
-    }, 2000);
+      setIsAddedToCart(true);
+      toast.success(t("products.addedToCart", { name: productName }), {
+        position: isRTL ? "top-left" : "top-right",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        setIsAddedToCart(false);
+      }, 2000);
+    }
   };
 
   const handleShare = async () => {
@@ -137,6 +163,65 @@ const ProductDetails = () => {
     }
   };
 
+  // Handle favorite toggle
+  const handleToggleFavorite = async () => {
+    if (!product) return;
+    
+    setIsFavoriteLoading(true);
+    try {
+      const response = await toggleProductFavorite(product.id);
+      setIsWishlisted(response.data.is_favorited);
+      
+      if (response.data.is_favorited) {
+        toast.success(isRTL ? "تمت الإضافة للمفضلة" : "Added to favorites");
+      } else {
+        toast.success(isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites");
+      }
+    } catch (err: unknown) {
+      // Check if it's an authentication error
+      const error = err as { response?: { status?: number } };
+      if (error.response?.status === 401) {
+        toast.error(isRTL ? "يجب تسجيل الدخول لإضافة المنتج للمفضلة" : "Please login to add to favorites");
+      } else {
+        toast.error(isRTL ? "حدث خطأ" : "Something went wrong");
+      }
+    } finally {
+      setIsFavoriteLoading(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-[#384B97] border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">{error}</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/products")}
+            className="px-6 py-3 bg-[#F65331] text-white rounded-lg font-bold"
+          >
+            {t("productDetails.backToProducts")}
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -158,8 +243,35 @@ const ProductDetails = () => {
     );
   }
 
-  // Mock images for gallery (in real app, product would have multiple images)
-  const productImages = [product.image || test1, test1, test1];
+  // Build product images array from API response
+  const productImages: string[] = [];
+  
+  // Add main image first
+  if (product.main_image_base64) {
+    productImages.push(product.main_image_base64);
+  } else if (product.image) {
+    productImages.push(product.image);
+  } else {
+    // Fallback to test image if no main image
+    productImages.push(test1);
+  }
+  
+  // Add sub-images from the images array
+  if (product.images && product.images.length > 0) {
+    product.images.forEach((img) => {
+      // Prefer base64 for better performance, fallback to URL
+      if (img.base64) {
+        productImages.push(img.base64);
+      } else if (img.url) {
+        productImages.push(img.url);
+      }
+    });
+  }
+  
+  // If no images at all, ensure we have at least one fallback
+  if (productImages.length === 0) {
+    productImages.push(test1);
+  }
 
   return (
     <>
@@ -228,12 +340,13 @@ const ProductDetails = () => {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    onClick={handleToggleFavorite}
+                    disabled={isFavoriteLoading}
                     className={`p-2.5 rounded-full shadow-md transition-all ${
                       isWishlisted
                         ? "bg-red-500 text-white"
                         : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
+                    } ${isFavoriteLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <Heart
                       className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
@@ -372,54 +485,51 @@ const ProductDetails = () => {
               </div>
 
               {/* Payment Options */}
-              {product.allowInstallment &&
-                product.installmentOptions.length > 0 && (
-                  <div className="bg-white rounded-xl p-5 shadow-md space-y-4">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-[#384B97]" />
-                      {t("productDetails.paymentOptions")}
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {/* Cash Option */}
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedInstallment(null)}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all ${
-                          !selectedInstallment
-                            ? "bg-[#384B97] text-white shadow-md"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                      >
-                        <Banknote className="w-5 h-5" />
-                        {t("productDetails.cash")}
-                      </motion.button>
+              <div className="bg-white rounded-xl p-5 shadow-md space-y-4">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-[#384B97]" />
+                  {t("productDetails.paymentOptions")}
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {/* Wallet Option */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedInstallment(null)}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all ${
+                      !selectedInstallment
+                        ? "bg-[#384B97] text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Banknote className="w-5 h-5" />
+                    {t("productDetails.wallet")}
+                  </motion.button>
 
-                      {/* Installment Options */}
-                      {product.installmentOptions.map((tier) => (
-                        <motion.button
-                          key={tier.months}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedInstallment(tier)}
-                          className={`flex flex-col items-center px-4 py-3 rounded-lg font-semibold transition-all ${
-                            selectedInstallment?.months === tier.months
-                              ? "bg-[#F65331] text-white shadow-md"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                          }`}
-                        >
-                          <span className="flex items-center gap-1">
-                            <CreditCard className="w-4 h-4" />
-                            {tier.months} {t("productDetails.months")}
-                          </span>
-                          <span className="text-xs opacity-80">
-                            +{tier.percentage}%
-                          </span>
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {/* Installment Options */}
+                  {product.allowInstallment && product.installmentOptions.map((tier) => (
+                    <motion.button
+                      key={tier.months}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedInstallment(tier)}
+                      className={`flex flex-col items-center px-4 py-3 rounded-lg font-semibold transition-all ${
+                        selectedInstallment?.months === tier.months
+                          ? "bg-[#F65331] text-white shadow-md"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">
+                        <CreditCard className="w-4 h-4" />
+                        {tier.months} {t("productDetails.months")}
+                      </span>
+                      <span className="text-xs opacity-80">
+                        +{tier.percentage}%
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
 
               {/* Quantity Selector */}
               <div className="flex items-center gap-4">

@@ -1,16 +1,17 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ShoppingCart, Check, Eye, CreditCard, Star } from "lucide-react";
+import { ShoppingCart, Check, Eye, CreditCard, Star, Heart } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { addToCart } from "../../store/slices/cartSlice";
+import { addToCart, addToCartAsync } from "../../store/slices/cartSlice";
+import { getPublicProducts, toggleProductFavorite, type PublicProduct } from "../../services/productService";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import test1 from "../../assets/images/test1.png";
 import coverProduct from "../../assets/images/coverProduct.png";
-import type { Product, InstallmentTier } from "../../types/product";
+import type { InstallmentTier } from "../../types/product";
 
 // Currency SVG Component
 const CurrencyIcon = ({
@@ -39,71 +40,188 @@ const Products = () => {
   const isRTL = i18n.language === "ar";
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [addedProducts, setAddedProducts] = useState<number[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
-  const [selectedCategory, _setSelectedCategory] = useState<string>("all");
-  const [sortBy, _setSortBy] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("");
 
-  // Get products from Redux store - only approved and visible products
-  const allProducts = useAppSelector((state) => state.products.products);
+  // State for API data
+  const [products, setProducts] = useState<PublicProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Filter products: only show approved and visible products, sorted by displayOrder
+  // State for favorites
+  const [favoritedProducts, setFavoritedProducts] = useState<Set<number>>(new Set());
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getPublicProducts({
+          per_page: 10,
+          page: currentPage,
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+        });
+        setProducts(response.data);
+        setTotalPages(response.meta.last_page);
+
+        // Initialize favorited products from API response
+        const favorited = new Set<number>();
+        response.data.forEach(product => {
+          if (product.is_favorited) {
+            favorited.add(product.id);
+          }
+        });
+        setFavoritedProducts(favorited);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError(isRTL ? "فشل في تحميل المنتجات" : "Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [currentPage, selectedCategory, isRTL]);
+
+  // Filter and sort products (already sorted by API, apply local sort if needed)
   const availableProducts = useMemo(() => {
-    let filtered = allProducts.filter(
-      (p) => p.approvalStatus === "approved" && p.isVisible
-    );
-
-    // Filter by category
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
+    let filtered = [...products];
 
     // Sort products
     if (sortBy === "price-low") {
-      filtered = [...filtered].sort((a, b) => a.price - b.price);
+      filtered = filtered.sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-high") {
-      filtered = [...filtered].sort((a, b) => b.price - a.price);
-    } else {
-      // Default: featured first, then by displayOrder
-      filtered = [...filtered].sort((a, b) => {
-        if (a.isFeatured && !b.isFeatured) return -1;
-        if (!a.isFeatured && b.isFeatured) return 1;
-        return a.displayOrder - b.displayOrder;
-      });
+      filtered = filtered.sort((a, b) => b.price - a.price);
     }
+    // Default sorting (featured first, then displayOrder) is handled by API
 
     return filtered;
-  }, [allProducts, selectedCategory, sortBy]);
+  }, [products, sortBy]);
 
-  const handleAddToCart = (product: Product) => {
-    dispatch(
-      addToCart({
-        id: product.id,
-        name: isRTL ? product.nameAr : product.name,
-        price: product.price,
-        progress:
-          product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
-        image: product.image,
-        allowInstallment: product.allowInstallment,
-        installmentOptions: product.installmentOptions,
-      })
-    );
-    setAddedProducts((prev) => [...prev, product.id]);
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value === "price-low" || value === "price-high") {
+      setSortBy(value);
+    } else {
+      setSelectedCategory(value === "" ? "all" : value);
+      setCurrentPage(1); // Reset to first page on category change
+    }
+  };
+
+  const handleAddToCart = async (product: PublicProduct) => {
+    const productName = isRTL ? product.nameAr : product.name;
+
+    if (isAuthenticated) {
+      try {
+        await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
+        setAddedProducts((prev) => [...prev, product.id]);
+        toast.success(t("products.addedToCart", { name: productName }), {
+          position: isRTL ? "top-left" : "top-right",
+          autoClose: 2000,
+        });
+      } catch (error) {
+        toast.error(String(error));
+      }
+    } else {
+      dispatch(
+        addToCart({
+          id: product.id,
+          name: productName,
+          price: product.price,
+          progress:
+            product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
+          image: product.image ?? undefined,
+          allowInstallment: product.allowInstallment,
+          installmentOptions: product.installmentOptions,
+        })
+      );
+      setAddedProducts((prev) => [...prev, product.id]);
+      toast.success(t("products.addedToCart", { name: productName }), {
+        position: isRTL ? "top-left" : "top-right",
+        autoClose: 2000,
+      });
+    }
 
     // Remove from added list after 2 seconds
     setTimeout(() => {
       setAddedProducts((prev) => prev.filter((id) => id !== product.id));
     }, 2000);
+  };
 
-    toast.success(
-      t("products.addedToCart", {
-        name: isRTL ? product.nameAr : product.name,
-      }),
-      {
-        position: "top-right",
-        autoClose: 2000,
+  // Handle favorite toggle
+  const handleToggleFavorite = async (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    // Optimistic update: Toggle immediately
+    const isCurrentlyFavorited = favoritedProducts.has(productId);
+
+    setFavoritedProducts(prev => {
+      const newSet = new Set(prev);
+      if (isCurrentlyFavorited) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
       }
-    );
+      return newSet;
+    });
+
+    try {
+      const response = await toggleProductFavorite(productId);
+
+      // Sync with server response
+      setFavoritedProducts(prev => {
+        const newSet = new Set(prev);
+        if (response.data.is_favorited) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+
+      if (response.data.is_favorited) {
+        toast.success(isRTL ? "تمت الإضافة للمفضلة" : "Added to favorites", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      } else {
+        toast.success(isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      }
+    } catch (err: unknown) {
+      // Revert on error
+      setFavoritedProducts(prev => {
+        const newSet = new Set(prev);
+        if (isCurrentlyFavorited) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+
+      // Check if it's an authentication error
+      const error = err as { response?: { status?: number } };
+      if (error.response?.status === 401) {
+        toast.error(isRTL ? "يجب تسجيل الدخول لإضافة المنتج للمفضلة" : "Please login to add to favorites", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.error(isRTL ? "حدث خطأ" : "Something went wrong", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      }
+    }
   };
 
   // Calculate installment price
@@ -112,7 +230,7 @@ const Products = () => {
   };
 
   // Get the lowest installment option for display
-  const getLowestInstallment = (product: Product) => {
+  const getLowestInstallment = (product: PublicProduct) => {
     if (!product.allowInstallment || !product.installmentOptions?.length)
       return null;
     return product.installmentOptions.reduce(
@@ -120,6 +238,36 @@ const Products = () => {
       product.installmentOptions[0]
     );
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-[#384B97] border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-[#384B97] text-white rounded-lg font-bold hover:bg-[#2a3a75]"
+          >
+            {isRTL ? "إعادة المحاولة" : "Try Again"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -170,7 +318,11 @@ const Products = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <select className="px-6 py-3 rounded-lg border-2 border-gray-200 text-[#384B97] font-semibold bg-white cursor-pointer hover:border-[#F65331] transition-all appearance-none pr-12">
+            <select
+              onChange={handleCategoryChange}
+              value={sortBy || selectedCategory}
+              className="px-6 py-3 rounded-lg border-2 border-gray-200 text-[#384B97] font-semibold bg-white cursor-pointer hover:border-[#F65331] transition-all appearance-none pr-12"
+            >
               <option value="">{t("products.filter.label")}</option>
               <option value="meat">{t("products.filter.meat")}</option>
               <option value="chicken">{t("products.filter.chicken")}</option>
@@ -210,6 +362,7 @@ const Products = () => {
               ? getInstallmentPrice(product.price, lowestInstallment)
               : null;
             const isFlipped = flippedCards.includes(product.id);
+            const isFavorited = favoritedProducts.has(product.id);
 
             return (
               <motion.div
@@ -233,7 +386,7 @@ const Products = () => {
               >
                 {/* Flip Card Container */}
                 <div
-                  className="relative w-full h-[420px] transition-transform duration-700 cursor-pointer"
+                  className="relative w-full h-[420px] transition-transform duration-700"
                   style={{
                     transformStyle: "preserve-3d",
                     transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -241,11 +394,11 @@ const Products = () => {
                 >
                   {/* Front Side */}
                   <div
-                    className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100"
+                    className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 cursor-pointer"
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     {/* Badges */}
-                    <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+                    <div className="absolute top-3 left-3 z-10 flex flex-col gap-2 pointer-events-none">
                       {product.isFeatured && (
                         <span className="bg-[#F65331] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3" />
@@ -259,6 +412,35 @@ const Products = () => {
                         </span>
                       )}
                     </div>
+
+                    {/* Favorite Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleToggleFavorite(product.id, e);
+                      }}
+                      className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${isFavorited
+                        ? "bg-[#F65331] text-white"
+                        : "bg-white/90 text-gray-400 hover:text-[#F65331]"
+                        } shadow-md backdrop-blur-sm`}
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={isFavorited ? "favorited" : "not-favorited"}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                        >
+                          <Heart
+                            className="w-5 h-5"
+                            fill={isFavorited ? "currentColor" : "none"}
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+                    </motion.button>
 
                     {/* Product Image */}
                     <div className="h-48 flex items-center justify-center bg-gray-50 p-4">
@@ -287,8 +469,8 @@ const Products = () => {
                       {monthlyPrice && lowestInstallment && (
                         <p className="text-xs text-[#384B97] mb-3">
                           {isRTL
-                            ? `أو ${Math.round(monthlyPrice / lowestInstallment.months)} ج.م / شهر`
-                            : `or ${Math.round(monthlyPrice / lowestInstallment.months)} EGP/mo`}
+                            ? `عائد متوقع ${Math.round(monthlyPrice)} ريال بعد ${lowestInstallment.months} شهور (+${lowestInstallment.percentage}%)`
+                            : `Expected return ${Math.round(monthlyPrice)} SAR after ${lowestInstallment.months} months (+${lowestInstallment.percentage}%)`}
                         </p>
                       )}
 
@@ -298,19 +480,42 @@ const Products = () => {
                           <span className="text-xs font-semibold text-[#384B97]">
                             {product.stock > 0
                               ? isRTL
-                                ? `متوفر: ${product.stock}`
-                                : `In Stock: ${product.stock}`
+                                ? `متوفر`
+                                : `Available`
                               : isRTL
                                 ? "غير متوفر"
                                 : "Out of Stock"}
                           </span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${product.stock_status === 'high'
+                            ? 'bg-green-100 text-green-700'
+                            : product.stock_status === 'medium'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : product.stock_status === 'low'
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                            {product.stock_status === 'high'
+                              ? (isRTL ? 'متوفر' : 'In Stock')
+                              : product.stock_status === 'medium'
+                                ? (isRTL ? 'متاح' : 'Available')
+                                : product.stock_status === 'low'
+                                  ? (isRTL ? 'كمية محدودة' : 'Limited')
+                                  : (isRTL ? 'نفذ' : 'Out')}
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                           <motion.div
-                            className={`h-2 rounded-full ${product.stock > 10 ? "bg-green-500" : product.stock > 0 ? "bg-yellow-500" : "bg-red-500"}`}
+                            className={`h-2 rounded-full ${product.stock_status === 'high'
+                              ? "bg-green-500"
+                              : product.stock_status === 'medium'
+                                ? "bg-yellow-500"
+                                : product.stock_status === 'low'
+                                  ? "bg-orange-500"
+                                  : "bg-red-500"
+                              }`}
                             initial={{ width: 0 }}
                             animate={{
-                              width: `${Math.min(100, product.stock)}%`,
+                              width: `${product.stock_percentage}%`,
                             }}
                             transition={{
                               duration: 1,
@@ -332,14 +537,14 @@ const Products = () => {
 
                   {/* Back Side */}
                   <div
-                    className="absolute inset-0 w-full h-full bg-linear-to-br from-[#384B97] to-[#2a3a75] rounded-2xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6"
+                    className="absolute inset-0 w-full h-full bg-linear-to-br from-[#384B97] to-[#2a3a75] rounded-2xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 cursor-pointer"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
                   >
                     {/* Badges on back */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    <div className="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none">
                       {product.isFeatured && (
                         <span className="bg-[#F65331] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3" />
@@ -353,6 +558,35 @@ const Products = () => {
                         </span>
                       )}
                     </div>
+
+                    {/* Favorite Button on back */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleToggleFavorite(product.id, e);
+                      }}
+                      className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${isFavorited
+                        ? "bg-[#F65331] text-white"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                        } shadow-md backdrop-blur-sm`}
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={isFavorited ? "favorited" : "not-favorited"}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                        >
+                          <Heart
+                            className="w-5 h-5"
+                            fill={isFavorited ? "currentColor" : "none"}
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+                    </motion.button>
 
                     {/* Product Name */}
                     <h3 className="text-2xl font-bold text-white mb-3 text-center">
@@ -375,18 +609,19 @@ const Products = () => {
                       {monthlyPrice && lowestInstallment && (
                         <p className="text-white/80 text-center text-xs mt-2">
                           {isRTL
-                            ? `أو ${Math.round(monthlyPrice / lowestInstallment.months)} ج.م / شهر لمدة ${lowestInstallment.months} شهور`
-                            : `or ${Math.round(monthlyPrice / lowestInstallment.months)} EGP/mo for ${lowestInstallment.months} months`}
+                            ? `عائد متوقع ${Math.round(monthlyPrice)} ريال خلال ${lowestInstallment.months} شهور (ربح +${Math.round(monthlyPrice - product.price)} ريال)`
+                            : `Expected return ${Math.round(monthlyPrice)} SAR in ${lowestInstallment.months} months (profit +${Math.round(monthlyPrice - product.price)} SAR)`}
                         </p>
                       )}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-3 w-full">
+                    <div className="flex flex-col gap-3 w-full pointer-events-auto">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           navigate(`/products/${product.id}`);
                         }}
@@ -400,6 +635,7 @@ const Products = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           handleAddToCart(product);
                         }}
@@ -438,6 +674,62 @@ const Products = () => {
             );
           })}
         </motion.div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            className="flex justify-center items-center gap-4 mt-12"
+          >
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${currentPage === 1
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-[#384B97] text-white hover:bg-[#2a3a75]"
+                }`}
+            >
+              {isRTL ? "السابق" : "Previous"}
+            </button>
+
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg font-semibold transition-all ${currentPage === page
+                    ? "bg-[#F65331] text-white"
+                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${currentPage === totalPages
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-[#384B97] text-white hover:bg-[#2a3a75]"
+                }`}
+            >
+              {isRTL ? "التالي" : "Next"}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Empty state */}
+        {availableProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-xl">
+              {isRTL ? "لا توجد منتجات متاحة" : "No products available"}
+            </p>
+          </div>
+        )}
       </motion.div>
     </>
   );

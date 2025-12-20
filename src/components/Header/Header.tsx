@@ -7,6 +7,7 @@ import {
   LogOut,
   UserCircle,
   ChevronDown,
+  DollarSign,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
@@ -14,6 +15,7 @@ import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/slices/authSlice";
 import logo from "../../assets/images/Logo.png";
 import MarqueeBanner from "../MarqueeBanner";
+import { logoutUser } from "../../services/authService";
 
 const Header = () => {
   const { i18n, t } = useTranslation();
@@ -42,7 +44,12 @@ const Header = () => {
     document.documentElement.lang = newLang;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // Ignore logout API errors - still logout locally
+    }
     dispatch(logout());
     setShowDropdown(false);
     navigate("/");
@@ -51,6 +58,11 @@ const Header = () => {
   const handleProfileClick = () => {
     setShowDropdown(false);
     navigate("/dashboard");
+  };
+
+  const handlePayoutsClick = () => {
+    setShowDropdown(false);
+    navigate("/dashboard?tab=payouts");
   };
 
   // Close dropdown when clicking outside
@@ -144,6 +156,19 @@ const Header = () => {
                               {t("common.profile")}
                             </span>
                           </button>
+
+                          {/* Investment Payouts - Admin Only */}
+                          {user?.role === "ADMIN" && (
+                            <button
+                              onClick={handlePayoutsClick}
+                              className="w-full px-4 py-3 text-right flex items-center gap-3 hover:bg-amber-50 transition-all border-t border-gray-100"
+                            >
+                              <DollarSign className="w-5 h-5 text-amber-600" />
+                              <span className="font-semibold text-amber-700">
+                                {t("dashboard.tabs.payouts")}
+                              </span>
+                            </button>
+                          )}
 
                           <button
                             onClick={handleLogout}

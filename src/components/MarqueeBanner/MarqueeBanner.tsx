@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./MarqueeBanner.css";
+import { getActiveMarquees, type Marquee } from "../../services/marqueeService";
 
 interface MarqueeItem {
   id: number;
@@ -8,8 +9,8 @@ interface MarqueeItem {
 }
 
 const MarqueeBanner = () => {
-  const bannerText = "subscribe & save 15%";
-  const repetitions = 7;
+  const [marqueeTexts, setMarqueeTexts] = useState<Marquee[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<MarqueeItem[]>([]);
@@ -17,11 +18,34 @@ const MarqueeBanner = () => {
   const animationRef = useRef<number | null>(null);
   const speedRef = useRef(1); // pixels per frame
 
-  // Measure item width and initialize positions
+  // Fetch marquees from API
   useEffect(() => {
+    const fetchMarquees = async () => {
+      try {
+        const response = await getActiveMarquees();
+        const activeMarquees = response.data.marquees || [];
+        setMarqueeTexts(activeMarquees);
+      } catch {
+        // Fallback to default text if API fails
+        setMarqueeTexts([{ id: 1, text: "subscribe & save 15%", is_active: true, order: 0, created_at: "", updated_at: "" }]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMarquees();
+  }, []);
+
+  // Measure item width and initialize positions when texts are loaded
+  useEffect(() => {
+    if (marqueeTexts.length === 0) return;
+
+    // Calculate total text for measurement
+    const combinedText = marqueeTexts.map(m => m.text).join(" • ");
+    
     const measureElement = document.createElement('span');
     measureElement.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:14px;font-weight:600;';
-    measureElement.textContent = bannerText;
+    measureElement.textContent = combinedText;
     document.body.appendChild(measureElement);
     const textWidth = measureElement.offsetWidth;
     document.body.removeChild(measureElement);
@@ -32,23 +56,22 @@ const MarqueeBanner = () => {
 
     // Create initial items positioned across the screen
     const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
-    const totalItems = Math.ceil(containerWidth / width) + repetitions + 2;
+    const repetitions = Math.ceil(containerWidth / width) + 3;
     
     const initialItems: MarqueeItem[] = [];
-    for (let i = 0; i < totalItems; i++) {
+    for (let i = 0; i < repetitions; i++) {
       initialItems.push({
         id: i,
-        text: bannerText,
+        text: combinedText,
         position: i * width,
       });
     }
     setItems(initialItems);
-  }, []);
+  }, [marqueeTexts]);
 
   // Animation loop - circular buffer logic
   useEffect(() => {
     if (itemWidth === 0 || items.length === 0) return;
-
 
     const animate = () => {
       setItems(prevItems => {
@@ -81,6 +104,18 @@ const MarqueeBanner = () => {
     };
   }, [itemWidth, items.length]);
 
+  // Don't render until data is loaded
+  if (loading || marqueeTexts.length === 0) {
+    return (
+      <div 
+        className="marquee-wrapper py-2" 
+        style={{ backgroundColor: '#F65331' }}
+      >
+        <div className="h-6"></div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={containerRef}
@@ -96,14 +131,21 @@ const MarqueeBanner = () => {
               transform: `translateX(${item.position}px) translateY(-50%)`,
             }}
           >
-            <span className="text-sm md:text-base font-semibold text-white" style={{ whiteSpace: 'nowrap' }}>
-              {item.text}
-            </span>
+            {marqueeTexts.map((marquee, idx) => (
+              <span key={marquee.id} className="inline-flex items-center">
+                <span className="text-sm md:text-base font-semibold text-white" style={{ whiteSpace: 'nowrap' }}>
+                  {marquee.text}
+                </span>
+                {idx < marqueeTexts.length - 1 && (
+                  <span className="text-white/80" style={{ margin: '0 72px', whiteSpace: 'nowrap' }}>•</span>
+                )}
+              </span>
+            ))}
             <span className="text-white/80" style={{ margin: '0 72px', whiteSpace: 'nowrap' }}>•</span>
           </div>
         ))}
       </div>
-      </div>
+    </div>
   );
 };
 

@@ -1,16 +1,37 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "../../store/hooks";
+import { getActiveSliders, type Slider } from "../../services/sliderService";
 
 const HeroSlider = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
-  const sliders = useAppSelector((state) => state.sliders.sliders);
+  const [activeSlider, setActiveSlider] = useState<Slider | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Get only the first active slider
-  const activeSlider = sliders
-    .filter((s) => s.isActive)
-    .sort((a, b) => a.order - b.order)[0];
+  useEffect(() => {
+    const fetchSliders = async () => {
+      try {
+        const response = await getActiveSliders();
+        const sliders = response.data.sliders || [];
+        // Get only the first active slider (already sorted by order from backend)
+        if (sliders.length > 0) {
+          setActiveSlider(sliders[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sliders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSliders();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-r from-[#384B97] to-[#F65331] animate-pulse" />
+    );
+  }
 
   if (!activeSlider) {
     return null;
@@ -47,7 +68,7 @@ const HeroSlider = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="text-sm sm:text-base md:text-lg font-bold text-white/90 uppercase tracking-wider mb-2 sm:mb-4"
           >
-            {isRTL ? activeSlider.titleAr : activeSlider.title}
+            {isRTL ? activeSlider.title_ar : activeSlider.title}
           </motion.h2>
 
           <motion.h1
@@ -60,7 +81,7 @@ const HeroSlider = () => {
               fontFamily: "'Impact', 'Arial Black', sans-serif",
             }}
           >
-            {isRTL ? activeSlider.titleAr : activeSlider.title}
+            {isRTL ? activeSlider.title_ar : activeSlider.title}
           </motion.h1>
 
           <motion.p
@@ -69,7 +90,7 @@ const HeroSlider = () => {
             transition={{ delay: 0.7, duration: 0.5 }}
             className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium italic max-w-2xl px-4"
           >
-            {isRTL ? activeSlider.descriptionAr : activeSlider.description}
+            {isRTL ? activeSlider.description_ar : activeSlider.description}
           </motion.p>
         </div>
       </motion.div>

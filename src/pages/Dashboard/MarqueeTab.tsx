@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -10,54 +10,92 @@ import {
   CheckCircle,
   XCircle,
   Type,
+  Loader2,
 } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import {
-  addMarquee,
-  updateMarquee,
-  deleteMarquee,
-  toggleMarqueeStatus,
-} from "../../store/slices/marqueeSlice";
 import { toast } from "react-toastify";
+import {
+  getAdminMarquees,
+  createMarquee,
+  updateMarquee as updateMarqueeApi,
+  deleteMarquee as deleteMarqueeApi,
+  toggleMarquee,
+  type Marquee,
+} from "../../services/marqueeService";
+import type { AxiosError } from "axios";
 
 const MarqueeTab = () => {
   const { i18n } = useTranslation();
-  const dispatch = useAppDispatch();
-  const marquees = useAppSelector((state) => state.marquee.marquees);
   const isRTL = i18n.language === "ar";
 
+  const [marquees, setMarquees] = useState<Marquee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newMarqueeText, setNewMarqueeText] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
 
-  const handleAddMarquee = () => {
-    if (newMarqueeText.trim()) {
-      dispatch(addMarquee({ text: newMarqueeText.trim() }));
+  const fetchMarquees = async () => {
+    try {
+      setLoading(true);
+      const response = await getAdminMarquees();
+      setMarquees(response.data.marquees || []);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل تحميل البيانات" : "Failed to load data"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarquees();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAddMarquee = async () => {
+    if (!newMarqueeText.trim()) {
+      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await createMarquee({ text: newMarqueeText.trim() });
       setNewMarqueeText("");
       setIsAdding(false);
-      toast.success(
-        isRTL ? "تم إضافة النص بنجاح" : "Marquee text added successfully"
-      );
-    } else {
-      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+      toast.success(isRTL ? "تم إضافة النص بنجاح" : "Marquee text added successfully");
+      fetchMarquees();
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل الإضافة" : "Failed to add"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleUpdateMarquee = (id: string) => {
-    if (editText.trim()) {
-      dispatch(updateMarquee({ id, text: editText.trim() }));
+  const handleUpdateMarquee = async (id: number) => {
+    if (!editText.trim()) {
+      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await updateMarqueeApi(id, { text: editText.trim() });
       setEditingId(null);
       setEditText("");
-      toast.success(
-        isRTL ? "تم تحديث النص بنجاح" : "Marquee text updated successfully"
-      );
-    } else {
-      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+      toast.success(isRTL ? "تم تحديث النص بنجاح" : "Marquee text updated successfully");
+      fetchMarquees();
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل التحديث" : "Failed to update"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDeleteMarquee = (id: string) => {
+  const handleDeleteMarquee = async (id: number) => {
     if (marquees.length <= 1) {
       toast.error(
         isRTL
@@ -66,18 +104,29 @@ const MarqueeTab = () => {
       );
       return;
     }
-    dispatch(deleteMarquee(id));
-    toast.success(
-      isRTL ? "تم حذف النص بنجاح" : "Marquee text deleted successfully"
-    );
+
+    try {
+      await deleteMarqueeApi(id);
+      toast.success(isRTL ? "تم حذف النص بنجاح" : "Marquee text deleted successfully");
+      fetchMarquees();
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل الحذف" : "Failed to delete"));
+    }
   };
 
-  const handleToggleStatus = (id: string) => {
-    dispatch(toggleMarqueeStatus(id));
-    toast.success(isRTL ? "تم تحديث حالة النص" : "Marquee status updated");
+  const handleToggleStatus = async (id: number) => {
+    try {
+      await toggleMarquee(id);
+      toast.success(isRTL ? "تم تحديث حالة النص" : "Marquee status updated");
+      fetchMarquees();
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل التحديث" : "Failed to update"));
+    }
   };
 
-  const startEditing = (id: string, text: string) => {
+  const startEditing = (id: number, text: string) => {
     setEditingId(id);
     setEditText(text);
   };
@@ -145,7 +194,8 @@ const MarqueeTab = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddMarquee}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2"
+                disabled={submitting}
+                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {isRTL ? "حفظ" : "Save"}
@@ -169,7 +219,17 @@ const MarqueeTab = () => {
 
       {/* Marquees List */}
       <div className="space-y-4">
-        {marquees.map((marquee) => (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
+          </div>
+        ) : marquees.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center text-gray-500">
+            <Type className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>{isRTL ? "لا توجد نصوص حتى الآن" : "No marquee texts yet"}</p>
+          </div>
+        ) : (
+          marquees.map((marquee) => (
           <motion.div
             key={marquee.id}
             initial={{ opacity: 0, y: 20 }}
@@ -212,12 +272,12 @@ const MarqueeTab = () => {
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleToggleStatus(marquee.id)}
                     className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      marquee.isActive
+                      marquee.is_active
                         ? "bg-green-100 text-green-600"
                         : "bg-gray-100 text-gray-400"
                     }`}
                   >
-                    {marquee.isActive ? (
+                    {marquee.is_active ? (
                       <CheckCircle className="w-6 h-6" />
                     ) : (
                       <XCircle className="w-6 h-6" />
@@ -230,7 +290,7 @@ const MarqueeTab = () => {
                     </p>
                     <p className="text-sm text-gray-500">
                       {isRTL ? "آخر تحديث: " : "Last updated: "}
-                      {new Date(marquee.updatedAt).toLocaleDateString(
+                      {new Date(marquee.updated_at).toLocaleDateString(
                         isRTL ? "ar-EG" : "en-US"
                       )}
                     </p>
@@ -258,7 +318,8 @@ const MarqueeTab = () => {
               </div>
             )}
           </motion.div>
-        ))}
+        ))
+        )}
       </div>
 
       {/* Preview Section */}
@@ -282,10 +343,9 @@ const MarqueeTab = () => {
                 },
               }}
             >
-              {[
-                ...marquees.filter((m) => m.isActive),
-                ...marquees.filter((m) => m.isActive),
-                ...marquees.filter((m) => m.isActive),
+              {[...marquees.filter((m) => m.is_active),
+                ...marquees.filter((m) => m.is_active),
+                ...marquees.filter((m) => m.is_active),
               ].map((marquee, index) => (
                 <div
                   key={`${marquee.id}-${index}`}

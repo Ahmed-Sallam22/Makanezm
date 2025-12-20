@@ -14,8 +14,11 @@ import {
   Lock,
   Save,
 //   Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { changePassword, type ChangePasswordData } from "../../services/dashboardService";
+import type { AxiosError } from "axios";
 
 const SettingsTab = () => {
   const { t, i18n } = useTranslation();
@@ -42,6 +45,7 @@ const SettingsTab = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -63,23 +67,50 @@ const SettingsTab = () => {
     toast.success(t("dashboard.settings.saveSuccess"));
   };
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error(t("dashboard.settings.passwordMismatch"));
       return;
     }
-    if (passwordData.newPassword.length < 6) {
+    
+    if (passwordData.newPassword.length < 8) {
       toast.error(t("dashboard.settings.passwordTooShort"));
       return;
     }
-    // In a real app, send to backend
-    toast.success(t("dashboard.settings.passwordChanged"));
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+
+    try {
+      setIsChangingPassword(true);
+      
+      const data: ChangePasswordData = {
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword,
+        new_password_confirmation: passwordData.confirmPassword,
+      };
+
+      await changePassword(data);
+      
+      toast.success(t("dashboard.settings.passwordChanged"));
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string; error?: string }>;
+      const errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error;
+      
+      if (errorMessage === 'Current password is incorrect') {
+        toast.error(t("dashboard.settings.incorrectPassword") || "Current password is incorrect");
+      } else if (errorMessage === 'New password must be different from current password') {
+        toast.error(t("dashboard.settings.samePassword") || "New password must be different from current password");
+      } else {
+        toast.error(errorMessage || t("dashboard.settings.passwordChangeError") || "Failed to change password");
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const cardVariants = {
@@ -474,12 +505,23 @@ const SettingsTab = () => {
 
             <div className="md:col-span-3 flex justify-end">
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isChangingPassword ? 1 : 1.02 }}
+                whileTap={{ scale: isChangingPassword ? 1 : 0.98 }}
                 type="submit"
-                className="px-6 py-2 bg-[#F65331] text-white rounded-lg hover:bg-[#e54525] transition-all font-semibold"
+                disabled={isChangingPassword}
+                className="px-6 py-2 bg-[#F65331] text-white rounded-lg hover:bg-[#e54525] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {t("dashboard.settings.updatePassword")}
+                {isChangingPassword ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t("dashboard.settings.updating")}
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    {t("dashboard.settings.updatePassword")}
+                  </>
+                )}
               </motion.button>
             </div>
           </form>

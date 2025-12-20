@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
+import { submitContactMessage } from "../../services/contactService";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -24,12 +25,15 @@ const Contact = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await submitContactMessage(formData);
       toast.success(t("contactPage.success"));
       setFormData({ name: "", email: "", message: "" });
+    } catch {
+      toast.error(t("contactPage.errors.submitFailed"));
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (

@@ -8,6 +8,7 @@ import { store } from "./store";
 import Layout from "./components/Layout";
 import TopLoader from "./components/TopLoader";
 import ScrollToTop from "./components/ScrollToTop";
+import AuthInitializer from "./components/AuthInitializer";
 import "./i18n";
 
 // Lazy load pages for better performance
@@ -32,6 +33,7 @@ const PageLoader = () => (
 function App() {
   return (
     <Provider store={store}>
+      <AuthInitializer />
       <Router>
         <TopLoader />
         <ScrollToTop />

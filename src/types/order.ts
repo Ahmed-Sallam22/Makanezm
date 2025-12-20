@@ -6,11 +6,21 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   price: number; // Base cash price
-  image?: string;
+  totalPrice: number;
+  image?: string | null;
   merchantId?: string;
+  // Resale/Investment info
+  isResale?: boolean;
+  resale?: {
+    planId: number;
+    months: number;
+    profitPercentage: number;
+    expectedReturn: number;
+    profitAmount: number;
+  };
 }
 
-// Installment payment details
+// Installment payment details (legacy support)
 export interface InstallmentDetails {
   tier: InstallmentTier;
   totalAmount: number; // Price with installment fee
@@ -21,22 +31,62 @@ export interface InstallmentDetails {
   profit: number; // Merchant's profit from installment
 }
 
+// Resale/Investment details
+export interface ResaleDetails {
+  returnDate: string | null;
+  expectedReturn: number;
+  profitAmount: number;
+  returned: boolean;
+  returnedAt: string | null;
+  daysRemaining: number;
+}
+
+// Order type: sale = direct purchase, resale = investment
+export type OrderType = 'sale' | 'resale' | 'mixed';
+
+// Order status including investment statuses
+export type OrderStatus = 
+  | 'pending' 
+  | 'processing' 
+  | 'shipped' 
+  | 'delivered' 
+  | 'cancelled'
+  | 'confirmed'
+  | 'invested'
+  | 'completed';
+
 export interface Order {
   id: string;
   orderNumber: string;
   items: OrderItem[];
   total: number;
-  discountAmount: number;
+  subtotal?: number;
+  discountAmount?: number;
   finalTotal: number; // Cash total or installment total
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentType: PaymentType; // 'cash' | 'installment'
+  totalAmount?: number;
+  itemsCount?: number;
+  status: OrderStatus;
+  type?: OrderType; // Order type: sale, resale, or mixed
+  paymentType?: PaymentType; // 'cash' | 'installment' (legacy)
   
-  // Installment-specific fields
+  // Installment-specific fields (legacy)
   installmentDetails?: InstallmentDetails;
+  
+  // Resale/Investment-specific fields
+  resale?: ResaleDetails;
+  
+  // Shipping info
+  shipping?: {
+    name: string | null;
+    phone: string | null;
+    city: string | null;
+    address: string | null;
+  };
   
   // Merchant info
   merchantId?: string;
   
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
   deliveryLink?: string;

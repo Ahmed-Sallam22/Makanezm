@@ -1,19 +1,26 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { ShoppingCart, Plus, Minus, CreditCard, Banknote } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Wallet, TrendingUp, Loader2, Trash2, Truck, PiggyBank, CheckCircle, AlertCircle, XCircle, Building2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import {
   removeFromCart,
   updateQuantity,
-  setItemInstallment,
+  setItemPurchaseType,
   clearCart,
+  fetchCart,
+  increaseQuantityAsync,
+  decreaseQuantityAsync,
+  removeFromCartAsync,
 } from "../../store/slices/cartSlice";
+import type { ResalePlan } from "../../services/cartService";
+import { processCheckout, type CheckoutPayload, type CheckoutResponse } from "../../services/checkoutService";
+import { getActiveCompanies, type Company } from "../../services/companyService";
+import { validateDiscountCode } from "../../services/discountService";
 import { addOrder } from "../../store/slices/ordersSlice";
 import type { Order } from "../../types/order";
-import type { InstallmentTier } from "../../types/product";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import test1 from "../../assets/images/test1.png";
@@ -27,118 +34,277 @@ const Cart = () => {
   const installmentTotal = useAppSelector(
     (state) => state.cart.installmentTotal
   );
+  const cartLoading = useAppSelector((state) => state.cart.loading);
+  const cartSynced = useAppSelector((state) => state.cart.synced);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [discountCode, setDiscountCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountLoading, setDiscountLoading] = useState(false);
 
-  // Check if any item has installment selected
-  const hasInstallmentItems = cartItems.some(
-    (item) => item.selectedInstallment
+  // Fetch cart from backend if authenticated and not yet synced
+  useEffect(() => {
+    if (isAuthenticated && !cartSynced) {
+      dispatch(fetchCart());
+    }
+  }, [isAuthenticated, cartSynced, dispatch]);
+
+  // Check if any item has resale (investment) selected
+  const hasResaleItems = cartItems.some(
+    (item) => item.purchaseType === 'resale' && item.selectedResalePlan
   );
-  const installmentFee = installmentTotal - total;
+  // Calculate expected profit from resale items
+  const expectedProfit = hasResaleItems ? installmentTotal - total : 0;
 
-  const handleRemoveItem = (id: number, name: string) => {
-    dispatch(removeFromCart(id));
-    toast.info(t("cart.removedFromCart", { name }));
+  const handleRemoveItem = async (id: number, name: string) => {
+    if (isAuthenticated) {
+      try {
+        await dispatch(removeFromCartAsync(id)).unwrap();
+        toast.info(t("cart.removedFromCart", { name }));
+      } catch (error) {
+        toast.error(String(error));
+      }
+    } else {
+      dispatch(removeFromCart(id));
+      toast.info(t("cart.removedFromCart", { name }));
+    }
   };
 
-  const handleUpdateQuantity = (
+  const handleUpdateQuantity = async (
     id: number,
     currentQuantity: number,
     delta: number
   ) => {
     const newQuantity = currentQuantity + delta;
-    if (newQuantity > 0) {
-      dispatch(updateQuantity({ id, quantity: newQuantity }));
+    
+    if (isAuthenticated) {
+      try {
+        if (delta > 0) {
+          await dispatch(increaseQuantityAsync(id)).unwrap();
+        } else if (delta < 0) {
+          if (newQuantity <= 0) {
+            const item = cartItems.find((item) => item.id === id);
+            if (item) {
+              await handleRemoveItem(id, item.name);
+            }
+          } else {
+            await dispatch(decreaseQuantityAsync(id)).unwrap();
+          }
+        }
+      } catch (error) {
+        toast.error(String(error));
+      }
     } else {
-      // Remove item if quantity becomes 0
-      const item = cartItems.find((item) => item.id === id);
-      if (item) {
-        handleRemoveItem(id, item.name);
+      if (newQuantity > 0) {
+        dispatch(updateQuantity({ id, quantity: newQuantity }));
+      } else {
+        // Remove item if quantity becomes 0
+        const item = cartItems.find((item) => item.id === id);
+        if (item) {
+          handleRemoveItem(id, item.name);
+        }
       }
     }
   };
 
-  const handleApplyDiscount = () => {
-    const validCodes: { [key: string]: number } = {
-      AH10: 10,
-      AH30: 30,
-      AH50: 50,
-    };
-
+  const handleApplyDiscount = async () => {
     const code = discountCode.trim().toUpperCase();
+    
+    if (!code) {
+      return;
+    }
 
-    if (validCodes[code]) {
-      setDiscountPercent(validCodes[code]);
-      toast.success(t("cart.discountApplied", { percent: validCodes[code] }));
-    } else if (code) {
+    try {
+      setDiscountLoading(true);
+      const response = await validateDiscountCode(code);
+      
+      if (response.valid && response.data?.discount_percent) {
+        setDiscountPercent(response.data.discount_percent);
+        toast.success(t("cart.discountApplied", { percent: response.data.discount_percent }));
+      } else {
+        toast.error(response.message || t("cart.invalidCode"));
+      }
+    } catch {
       toast.error(t("cart.invalidCode"));
+    } finally {
+      setDiscountLoading(false);
     }
   };
 
-  // Calculate final amounts considering installments
-  const effectiveTotal = hasInstallmentItems ? installmentTotal : total;
+  // Calculate final amounts
+  // For wallet purchases: pay base price
+  // For resale: pay base price, expect to receive more later
+  const effectiveTotal = total; // Always pay base price
   const discountAmount = (effectiveTotal * discountPercent) / 100;
   const finalTotal = effectiveTotal - discountAmount;
 
+  // Check if cart has wallet items (requires shipping)
+  const hasWalletItems = cartItems.some(item => item.purchaseType === 'wallet');
+  // Check if cart has only investment items (no shipping needed)
+  const isPureInvestment = !hasWalletItems && hasResaleItems;
+
   // Modal states
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showOrderStatusModal, setShowOrderStatusModal] = useState(false);
-  const [showDeliveryLinkModal, setShowDeliveryLinkModal] = useState(false);
-  const [paymentType, setPaymentType] = useState<"credit" | "cash">("cash");
-  const [orderNumber, setOrderNumber] = useState("");
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutResult, setCheckoutResult] = useState<CheckoutResponse | null>(null);
+  
+  // Shipping form state (phone and address required - name and city come from user profile)
+  const [shippingPhone, setShippingPhone] = useState("");
+  const [additionalPhones, setAdditionalPhones] = useState<string[]>([]);
+  const [shippingAddress, setShippingAddress] = useState("");
+
+  // Company selection state - each item needs a company
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companiesLoading, setCompaniesLoading] = useState(false);
+  const [itemCompanies, setItemCompanies] = useState<Record<number, number>>({}); // productId -> companyId
+
+  // Fetch companies when checkout modal opens
+  useEffect(() => {
+    if (showCheckoutModal && companies.length === 0) {
+      const fetchCompanies = async () => {
+        setCompaniesLoading(true);
+        try {
+          const response = await getActiveCompanies();
+          setCompanies(response.data.companies || []);
+        } catch (error) {
+          console.error("Failed to fetch companies:", error);
+          toast.error(t("checkout.companiesFetchError") || "Failed to load companies");
+        } finally {
+          setCompaniesLoading(false);
+        }
+      };
+      fetchCompanies();
+    }
+  }, [showCheckoutModal, companies.length, t]);
+
+  // Update company selection for an item
+  const handleItemCompanyChange = (productId: number, companyId: number) => {
+    setItemCompanies(prev => ({ ...prev, [productId]: companyId }));
+  };
+
+  // Check if all items have companies selected
+  const allItemsHaveCompanies = cartItems.every(item => itemCompanies[item.id]);
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
       toast.warning(t("cart.cartEmpty"));
       return;
     }
-    // Open payment modal first
-    setShowPaymentModal(true);
+    if (!isAuthenticated) {
+      toast.warning(t("checkout.loginRequired") || "Please login to checkout");
+      navigate("/login");
+      return;
+    }
+    // Open checkout modal
+    setShowCheckoutModal(true);
   };
 
-  const handleConfirmPayment = () => {
-    setShowPaymentModal(false);
-    // Generate order number
-    setOrderNumber(`ORD-${Date.now()}`);
-    // Show order status modal
-    setShowOrderStatusModal(true);
+  const handleConfirmCheckout = async () => {
+    // Validate company selection for all items
+    if (!allItemsHaveCompanies) {
+      toast.error(t("checkout.selectCompanyForAll") || "Please select a company for each product");
+      return;
+    }
+
+    // Validate shipping if has wallet items (phone and address required)
+    if (hasWalletItems) {
+      if (!shippingPhone.trim() || !shippingAddress.trim()) {
+        toast.error(t("checkout.shippingRequired") || "Please fill in phone and address");
+        return;
+      }
+    }
+
+    setCheckoutLoading(true);
+
+    try {
+      // Build checkout payload
+      const payload: CheckoutPayload = {
+        items: cartItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          purchase_type: item.purchaseType,
+          resale_plan_id: item.purchaseType === 'resale' && item.selectedResalePlan 
+            ? item.selectedResalePlan.id 
+            : null,
+          company_id: itemCompanies[item.id],
+        })),
+        discount_percent: discountPercent,
+        discount_code: discountCode || undefined,
+      };
+
+      // Add shipping info if has wallet items (name and city are optional - backend uses user profile)
+      if (hasWalletItems) {
+        payload.shipping_phone = shippingPhone;
+        payload.shipping_address = shippingAddress;
+        // Add additional phones if any
+        const validAdditionalPhones = additionalPhones.filter(p => p.trim());
+        if (validAdditionalPhones.length > 0) {
+          payload.shipping_phones = validAdditionalPhones;
+        }
+      }
+
+      // Process checkout via API
+      const result = await processCheckout(payload);
+
+      if (result.success) {
+        setCheckoutResult(result);
+        setShowCheckoutModal(false);
+        setShowSuccessModal(true);
+
+        // Also add to local orders store for immediate UI update
+        const order: Order = {
+          id: String(result.data.order.id),
+          orderNumber: result.data.order.order_number,
+          items: cartItems.map((item) => ({
+            id: item.id,
+            productId: item.id,
+            productName: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            totalPrice: item.price * item.quantity,
+          })),
+          total,
+          discountAmount,
+          finalTotal,
+          status: result.data.order.status as "pending" | "processing" | "shipped" | "delivered" | "cancelled",
+          paymentType: "cash",
+          createdAt: result.data.order.created_at,
+          updatedAt: result.data.order.created_at,
+        };
+        dispatch(addOrder(order));
+
+        // Clear local cart state
+        dispatch(clearCart());
+      } else {
+        toast.error(result.message || t("checkout.failed"));
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string; data?: { shortage?: number } } } };
+      const message = err.response?.data?.message || t("checkout.failed") || "Checkout failed";
+      
+      // Check for insufficient balance
+      if (err.response?.data?.data?.shortage) {
+        const shortage = err.response.data.data.shortage;
+        toast.error(`${message}. ${t("checkout.insufficientBalance") || "Insufficient balance"}: ${shortage} ${t("cart.riyal")}`);
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
-  const handleOrderStatusNext = () => {
-    setShowOrderStatusModal(false);
-    // Show delivery link modal
-    setShowDeliveryLinkModal(true);
-  };
-
-  const handleConfirmDeliveryLink = () => {
-    // Create order from cart
-    const order: Order = {
-      id: `order-${Date.now()}`,
-      orderNumber,
-      items: cartItems.map((item) => ({
-        id: item.id,
-        productId: item.id,
-        productName: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      total,
-      discountAmount,
-      finalTotal,
-      status: "pending",
-      paymentType,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    // Add order to store
-    dispatch(addOrder(order));
-
-    toast.success(t("checkout.deliveryLink.linkSuccess"));
-    setShowDeliveryLinkModal(false);
-    // Clear cart
-    dispatch(clearCart());
-    // Navigate to dashboard/orders
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    setCheckoutResult(null);
+    // Reset form
+    setShippingPhone("");
+    setAdditionalPhones([]);
+    setShippingAddress("");
+    setDiscountCode("");
+    setDiscountPercent(0);
+    setItemCompanies({});
+    // Navigate to dashboard
     navigate("/dashboard");
   };
 
@@ -174,7 +340,19 @@ const Cart = () => {
           <p className="text-gray-600 text-lg">{t("cart.subtitle")}</p>
         </motion.div>
 
-        {cartItems.length === 0 ? (
+        {/* Loading state when fetching cart from backend */}
+        {cartLoading && isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-16"
+          >
+            <Loader2 className="w-12 h-12 text-[#F65331] animate-spin mb-4" />
+            <p className="text-gray-600">{t("cart.loading") || "جاري تحميل السلة..."}</p>
+          </motion.div>
+        )}
+
+        {!cartLoading && cartItems.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -194,19 +372,17 @@ const Cart = () => {
               {t("cart.continueShopping")}
             </motion.button>
           </motion.div>
-        ) : (
+        ) : !cartLoading && (
           <div className="space-y-6">
             {/* Cart Items */}
             <div className="space-y-4">
               {cartItems.map((item, index) => {
-                const hasInstallment =
-                  item.allowInstallment &&
-                  item.installmentOptions &&
-                  item.installmentOptions.length > 0;
+                const hasResalePlans = item.resalePlans && item.resalePlans.length > 0;
                 const itemTotal = item.price * item.quantity;
-                const installmentTotal = item.selectedInstallment
-                  ? itemTotal * (1 + item.selectedInstallment.percentage / 100)
+                const expectedReturn = item.selectedResalePlan 
+                  ? item.selectedResalePlan.expected_return * item.quantity
                   : itemTotal;
+                const profitAmount = expectedReturn - itemTotal;
 
                 return (
                   <motion.div
@@ -214,8 +390,19 @@ const Cart = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white rounded-2xl shadow-md p-6"
+                    className="bg-white rounded-2xl shadow-md p-6 relative"
                   >
+                    {/* Remove Button - Top Left Corner */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleRemoveItem(item.id, item.name)}
+                      className="absolute top-4 left-4 z-10 w-10 h-10 bg-red-50 hover:bg-red-100 rounded-full flex items-center justify-center text-red-500 hover:text-red-600 transition-all group"
+                      title={t("cart.remove") || "Remove item"}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
+
                     <div className="flex items-center gap-6">
                       {/* Product Image - Right Side */}
                       <div className="w-24 h-24 shrink-0">
@@ -232,93 +419,137 @@ const Cart = () => {
                           {item.name}
                         </h3>
 
-                        {/* Installment Options */}
-                        {hasInstallment && (
-                          <div className="mb-3">
-                            <div className="flex flex-wrap gap-2 justify-end">
-                              {/* Cash option */}
+                        {/* Purchase Type Options: Wallet (Direct) or Resale (Investment) */}
+                        <div className="mb-3">
+                          <p className="text-sm text-gray-500 text-right mb-2">
+                            {t("cart.purchaseType")}
+                          </p>
+                          <div className="flex flex-wrap gap-2 justify-end">
+                            {/* Wallet (Direct Purchase) option */}
+                            <button
+                              onClick={() =>
+                                dispatch(
+                                  setItemPurchaseType({
+                                    id: item.id,
+                                    purchaseType: 'wallet',
+                                  })
+                                )
+                              }
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                item.purchaseType === 'wallet'
+                                  ? "bg-[#384B97] text-white shadow-md"
+                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                              }`}
+                            >
+                              <Wallet className="w-4 h-4" />
+                              {t("cart.directPurchase")}
+                            </button>
+
+                            {/* Resale (Investment) option - only show if has resale plans */}
+                            {hasResalePlans && (
                               <button
-                                onClick={() =>
+                                onClick={() => {
+                                  const firstPlan = item.resalePlans![0];
                                   dispatch(
-                                    setItemInstallment({
+                                    setItemPurchaseType({
                                       id: item.id,
-                                      installment: null,
+                                      purchaseType: 'resale',
+                                      resalePlan: firstPlan,
                                     })
-                                  )
-                                }
-                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                                  !item.selectedInstallment
-                                    ? "bg-[#384B97] text-white"
+                                  );
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                  item.purchaseType === 'resale'
+                                    ? "bg-[#F65331] text-white shadow-md"
                                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                 }`}
                               >
-                                <Banknote className="w-4 h-4" />
-                                {t("cart.cash")}
+                                <TrendingUp className="w-4 h-4" />
+                                {t("cart.investment")}
                               </button>
+                            )}
+                          </div>
 
-                              {/* Installment options */}
-                              {item.installmentOptions?.map(
-                                (tier: InstallmentTier) => (
+                          {/* Resale Plan Selection - show only if resale is selected */}
+                          {item.purchaseType === 'resale' && hasResalePlans && (
+                            <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                              <p className="text-sm text-green-700 font-semibold text-right mb-2">
+                                {t("cart.selectResalePlan")}
+                              </p>
+                              <div className="flex flex-wrap gap-2 justify-end">
+                                {item.resalePlans?.map((plan: ResalePlan) => (
                                   <button
-                                    key={tier.months}
+                                    key={plan.id}
                                     onClick={() =>
                                       dispatch(
-                                        setItemInstallment({
+                                        setItemPurchaseType({
                                           id: item.id,
-                                          installment: tier,
+                                          purchaseType: 'resale',
+                                          resalePlan: plan,
                                         })
                                       )
                                     }
-                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                                      item.selectedInstallment?.months ===
-                                      tier.months
-                                        ? "bg-[#F65331] text-white"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                    className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                                      item.selectedResalePlan?.id === plan.id
+                                        ? "bg-green-600 text-white shadow-md"
+                                        : "bg-white text-gray-700 border border-green-300 hover:bg-green-100"
                                     }`}
                                   >
-                                    <CreditCard className="w-4 h-4" />
-                                    {tier.months} {t("cart.months")}
+                                    <span className="font-bold">{plan.months}</span> {t("cart.months")}
+                                    <span className="mx-1">•</span>
+                                    <span className="text-black-600 font-semibold">+{plan.profit_percentage}%</span>
                                   </button>
-                                )
+                                ))}
+                              </div>
+
+                              {/* Show expected return */}
+                              {item.selectedResalePlan && (
+                                <div className="mt-3 pt-2 border-t border-green-200 text-right">
+                                  <div className="flex justify-between items-center text-sm">
+                                    <span className="text-green-700 font-bold">
+                                      {Math.round(expectedReturn)} {t("cart.riyal")}
+                                    </span>
+                                    <span className="text-gray-600">{t("cart.expectedReturn")}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-sm mt-1">
+                                    <span className="text-green-600 font-semibold">
+                                      +{Math.round(profitAmount)} {t("cart.riyal")}
+                                    </span>
+                                    <span className="text-gray-500">{t("cart.yourProfit")}</span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-2 text-right">
+                                    {t("cart.investmentNote")}
+                                  </p>
+                                </div>
                               )}
                             </div>
+                          )}
 
-                            {/* Show installment details */}
-                            {item.selectedInstallment && (
-                              <div className="mt-2 text-right text-sm text-[#384B97]">
-                                <span className="font-semibold">
-                                  {Math.round(
-                                    installmentTotal /
-                                      item.selectedInstallment.months
-                                  )}{" "}
-                                  {t("cart.riyal")}/{t("cart.month")}
-                                </span>
-                                <span className="text-gray-500 mx-2">•</span>
-                                <span className="text-gray-600">
-                                  {t("cart.totalWithInstallment")}:{" "}
-                                  {Math.round(installmentTotal)}{" "}
-                                  {t("cart.riyal")}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          {/* Direct Purchase Info */}
+                          {item.purchaseType === 'wallet' && (
+                            <div className="mt-2 text-right text-sm text-[#384B97]">
+                              <span className="text-gray-600">
+                                {t("cart.directPurchaseNote")}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* Price and Quantity - Left Side */}
                       <div className="flex flex-col items-center gap-3">
                         <div className="text-center">
                           <span className="text-2xl font-bold text-gray-800">
-                            {item.selectedInstallment
-                              ? Math.round(installmentTotal)
-                              : itemTotal}
+                            {itemTotal}
                           </span>
                           <span className="text-gray-600 mr-1">
                             {t("cart.riyal")}
                           </span>
-                          {item.selectedInstallment && (
-                            <div className="text-xs text-gray-500 line-through">
-                              {itemTotal} {t("cart.riyal")}
+                          {/* Show investment badge if resale selected */}
+                          {item.purchaseType === 'resale' && item.selectedResalePlan && (
+                            <div className="text-xs text-green-600 font-semibold mt-1">
+                              <TrendingUp className="w-3 h-3 inline mr-1" />
+                              {t("cart.investment")}
                             </div>
                           )}
                         </div>
@@ -371,13 +602,16 @@ const Cart = () => {
                   onChange={(e) => setDiscountCode(e.target.value)}
                   placeholder={t("cart.discountCode")}
                   className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                  disabled={discountLoading}
                 />
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: discountLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: discountLoading ? 1 : 0.98 }}
                   onClick={handleApplyDiscount}
-                  className="px-8 py-3 border-2 border-[#F65331] text-[#F65331] rounded-lg font-bold hover:bg-[#F65331] hover:text-white transition-all"
+                  disabled={discountLoading || !discountCode.trim()}
+                  className="px-8 py-3 border-2 border-[#F65331] text-[#F65331] rounded-lg font-bold hover:bg-[#F65331] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
+                  {discountLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {t("cart.applyDiscount")}
                 </motion.button>
               </div>
@@ -391,14 +625,14 @@ const Cart = () => {
                   <span className="font-semibold">{t("cart.subtotal")}</span>
                 </div>
 
-                {/* Installment Fee (if any) */}
-                {hasInstallmentItems && installmentFee > 0 && (
-                  <div className="flex justify-between text-[#384B97] mb-3">
+                {/* Expected Profit from Investments (if any resale items) */}
+                {hasResaleItems && expectedProfit > 0 && (
+                  <div className="flex justify-between text-green-600 mb-3">
                     <span className="font-semibold">
-                      +{Math.round(installmentFee)} {t("cart.riyal")}
+                      +{Math.round(expectedProfit)} {t("cart.riyal")}
                     </span>
                     <span className="font-semibold">
-                      {t("cart.installmentFee")}
+                      {t("cart.expectedProfitLabel")}
                     </span>
                   </div>
                 )}
@@ -453,265 +687,352 @@ const Cart = () => {
           </div>
         )}
 
-        {/* Payment & Invoice Modal */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        {/* Checkout Modal */}
+        {showCheckoutModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-2xl p-8 max-w-lg w-full my-8"
             >
               <h2 className="text-2xl font-bold text-[#384B97] mb-6 text-right">
-                {t("checkout.paymentInvoice.title")}
+                {t("checkout.title") || "إتمام الطلب"}
               </h2>
 
-              {/* Payment Type Selection */}
-              <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-3 text-right">
-                  {t("checkout.paymentInvoice.paymentType")}
-                </label>
-                <div className="space-y-3">
-                  <label className="flex items-center justify-end gap-3 cursor-pointer p-4 border-2 rounded-lg hover:border-[#F65331] transition-all">
-                    <span className="font-semibold">
-                      {t("checkout.paymentInvoice.creditSale")}
-                    </span>
-                    <input
-                      type="radio"
-                      name="paymentType"
-                      value="credit"
-                      checked={paymentType === "credit"}
-                      onChange={(e) =>
-                        setPaymentType(e.target.value as "credit" | "cash")
-                      }
-                      className="w-5 h-5"
-                    />
-                  </label>
-                  <label className="flex items-center justify-end gap-3 cursor-pointer p-4 border-2 rounded-lg hover:border-[#F65331] transition-all">
-                    <span className="font-semibold">
-                      {t("checkout.paymentInvoice.cashSale")}
-                    </span>
-                    <input
-                      type="radio"
-                      name="paymentType"
-                      value="cash"
-                      checked={paymentType === "cash"}
-                      onChange={(e) =>
-                        setPaymentType(e.target.value as "credit" | "cash")
-                      }
-                      className="w-5 h-5"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {/* Invoice Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-bold text-gray-800 mb-3 text-right">
-                  {t("checkout.paymentInvoice.invoiceSummary")}
-                </h3>
-                <div className="space-y-2 text-right">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">
-                      {finalTotal.toFixed(0)} {t("cart.riyal")}
-                    </span>
-                    <span>{t("cart.total")}</span>
-                  </div>
-                  {paymentType === "credit" && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="font-semibold">
-                        {(finalTotal * 0.15).toFixed(0)} {t("cart.riyal")}
-                      </span>
-                      <span>{t("checkout.paymentInvoice.expectedProfit")}</span>
+              {/* Order Type Indicator */}
+              <div className="mb-6 p-4 rounded-lg bg-gray-50">
+                {isPureInvestment ? (
+                  <div className="flex items-center gap-3 text-green-600">
+                    <PiggyBank className="w-6 h-6" />
+                    <div className="text-right flex-1">
+                      <p className="font-bold">{t("checkout.investmentOrder") || "طلب استثماري"}</p>
+                      <p className="text-sm text-gray-600">{t("checkout.noShippingNeeded") || "لا يحتاج شحن - سيعود استثمارك مع الربح"}</p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : hasWalletItems && hasResaleItems ? (
+                  <div className="flex items-center gap-3 text-[#384B97]">
+                    <div className="flex">
+                      <Truck className="w-5 h-5" />
+                      <TrendingUp className="w-5 h-5 -ml-1" />
+                    </div>
+                    <div className="text-right flex-1">
+                      <p className="font-bold">{t("checkout.mixedOrder") || "طلب مختلط"}</p>
+                      <p className="text-sm text-gray-600">{t("checkout.mixedOrderDesc") || "يحتوي على منتجات للشحن واستثمارات"}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 text-[#F65331]">
+                    <Truck className="w-6 h-6" />
+                    <div className="text-right flex-1">
+                      <p className="font-bold">{t("checkout.directOrder") || "طلب مباشر"}</p>
+                      <p className="text-sm text-gray-600">{t("checkout.willBeShipped") || "سيتم شحن المنتجات إليك"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowPaymentModal(false)}
-                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-50"
-                >
-                  {t("checkout.paymentInvoice.cancel")}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleConfirmPayment}
-                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525]"
-                >
-                  {t("checkout.paymentInvoice.confirmPayment")}
-                </motion.button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Order Status Verification Modal */}
-        {showOrderStatusModal && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl p-8 max-w-md w-full"
-            >
-              <h2 className="text-2xl font-bold text-[#384B97] mb-6 text-right">
-                {t("checkout.orderStatus.title")}
-              </h2>
-
-              {/* Order Information */}
-              <div className="space-y-4 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <label className="block text-sm text-gray-600 mb-1 text-right">
-                    {t("checkout.orderStatus.orderNumber")}
-                  </label>
-                  <p className="text-lg font-bold text-gray-800 text-right">
-                    {orderNumber}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-600 mb-2 text-right">
-                    {t("checkout.orderStatus.customerName")}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="أدخل اسم العميل"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+              {/* Shipping Form - Only show if has wallet items */}
+              {hasWalletItems && (
+                <div className="mb-6 space-y-4">
+                  <h3 className="font-bold text-gray-800 text-right flex items-center justify-end gap-2">
+                    <span>{t("checkout.shippingDetails") || "تفاصيل الشحن"}</span>
+                    <Truck className="w-5 h-5" />
+                  </h3>
+                  
+                  <div>
+                    <input
+                      type="tel"
+                      value={shippingPhone}
+                      onChange={(e) => setShippingPhone(e.target.value)}
+                      placeholder={t("checkout.phone") || "رقم الجوال"}
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                    />
+                  </div>
+                  
+                  {/* Additional Phones */}
+                  {additionalPhones.map((phone, index) => (
+                    <div key={index} className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAdditionalPhones(additionalPhones.filter((_, i) => i !== index))}
+                        className="px-3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          const updated = [...additionalPhones];
+                          updated[index] = e.target.value;
+                          setAdditionalPhones(updated);
+                        }}
+                        placeholder={t("checkout.additionalPhone") || "رقم جوال إضافي"}
+                        className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                  
+                  <button
+                    type="button"
+                    onClick={() => setAdditionalPhones([...additionalPhones, ""])}
+                    className="w-full px-4 py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-[#F65331] hover:text-[#F65331] transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>+</span>
+                    <span>{t("checkout.addPhone") || "إضافة رقم جوال آخر"}</span>
+                  </button>
+                  
+                  <textarea
+                    value={shippingAddress}
+                    onChange={(e) => setShippingAddress(e.target.value)}
+                    placeholder={t("checkout.address") || "العنوان التفصيلي"}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none resize-none"
                   />
                 </div>
+              )}
 
-                {/* Status Badge */}
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                  <label className="block text-sm text-gray-600 mb-2 text-right">
-                    {t("checkout.orderStatus.status")}
-                  </label>
-                  <div className="flex items-center justify-end gap-2">
-                    <span className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold">
-                      {t("checkout.orderStatus.processing")}
-                    </span>
+              {/* Company Selection Section */}
+              <div className="mb-6">
+                <h3 className="font-bold text-gray-800 text-right flex items-center justify-end gap-2 mb-4">
+                  <span>{t("checkout.selectCompany") || "اختر الشركة لكل منتج"}</span>
+                  <Building2 className="w-5 h-5" />
+                </h3>
+                
+                {companiesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#384B97]" />
                   </div>
-                </div>
-
-                {/* Order Items */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-bold text-gray-800 mb-3 text-right">
-                    المنتجات
-                  </h4>
-                  <div className="space-y-2">
+                ) : companies.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    {t("checkout.noCompanies") || "لا توجد شركات متاحة"}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
                     {cartItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between text-sm"
-                      >
-                        <span>
-                          {item.quantity}x {item.price} ريال
-                        </span>
-                        <span>{item.name}</span>
+                      <div key={item.id} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {item.purchaseType === 'resale' ? (
+                              <TrendingUp className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Wallet className="w-4 h-4 text-[#384B97]" />
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className="font-semibold text-gray-800">{item.name}</span>
+                            <span className="text-sm text-gray-500 mx-2">×{item.quantity}</span>
+                          </div>
+                        </div>
+                        <select
+                          value={itemCompanies[item.id] || ""}
+                          onChange={(e) => handleItemCompanyChange(item.id, Number(e.target.value))}
+                          className={`w-full px-3 py-2 rounded-lg border-2 text-right focus:outline-none transition-colors ${
+                            itemCompanies[item.id] 
+                              ? "border-green-300 bg-green-50" 
+                              : "border-gray-200 bg-white"
+                          } focus:border-[#F65331]`}
+                        >
+                          <option value="">{t("checkout.selectCompanyPlaceholder") || "-- اختر الشركة --"}</option>
+                          {companies.map((company) => (
+                            <option key={company.id} value={company.id}>
+                              {company.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     ))}
                   </div>
+                )}
+                
+                {/* Warning if not all items have companies */}
+                {!allItemsHaveCompanies && (
+                  <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-yellow-800 text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{t("checkout.companyRequired") || "يجب اختيار شركة لكل منتج لإتمام الطلب"}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-gray-800 mb-3 text-right">
+                  {t("checkout.orderSummary") || "ملخص الطلب"}
+                </h3>
+                
+                {/* Items breakdown */}
+                <div className="space-y-2 text-sm mb-3 max-h-32 overflow-y-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center">
+                      <span className="font-semibold">
+                        {item.price * item.quantity} {t("cart.riyal")}
+                      </span>
+                      <div className="text-right flex items-center gap-2">
+                        <span>{item.name} × {item.quantity}</span>
+                        {item.purchaseType === 'resale' ? (
+                          <TrendingUp className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Wallet className="w-4 h-4 text-[#384B97]" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-gray-200 pt-3 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">{total} {t("cart.riyal")}</span>
+                    <span>{t("cart.subtotal")}</span>
+                  </div>
+                  
+                  {discountPercent > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="font-semibold">-{discountAmount.toFixed(0)} {t("cart.riyal")}</span>
+                      <span>{t("checkout.discount") || "خصم"} {discountPercent}%</span>
+                    </div>
+                  )}
+                  
+                  {hasResaleItems && expectedProfit > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="font-semibold">+{Math.round(expectedProfit)} {t("cart.riyal")}</span>
+                      <span>{t("cart.expectedProfitLabel")}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
+                    <span>{finalTotal.toFixed(0)} {t("cart.riyal")}</span>
+                    <span>{t("checkout.totalToPay") || "المبلغ المطلوب"}</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Warning for investments */}
+              {hasResaleItems && (
+                <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-2 text-right">
+                    <div className="flex-1">
+                      <p className="text-sm text-yellow-800">
+                        <AlertCircle className="w-4 h-4 inline ml-1" />
+                        {t("checkout.investmentWarning") || "الاستثمارات ستُسجل بالأرباح الحالية ولن تتأثر بأي تغييرات مستقبلية في خطط المنتجات."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowOrderStatusModal(false)}
-                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-50"
+                  onClick={() => setShowCheckoutModal(false)}
+                  disabled={checkoutLoading}
+                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-50 disabled:opacity-50"
                 >
-                  {t("checkout.orderStatus.close")}
+                  {t("checkout.cancel") || "إلغاء"}
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleOrderStatusNext}
-                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525]"
+                  whileHover={{ scale: (!allItemsHaveCompanies || checkoutLoading || companiesLoading) ? 1 : 1.02 }}
+                  whileTap={{ scale: (!allItemsHaveCompanies || checkoutLoading || companiesLoading) ? 1 : 0.98 }}
+                  onClick={handleConfirmCheckout}
+                  disabled={checkoutLoading || companiesLoading || !allItemsHaveCompanies}
+                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  متابعة
+                  {checkoutLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      {t("checkout.processing") || "جاري المعالجة..."}
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="w-5 h-5" />
+                      {t("checkout.confirmPayment") || "تأكيد الدفع"}
+                    </>
+                  )}
                 </motion.button>
               </div>
             </motion.div>
           </div>
         )}
 
-        {/* Delivery Link Modal */}
-        {showDeliveryLinkModal && (
+        {/* Success Modal */}
+        {showSuccessModal && checkoutResult && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
             >
-              <h2 className="text-2xl font-bold text-[#384B97] mb-6 text-right">
-                {t("checkout.deliveryLink.title")}
-              </h2>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </motion.div>
 
-              {/* Product Selection */}
-              <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-3 text-right">
-                  {t("checkout.deliveryLink.selectProduct")}
-                </label>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-[#F65331] transition-all"
-                    >
-                      <img
-                        src={test1}
-                        alt={item.name}
-                        className="w-16 h-16 object-contain"
-                      />
-                      <div className="flex-1 text-right">
-                        <h4 className="font-bold text-gray-800">{item.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          {item.quantity}x {item.price} ريال
-                        </p>
-                      </div>
-                      <input type="checkbox" className="w-5 h-5" />
-                    </div>
-                  ))}
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                {t("checkout.success") || "تم بنجاح!"}
+              </h2>
+              <p className="text-gray-600 mb-6">
+                {checkoutResult.message}
+              </p>
+
+              {/* Order Info */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
+                <div className="flex justify-between mb-2">
+                  <span className="font-bold">{checkoutResult.data.order.order_number}</span>
+                  <span className="text-gray-600">{t("checkout.orderNumber") || "رقم الطلب"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-bold">{checkoutResult.data.order.total_amount} {t("cart.riyal")}</span>
+                  <span className="text-gray-600">{t("checkout.totalAmount") || "المبلغ الإجمالي"}</span>
                 </div>
               </div>
 
-              {/* Delivery App Selection */}
-              <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-3 text-right">
-                  {t("checkout.deliveryLink.deliveryApp")}
-                </label>
-                <select className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none">
-                  <option>مرسول</option>
-                  <option>هنقرستيشن</option>
-                  <option>جاهز</option>
-                  <option>طلبات</option>
-                </select>
-              </div>
+              {/* Investment Summary if any */}
+              {checkoutResult.data.investments && checkoutResult.data.investments.length > 0 && (
+                <div className="bg-green-50 rounded-lg p-4 mb-6 text-right">
+                  <h3 className="font-bold text-green-800 mb-3 flex items-center justify-end gap-2">
+                    <span>{t("checkout.investmentsSummary") || "ملخص الاستثمارات"}</span>
+                    <TrendingUp className="w-5 h-5" />
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-green-700">
+                        {checkoutResult.data.total_expected_return} {t("cart.riyal")}
+                      </span>
+                      <span className="text-gray-600">{t("cart.expectedReturn")}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-green-600">
+                        +{checkoutResult.data.total_expected_profit} {t("cart.riyal")}
+                      </span>
+                      <span className="text-gray-600">{t("cart.yourProfit")}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowDeliveryLinkModal(false)}
-                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-50"
-                >
-                  إلغاء
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleConfirmDeliveryLink}
-                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525]"
-                >
-                  {t("checkout.deliveryLink.confirmLink")}
-                </motion.button>
-              </div>
+              {/* Shipping notice if applicable */}
+              {checkoutResult.data.summary.requires_shipping && (
+                <div className="bg-blue-50 rounded-lg p-3 mb-6 text-right">
+                  <p className="text-sm text-blue-800 flex items-center justify-end gap-2">
+                    <span>{t("checkout.shippingNotice") || "سيتم شحن المنتجات المباشرة إلى عنوانك قريباً"}</span>
+                    <Truck className="w-4 h-4" />
+                  </p>
+                </div>
+              )}
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSuccessClose}
+                className="w-full py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525]"
+              >
+                {t("checkout.viewOrders") || "عرض الطلبات"}
+              </motion.button>
             </motion.div>
           </div>
         )}
