@@ -29,6 +29,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean; // Track if auth has been initialized
 }
 
 // Check for existing token on app load
@@ -37,7 +38,8 @@ const storedToken = localStorage.getItem('auth_token');
 const initialState: AuthState = {
   user: null,
   token: storedToken,
-  isAuthenticated: false,
+  isAuthenticated: !!storedToken, // Set to true if token exists - this ensures API calls include token
+  isInitialized: false, // Will be set to true after AuthInitializer runs
 };
 
 const authSlice = createSlice({
@@ -48,12 +50,14 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      state.isInitialized = true;
       localStorage.setItem('auth_token', action.payload.token);
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.isInitialized = true;
       localStorage.removeItem('auth_token');
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
@@ -63,10 +67,15 @@ const authSlice = createSlice({
     },
     setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
+      state.isAuthenticated = true;
       localStorage.setItem('auth_token', action.payload);
+    },
+    // Action to mark auth as initialized (called after AuthInitializer checks token validity)
+    setInitialized: (state, action: PayloadAction<boolean>) => {
+      state.isInitialized = action.payload;
     },
   },
 });
 
-export const { login, logout, updateUser, setToken } = authSlice.actions;
+export const { login, logout, updateUser, setToken, setInitialized } = authSlice.actions;
 export default authSlice.reducer;

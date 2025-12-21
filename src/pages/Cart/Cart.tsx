@@ -158,9 +158,9 @@ const Cart = () => {
   const [companiesLoading, setCompaniesLoading] = useState(false);
   const [itemCompanies, setItemCompanies] = useState<Record<number, number>>({}); // productId -> companyId
 
-  // Fetch companies when checkout modal opens
+  // Fetch companies on page load for cart item selection
   useEffect(() => {
-    if (showCheckoutModal && companies.length === 0) {
+    if (companies.length === 0) {
       const fetchCompanies = async () => {
         setCompaniesLoading(true);
         try {
@@ -175,7 +175,8 @@ const Cart = () => {
       };
       fetchCompanies();
     }
-  }, [showCheckoutModal, companies.length, t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update company selection for an item
   const handleItemCompanyChange = (productId: number, companyId: number) => {
@@ -533,6 +534,51 @@ const Cart = () => {
                               </span>
                             </div>
                           )}
+
+                        {/* Delivery Partner Selection - Modern Dropdown */}
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="relative flex-1">
+                              {companiesLoading ? (
+                                <div className="flex items-center justify-center py-2">
+                                  <Loader2 className="w-5 h-5 animate-spin text-[#384B97]" />
+                                </div>
+                              ) : (
+                                <div className="relative">
+                                  <select
+                                    value={itemCompanies[item.id] || ""}
+                                    onChange={(e) => handleItemCompanyChange(item.id, Number(e.target.value))}
+                                    className={`w-full px-4 py-2.5 rounded-xl text-right appearance-none cursor-pointer transition-all duration-200 pr-4 pl-10 ${
+                                      itemCompanies[item.id]
+                                        ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 text-green-800 font-medium"
+                                        : "bg-gray-50 border-2 border-gray-200 text-gray-600 hover:border-[#384B97] hover:bg-blue-50"
+                                    } focus:outline-none focus:ring-2 focus:ring-[#384B97]/20`}
+                                  >
+                                    <option value="">{t("cart.selectDeliveryPartner") || "اختر شريك التوصيل"}</option>
+                                    {companies.map((company) => (
+                                      <option key={company.id} value={company.id}>
+                                        {company.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    {itemCompanies[item.id] ? (
+                                      <CheckCircle className="w-5 h-5 text-green-500" />
+                                    ) : (
+                                      <Building2 className="w-5 h-5 text-gray-400" />
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-right shrink-0">
+                              <span className="text-sm font-medium text-gray-700">
+                                {t("cart.deliveryPartner") || "شريك التوصيل"}
+                              </span>
+                              <Truck className="w-5 h-5 text-[#384B97]" />
+                            </div>
+                          </div>
+                        </div>
                         </div>
                       </div>
 
@@ -792,67 +838,13 @@ const Cart = () => {
                 </div>
               )}
 
-              {/* Company Selection Section */}
-              <div className="mb-6">
-                <h3 className="font-bold text-gray-800 text-right flex items-center justify-end gap-2 mb-4">
-                  <span>{t("checkout.selectCompany") || "اختر الشركة لكل منتج"}</span>
-                  <Building2 className="w-5 h-5" />
-                </h3>
-                
-                {companiesLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#384B97]" />
-                  </div>
-                ) : companies.length === 0 ? (
-                  <div className="text-center py-4 text-gray-500">
-                    {t("checkout.noCompanies") || "لا توجد شركات متاحة"}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            {item.purchaseType === 'resale' ? (
-                              <TrendingUp className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Wallet className="w-4 h-4 text-[#384B97]" />
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <span className="font-semibold text-gray-800">{item.name}</span>
-                            <span className="text-sm text-gray-500 mx-2">×{item.quantity}</span>
-                          </div>
-                        </div>
-                        <select
-                          value={itemCompanies[item.id] || ""}
-                          onChange={(e) => handleItemCompanyChange(item.id, Number(e.target.value))}
-                          className={`w-full px-3 py-2 rounded-lg border-2 text-right focus:outline-none transition-colors ${
-                            itemCompanies[item.id] 
-                              ? "border-green-300 bg-green-50" 
-                              : "border-gray-200 bg-white"
-                          } focus:border-[#F65331]`}
-                        >
-                          <option value="">{t("checkout.selectCompanyPlaceholder") || "-- اختر الشركة --"}</option>
-                          {companies.map((company) => (
-                            <option key={company.id} value={company.id}>
-                              {company.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Warning if not all items have companies */}
-                {!allItemsHaveCompanies && (
-                  <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-yellow-800 text-sm">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span>{t("checkout.companyRequired") || "يجب اختيار شركة لكل منتج لإتمام الطلب"}</span>
-                  </div>
-                )}
-              </div>
+              {/* Warning if not all items have delivery partners selected */}
+              {!allItemsHaveCompanies && (
+                <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-yellow-800 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-right flex-1">{t("cart.selectDeliveryPartnerWarning") || "يرجى اختيار شريك توصيل لكل منتج في السلة قبل إتمام الطلب"}</span>
+                </div>
+              )}
 
               {/* Order Summary */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6">

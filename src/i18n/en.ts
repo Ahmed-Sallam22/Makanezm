@@ -217,6 +217,10 @@ export default {
         directPurchase: "Direct Purchase",
         investment: "Investment",
         directPurchaseNote: "Product will be shipped to you after purchase",
+        // Company Selection
+        deliveryPartner: "Company",
+        selectDeliveryPartner: "Select company",
+        selectDeliveryPartnerWarning: "Please select a company for each product in cart before checkout",
         // Resale/Investment options
         selectResalePlan: "Select investment period",
         expectedReturn: "Expected Return",

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { getCurrentUser } from "../services/authService";
-import { login, logout } from "../store/slices/authSlice";
+import { login, logout, setInitialized } from "../store/slices/authSlice";
 import { fetchCart, resetSyncStatus } from "../store/slices/cartSlice";
 
 const AuthInitializer = () => {
@@ -47,6 +47,12 @@ const AuthInitializer = () => {
           // Clear cart sync status on logout
           dispatch(resetSyncStatus());
         }
+      } else if (!token) {
+        // No token, mark as initialized
+        dispatch(setInitialized(true));
+      } else {
+        // Token exists and user is already loaded, mark as initialized
+        dispatch(setInitialized(true));
       }
     };
 

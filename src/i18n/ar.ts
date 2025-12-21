@@ -215,6 +215,10 @@ export default {
         directPurchase: "شراء مباشر",
         investment: "استثمار",
         directPurchaseNote: "سيتم شحن المنتج إليك بعد الشراء",
+        // اختيار الشركة
+        deliveryPartner: "شركة",
+        selectDeliveryPartner: "اختر شركة",
+        selectDeliveryPartnerWarning: "يرجى اختيار شركة لكل منتج في السلة قبل إتمام الطلب",
         // خيارات الاستثمار/إعادة البيع
         selectResalePlan: "اختر فترة الاستثمار",
         expectedReturn: "العائد المتوقع",
