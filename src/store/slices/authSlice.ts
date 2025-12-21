@@ -34,9 +34,10 @@ interface AuthState {
 
 // Check for existing token on app load
 const storedToken = localStorage.getItem('auth_token');
+const storedUser = localStorage.getItem('auth_user');
 
 const initialState: AuthState = {
-  user: null,
+  user: storedUser ? JSON.parse(storedUser) : null,
   token: storedToken,
   isAuthenticated: !!storedToken, // Set to true if token exists - this ensures API calls include token
   isInitialized: false, // Will be set to true after AuthInitializer runs
@@ -52,6 +53,7 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.isInitialized = true;
       localStorage.setItem('auth_token', action.payload.token);
+      localStorage.setItem('auth_user', JSON.stringify(action.payload.user));
     },
     logout: (state) => {
       state.user = null;
@@ -59,10 +61,12 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.isInitialized = true;
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
+        localStorage.setItem('auth_user', JSON.stringify(state.user));
       }
     },
     setToken: (state, action: PayloadAction<string>) => {

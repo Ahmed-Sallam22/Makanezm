@@ -22,6 +22,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Login = lazy(() => import("./pages/Login"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const PaymentResult = lazy(() => import("./pages/PaymentResult"));
 
 // Loading component
 const PageLoader = () => (
@@ -51,6 +52,7 @@ function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="cart" element={<Cart />} />
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="payment/result" element={<PaymentResult />} />
               </Route>
             </Routes>
           </Suspense>
