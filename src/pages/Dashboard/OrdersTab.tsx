@@ -74,7 +74,7 @@ const OrdersTab = () => {
       (o) => o.status === "pending" || o.status === "processing"
     );
     const completedOrders = orders.filter(
-      (o) => o.status === "delivered" || o.status === "completed"
+      (o) => o.status === "confirmed" || o.status === "invested"
     );
 
     const totalRevenue = orders.reduce(
@@ -109,16 +109,12 @@ const OrdersTab = () => {
     { key: "resale" as FilterType, label: t("dashboard.orders.investment") },
   ];
 
-  // Status filter options
+  // Status filter options (simplified: confirmed is final for wallet, invested for resale)
   const statusFilters: { key: StatusFilter; label: string }[] = [
     { key: "all", label: t("dashboard.orders.allStatuses") },
     { key: "pending", label: t("dashboard.status.pending") },
     { key: "confirmed", label: t("dashboard.status.confirmed") },
-    { key: "processing", label: t("dashboard.status.processing") },
-    { key: "shipped", label: t("dashboard.status.shipped") },
-    { key: "delivered", label: t("dashboard.status.delivered") },
     { key: "invested", label: t("dashboard.status.invested") },
-    { key: "completed", label: t("dashboard.status.completed") },
     { key: "cancelled", label: t("dashboard.status.cancelled") },
   ];
 
@@ -535,7 +531,9 @@ const OrdersTab = () => {
                           {order.items.slice(0, 3).map((item) => (
                             <div
                               key={item.id}
-                              className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                              className={`flex items-center justify-between py-2 border-b border-gray-100 last:border-0 ${
+                                item.isResale ? "bg-orange-50 rounded-lg px-2" : ""
+                              }`}
                             >
                               <div className="flex items-center gap-3">
                                 {item.image && (
@@ -546,9 +544,25 @@ const OrdersTab = () => {
                                   />
                                 )}
                                 <div>
-                                  <p className="text-gray-800 font-medium">
-                                    {item.productName}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-gray-800 font-medium">
+                                      {item.productName}
+                                    </p>
+                                    {/* Item type badge for mixed orders */}
+                                    {order.type === "mixed" && (
+                                      <span
+                                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                          item.isResale
+                                            ? "bg-orange-100 text-orange-700"
+                                            : "bg-blue-100 text-blue-700"
+                                        }`}
+                                      >
+                                        {item.isResale
+                                          ? t("dashboard.orders.investment")
+                                          : t("dashboard.orders.directPurchase")}
+                                      </span>
+                                    )}
+                                  </div>
                                   <p className="text-sm text-gray-500">
                                     {t("dashboard.orders.qty")}: {item.quantity}{" "}
                                     × {formatCurrency(item.price)}
@@ -578,8 +592,8 @@ const OrdersTab = () => {
                       )}
                     </div>
 
-                    {/* Investment Details */}
-                    {isResale && order.resale && (
+                    {/* Investment Details - Show for orders with resale items */}
+                    {isResale && order.resale && order.resale.expectedReturn > 0 && (
                       <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
                         <div className="flex items-center gap-2 mb-3">
                           <TrendingUp className="w-5 h-5 text-orange-600" />
@@ -594,7 +608,14 @@ const OrdersTab = () => {
                               {t("dashboard.orders.invested")}
                             </p>
                             <p className="font-bold text-gray-800">
-                              {formatCurrency(order.totalAmount || order.finalTotal)}
+                              {/* For mixed orders, only count resale items */}
+                              {formatCurrency(
+                                order.type === "mixed" && order.items
+                                  ? order.items
+                                      .filter((item) => item.isResale)
+                                      .reduce((sum, item) => sum + (item.totalPrice || item.price * item.quantity), 0)
+                                  : order.totalAmount || order.finalTotal
+                              )}
                             </p>
                           </div>
                           <div>
@@ -716,7 +737,6 @@ const OrdersTab = () => {
                     )}
 
                     {/* Order Total & Actions */}
-                    {order.type !== "resale" && (
                       <div className="mt-4 pt-4 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                           <p className="text-sm text-gray-600">
@@ -727,8 +747,20 @@ const OrdersTab = () => {
                           </p>
                         </div>
 
-                        <div className="flex gap-2">
-                          {isAdmin && order.type === "sale" && order.status === "pending" ? (
+                        <div className="flex flex-wrap gap-2">
+                          {/* View Details button */}
+                          <button
+                            onClick={() => handleViewOrder(order.id)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            {t("dashboard.orders.viewDetails")}
+                          </button>
+
+                          {/* Approve button for pending sale/wallet items */}
+                          {isAdmin && 
+                           order.status === "pending" && 
+                           (order.type === "sale" || (order.type === "mixed" && order.items?.some(item => !item.isResale))) && (
                             <button
                               onClick={() => handleApproveOrder(order.id)}
                               className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
@@ -736,16 +768,9 @@ const OrdersTab = () => {
                               <CheckCircle className="w-4 h-4" />
                               {t("dashboard.orders.approve") || "Approve"}
                             </button>
-                          ) : (
-                            <button
-                              onClick={() => handleViewOrder(order.id)}
-                              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                            >
-                              <Eye className="w-4 h-4" />
-                              {t("dashboard.orders.viewDetails")}
-                            </button>
                           )}
 
+                          {/* Cancel button */}
                           {canCancel && (
                             <button
                               onClick={() => handleCancelOrder(order.id)}
@@ -757,7 +782,6 @@ const OrdersTab = () => {
                           )}
                         </div>
                       </div>
-                    )}
                   </div>
                 </motion.div>
               );

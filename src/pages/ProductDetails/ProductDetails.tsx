@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { addToCart, addToCartAsync } from "../../store/slices/cartSlice";
+import { addToCartAsync } from "../../store/slices/cartSlice";
 import { getPublicProduct, getPublicProducts, toggleProductFavorite, type PublicProduct } from "../../services/productService";
 import type { InstallmentTier } from "../../types/product";
 import SEO from "../../components/SEO";
@@ -48,6 +48,7 @@ const ProductDetails = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Fetch product from API
   useEffect(() => {
@@ -96,49 +97,26 @@ const ProductDetails = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const productName = isRTL ? product.nameAr : product.name;
 
-    if (isAuthenticated) {
-      try {
-        await dispatch(addToCartAsync({ productId: product.id, quantity })).unwrap();
-        setIsAddedToCart(true);
-        toast.success(t("products.addedToCart", { name: productName }), {
-          position: isRTL ? "top-left" : "top-right",
-          autoClose: 2000,
-        });
-        
-        setTimeout(() => {
-          setIsAddedToCart(false);
-        }, 2000);
-      } catch (error) {
-        toast.error(String(error));
-      }
-    } else {
-      // For unauthenticated users, add locally
-      for (let i = 0; i < quantity; i++) {
-        dispatch(
-          addToCart({
-            id: product.id,
-            name: productName,
-            price: product.price,
-            progress:
-              product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
-            image: product.image ?? undefined,
-            allowInstallment: product.allowInstallment,
-            installmentOptions: product.installmentOptions,
-          })
-        );
-      }
-
+    try {
+      await dispatch(addToCartAsync({ productId: product.id, quantity })).unwrap();
       setIsAddedToCart(true);
       toast.success(t("products.addedToCart", { name: productName }), {
         position: isRTL ? "top-left" : "top-right",
         autoClose: 2000,
       });
-
+      
       setTimeout(() => {
         setIsAddedToCart(false);
       }, 2000);
+    } catch (error) {
+      toast.error(String(error));
     }
   };
 
@@ -167,6 +145,11 @@ const ProductDetails = () => {
   const handleToggleFavorite = async () => {
     if (!product) return;
     
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
     setIsFavoriteLoading(true);
     try {
       const response = await toggleProductFavorite(product.id);
@@ -177,14 +160,8 @@ const ProductDetails = () => {
       } else {
         toast.success(isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites");
       }
-    } catch (err: unknown) {
-      // Check if it's an authentication error
-      const error = err as { response?: { status?: number } };
-      if (error.response?.status === 401) {
-        toast.error(isRTL ? "يجب تسجيل الدخول لإضافة المنتج للمفضلة" : "Please login to add to favorites");
-      } else {
-        toast.error(isRTL ? "حدث خطأ" : "Something went wrong");
-      }
+    } catch {
+      toast.error(isRTL ? "حدث خطأ" : "Something went wrong");
     } finally {
       setIsFavoriteLoading(false);
     }
@@ -540,7 +517,13 @@ const ProductDetails = () => {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setShowLoginModal(true);
+                        return;
+                      }
+                      setQuantity((q) => Math.max(1, q - 1));
+                    }}
                     className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
                   >
                     <Minus className="w-4 h-4" />
@@ -551,9 +534,13 @@ const ProductDetails = () => {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() =>
-                      setQuantity((q) => Math.min(product.stock, q + 1))
-                    }
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setShowLoginModal(true);
+                        return;
+                      }
+                      setQuantity((q) => Math.min(product.stock, q + 1));
+                    }}
                     className="w-8 h-8 bg-white rounded-md flex items-center justify-center hover:bg-gray-200 transition-all"
                   >
                     <Plus className="w-4 h-4" />
@@ -732,6 +719,67 @@ const ProductDetails = () => {
             )}
           </motion.button>
         </div>
+
+        {/* Login Required Modal */}
+        <AnimatePresence>
+          {showLoginModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              onClick={() => setShowLoginModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+              >
+                <div className="text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                    className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                  >
+                    <ShoppingCart className="w-10 h-10 text-white" />
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {isRTL ? "تسجيل الدخول مطلوب" : "Login Required"}
+                  </h3>
+                  <p className="text-gray-600 mb-8">
+                    {isRTL
+                      ? "يجب تسجيل الدخول أولاً للتفاعل مع المنتجات"
+                      : "Please login first to interact with products"}
+                  </p>
+
+                  <div className="flex gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowLoginModal(false)}
+                      className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                    >
+                      {isRTL ? "إلغاء" : "Cancel"}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate("/login")}
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                    >
+                      {isRTL ? "تسجيل الدخول" : "Login"}
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

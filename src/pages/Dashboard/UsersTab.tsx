@@ -375,15 +375,25 @@ const UsersTab = () => {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => openEditModal(user)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                          title={t("dashboard.users.edit")}
+                          disabled={user.role === 'USER'}
+                          className={`p-2 rounded-lg transition-all ${
+                            user.role === 'USER'
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : 'text-blue-600 hover:bg-blue-50'
+                          }`}
+                          title={user.role === 'USER' ? t("dashboard.users.cannotEditCustomer") : t("dashboard.users.edit")}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(user.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          title={t("dashboard.users.delete")}
+                          disabled={user.role === 'USER'}
+                          className={`p-2 rounded-lg transition-all ${
+                            user.role === 'USER'
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : 'text-red-600 hover:bg-red-50'
+                          }`}
+                          title={user.role === 'USER' ? t("dashboard.users.cannotDeleteCustomer") : t("dashboard.users.delete")}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

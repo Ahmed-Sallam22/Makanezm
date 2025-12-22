@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ShoppingCart, Check, Eye, CreditCard, Star, Heart } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { addToCart, addToCartAsync } from "../../store/slices/cartSlice";
+import { addToCartAsync } from "../../store/slices/cartSlice";
 import { getPublicProducts, toggleProductFavorite, type PublicProduct } from "../../services/productService";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
@@ -55,6 +55,9 @@ const Products = () => {
 
   // State for favorites
   const [favoritedProducts, setFavoritedProducts] = useState<Set<number>>(new Set());
+
+  // State for login modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Fetch products from API
   useEffect(() => {
@@ -115,37 +118,22 @@ const Products = () => {
   };
 
   const handleAddToCart = async (product: PublicProduct) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const productName = isRTL ? product.nameAr : product.name;
 
-    if (isAuthenticated) {
-      try {
-        await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
-        setAddedProducts((prev) => [...prev, product.id]);
-        toast.success(t("products.addedToCart", { name: productName }), {
-          position: isRTL ? "top-left" : "top-right",
-          autoClose: 2000,
-        });
-      } catch (error) {
-        toast.error(String(error));
-      }
-    } else {
-      dispatch(
-        addToCart({
-          id: product.id,
-          name: productName,
-          price: product.price,
-          progress:
-            product.stock > 0 ? Math.min(100, (product.stock / 100) * 100) : 0,
-          image: product.image ?? undefined,
-          allowInstallment: product.allowInstallment,
-          installmentOptions: product.installmentOptions,
-        })
-      );
+    try {
+      await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
       setAddedProducts((prev) => [...prev, product.id]);
       toast.success(t("products.addedToCart", { name: productName }), {
         position: isRTL ? "top-left" : "top-right",
         autoClose: 2000,
       });
+    } catch (error) {
+      toast.error(String(error));
     }
 
     // Remove from added list after 2 seconds
@@ -157,6 +145,12 @@ const Products = () => {
   // Handle favorite toggle
   const handleToggleFavorite = async (productId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Check authentication first
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
 
     // Optimistic update: Toggle immediately
     const isCurrentlyFavorited = favoritedProducts.has(productId);
@@ -196,7 +190,7 @@ const Products = () => {
           autoClose: 2000,
         });
       }
-    } catch (err: unknown) {
+    } catch {
       // Revert on error
       setFavoritedProducts(prev => {
         const newSet = new Set(prev);
@@ -208,19 +202,10 @@ const Products = () => {
         return newSet;
       });
 
-      // Check if it's an authentication error
-      const error = err as { response?: { status?: number } };
-      if (error.response?.status === 401) {
-        toast.error(isRTL ? "يجب تسجيل الدخول لإضافة المنتج للمفضلة" : "Please login to add to favorites", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } else {
-        toast.error(isRTL ? "حدث خطأ" : "Something went wrong", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-      }
+      toast.error(isRTL ? "حدث خطأ" : "Something went wrong", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
@@ -731,6 +716,67 @@ const Products = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Login Required Modal */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowLoginModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+            >
+              <div className="text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                >
+                  <ShoppingCart className="w-10 h-10 text-white" />
+                </motion.div>
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  {isRTL ? "تسجيل الدخول مطلوب" : "Login Required"}
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  {isRTL
+                    ? "يجب تسجيل الدخول أولاً لإضافة المنتجات إلى السلة"
+                    : "Please login first to add products to your cart"}
+                </p>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowLoginModal(false)}
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                  >
+                    {isRTL ? "إلغاء" : "Cancel"}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/login")}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                  >
+                    {isRTL ? "تسجيل الدخول" : "Login"}
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

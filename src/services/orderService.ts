@@ -264,7 +264,11 @@ const mapStatus = (status: string): FrontendOrder['status'] => {
  * Transform API order item to frontend format
  */
 const transformOrderItem = (item: ApiOrderItem): FrontendOrderItem => {
-  const isResale = !!item.resale;
+  // Check if resale exists and is not an empty object
+  const hasValidResale = !!(item.resale && 
+    typeof item.resale === 'object' && 
+    Object.keys(item.resale).length > 0 &&
+    item.resale.plan_id !== undefined);
   
   return {
     id: item.id,
@@ -274,8 +278,8 @@ const transformOrderItem = (item: ApiOrderItem): FrontendOrderItem => {
     price: Number(item.unit_price),
     totalPrice: Number(item.total_price),
     image: item.product_image_base64,
-    isResale,
-    resale: isResale && item.resale ? {
+    isResale: hasValidResale,
+    resale: hasValidResale && item.resale ? {
       planId: item.resale.plan_id,
       months: item.resale.months,
       profitPercentage: Number(item.resale.profit_percentage),
@@ -287,18 +291,55 @@ const transformOrderItem = (item: ApiOrderItem): FrontendOrderItem => {
 };
 
 /**
+ * Helper to check if a value is a valid number (not empty object, null, or undefined)
+ */
+const isValidNumber = (value: unknown): boolean => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'object') return false;
+  const num = Number(value);
+  return !isNaN(num);
+};
+
+/**
  * Transform API order to frontend format (list view)
  */
 export const transformOrder = (order: ApiOrder): FrontendOrder => {
   const hasResale = order.type === 'resale' || order.type === 'mixed';
   const shippingCity = getShippingCity(order.shipping_city);
   const createdAtStr = parseLaravelDate(order.created_at);
-  const resaleReturnDateStr = typeof order.resale_return_date === 'string' 
-    ? order.resale_return_date 
-    : parseLaravelDate(order.resale_return_date);
+  
+  // Handle resale_return_date - check if it's empty object
+  const resaleReturnDateStr = 
+    typeof order.resale_return_date === 'string' && order.resale_return_date
+      ? order.resale_return_date
+      : (typeof order.resale_return_date === 'object' && order.resale_return_date && 'formatted' in order.resale_return_date)
+        ? parseLaravelDate(order.resale_return_date)
+        : null;
   
   // Transform items if available
   const items = order.items ? order.items.map(transformOrderItem) : [];
+  
+  // For mixed orders, calculate resale totals from items
+  let resaleExpectedReturn = 0;
+  let resaleProfitAmount = 0;
+  let hasResaleItems = false;
+  
+  if (order.type === 'mixed' && items.length > 0) {
+    // Calculate from resale items only
+    items.forEach(item => {
+      if (item.isResale && item.resale) {
+        hasResaleItems = true;
+        resaleExpectedReturn += item.resale.expectedReturn;
+        resaleProfitAmount += item.resale.profitAmount;
+      }
+    });
+  } else if (isValidNumber(order.resale_expected_return)) {
+    // Use order-level values for pure resale orders
+    resaleExpectedReturn = Number(order.resale_expected_return);
+    resaleProfitAmount = isValidNumber(order.resale_profit_amount) 
+      ? Number(order.resale_profit_amount) 
+      : 0;
+  }
   
   // Get shipping info (prefer shipping object over shipping_city)
   let shipping: FrontendOrder['shipping'] | undefined;
@@ -307,6 +348,9 @@ export const transformOrder = (order: ApiOrder): FrontendOrder => {
   } else if (shippingCity) {
     shipping = { name: null, phone: null, city: shippingCity, address: null };
   }
+  
+  // Determine if we have valid resale data
+  const hasValidResale = hasResale && (resaleExpectedReturn > 0 || hasResaleItems || resaleReturnDateStr);
   
   return {
     id: String(order.id),
@@ -318,13 +362,13 @@ export const transformOrder = (order: ApiOrder): FrontendOrder => {
     totalAmount: Number(order.total_amount),
     itemsCount: order.items_count,
     shipping,
-    resale: hasResale ? {
-      returnDate: resaleReturnDateStr || null,
-      expectedReturn: Number(order.resale_expected_return || 0),
-      profitAmount: Number(order.resale_profit_amount || 0),
-      returned: order.resale_returned || false,
+    resale: hasValidResale ? {
+      returnDate: resaleReturnDateStr,
+      expectedReturn: resaleExpectedReturn,
+      profitAmount: resaleProfitAmount,
+      returned: typeof order.resale_returned === 'boolean' ? order.resale_returned : false,
       returnedAt: null,
-      daysRemaining: calculateDaysRemaining(order.resale_return_date),
+      daysRemaining: resaleReturnDateStr ? calculateDaysRemaining(resaleReturnDateStr) : 0,
     } : undefined,
     notes: null,
     createdAt: createdAtStr,
@@ -349,23 +393,52 @@ export const transformOrderDetail = (order: ApiOrderDetail): FrontendOrder => {
   const createdAtStr = parseLaravelDate(order.created_at);
   const updatedAtStr = parseLaravelDate(order.updated_at);
   
+  // Transform items first
+  const items = order.items ? order.items.map(transformOrderItem) : [];
+  
+  // For mixed orders, calculate resale totals from items if order-level data is missing
+  let resaleExpectedReturn = 0;
+  let resaleProfitAmount = 0;
+  let resaleReturnDate: string | null = null;
+  let hasResaleItems = false;
+  
+  if (hasResale) {
+    // Check if order-level resale data exists and is valid
+    if (order.resale && isValidNumber(order.resale.expected_return) && Number(order.resale.expected_return) > 0) {
+      resaleExpectedReturn = Number(order.resale.expected_return);
+      resaleProfitAmount = isValidNumber(order.resale.profit_amount) ? Number(order.resale.profit_amount) : 0;
+      resaleReturnDate = order.resale.return_date || null;
+    } else if (items.length > 0) {
+      // Calculate from items for mixed orders
+      items.forEach(item => {
+        if (item.isResale && item.resale) {
+          hasResaleItems = true;
+          resaleExpectedReturn += item.resale.expectedReturn;
+          resaleProfitAmount += item.resale.profitAmount;
+        }
+      });
+    }
+  }
+  
+  const hasValidResale = hasResale && (resaleExpectedReturn > 0 || hasResaleItems);
+  
   return {
     id: String(order.id),
     orderNumber: order.order_number,
     type: order.type,
     status: mapStatus(order.status),
-    items: order.items ? order.items.map(transformOrderItem) : [],
+    items,
     subtotal: Number(order.subtotal),
     totalAmount: Number(order.total_amount),
-    itemsCount: order.items ? order.items.length : 0,
+    itemsCount: items.length,
     shipping: getValidShipping(order.shipping),
-    resale: hasResale && order.resale ? {
-      returnDate: order.resale.return_date,
-      expectedReturn: Number(order.resale.expected_return || 0),
-      profitAmount: Number(order.resale.profit_amount || 0),
-      returned: order.resale.returned,
-      returnedAt: order.resale.returned_at,
-      daysRemaining: calculateDaysRemaining(order.resale.return_date),
+    resale: hasValidResale ? {
+      returnDate: resaleReturnDate,
+      expectedReturn: resaleExpectedReturn,
+      profitAmount: resaleProfitAmount,
+      returned: order.resale?.returned || false,
+      returnedAt: order.resale?.returned_at || null,
+      daysRemaining: resaleReturnDate ? calculateDaysRemaining(resaleReturnDate) : 0,
     } : undefined,
     notes: order.notes,
     createdAt: createdAtStr,

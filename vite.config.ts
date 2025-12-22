@@ -10,7 +10,6 @@ export default defineConfig({
     basicSsl(),
   ],
   server: {
-    https: true,
     port: 5173,
   },
   build: {

@@ -285,9 +285,6 @@ const Login = () => {
                 {isLoading ? "..." : t("loginPage.loginButton")}
               </motion.button>
 
-              <p className="text-center text-sm text-gray-600">
-                {t("loginPage.adminHint")}: admin@gmail.com / admin123
-              </p>
             </motion.form>
           ) : (
             // Register Form

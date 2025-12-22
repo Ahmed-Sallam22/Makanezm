@@ -22,6 +22,9 @@ export interface CartItemResponse {
   id: number;
   product_id: number;
   quantity: number;
+  purchase_type: 'wallet' | 'resale';
+  resale_plan_id: number | null;
+  company_id: number | null;
   title: string | null;
   description: string | null;
   price: number | null;
@@ -31,6 +34,7 @@ export interface CartItemResponse {
   main_image_base64: string | null;
   payment_options: PaymentOption[];
   resale_plans: ResalePlan[];
+  selected_resale_plan: ResalePlan | null;
   created_at: string;
   updated_at: string;
 }
@@ -114,5 +118,20 @@ export const clearCart = async (): Promise<{
   message: string;
 }> => {
   const response = await api.delete('/cart');
+  return response.data;
+};
+
+// Update cart item purchase options (purchase_type, resale_plan_id, company_id)
+export interface UpdateCartOptionsPayload {
+  purchase_type?: 'wallet' | 'resale';
+  resale_plan_id?: number | null;
+  company_id?: number | null;
+}
+
+export const updateCartOptions = async (
+  productId: number,
+  options: UpdateCartOptionsPayload
+): Promise<SingleCartItemResponse> => {
+  const response = await api.patch(`/cart/${productId}/options`, options);
   return response.data;
 };

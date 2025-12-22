@@ -20,6 +20,8 @@ export interface CartItem {
   purchaseType: PurchaseType;
   // Selected resale plan (only used when purchaseType === 'resale')
   selectedResalePlan?: ResalePlan | null;
+  // Selected company for delivery
+  companyId?: number;
   // Legacy installment options (keeping for backward compatibility)
   allowInstallment?: boolean;
   installmentOptions?: InstallmentTier[];
@@ -148,6 +150,23 @@ export const clearCartAsync = createAsyncThunk(
   }
 );
 
+// Async thunk to update cart item options (purchase_type, resale_plan_id, company_id)
+export const updateCartOptionsAsync = createAsyncThunk(
+  "cart/updateCartOptionsAsync",
+  async (
+    { productId, options }: { productId: number; options: cartService.UpdateCartOptionsPayload },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await cartService.updateCartOptions(productId, options);
+      return { productId, data: response.data };
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || "Failed to update cart options");
+    }
+  }
+);
+
 // Helper to calculate totals
 // For wallet purchases: base price * quantity
 // For resale purchases: base price * quantity (investment amount - returns later with profit)
@@ -247,6 +266,16 @@ const cartSlice = createSlice({
       state.total = totals.total;
       state.installmentTotal = totals.installmentTotal;
     },
+    // Set company for a cart item
+    setItemCompany: (
+      state,
+      action: PayloadAction<{ id: number; companyId: number | undefined }>
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
+      if (item) {
+        item.companyId = action.payload.companyId;
+      }
+    },
     clearCart: (state) => {
       state.items = [];
       state.total = 0;
@@ -285,8 +314,12 @@ const cartSlice = createSlice({
           image: item.main_image_base64 || undefined,
           paymentOptions: item.payment_options || [],
           resalePlans: item.resale_plans || [],
-          purchaseType: 'wallet' as PurchaseType, // Default to wallet (direct purchase)
-          selectedResalePlan: null,
+          // Load saved purchase type from backend (default to 'wallet')
+          purchaseType: (item.purchase_type as PurchaseType) || 'wallet',
+          // Load saved resale plan from backend
+          selectedResalePlan: item.selected_resale_plan || null,
+          // Store company_id for reference
+          companyId: item.company_id || undefined,
         }));
         const totals = calculateTotals(state.items);
         state.total = totals.total;
@@ -393,6 +426,20 @@ const cartSlice = createSlice({
         state.items = [];
         state.total = 0;
         state.installmentTotal = 0;
+      })
+
+    // Update cart options async
+      .addCase(updateCartOptionsAsync.fulfilled, (state, action) => {
+        const { productId, data } = action.payload;
+        const item = state.items.find((i) => i.id === productId);
+        if (item) {
+          item.purchaseType = (data.purchase_type as PurchaseType) || 'wallet';
+          item.selectedResalePlan = data.selected_resale_plan || null;
+          item.companyId = data.company_id || undefined;
+        }
+        const totals = calculateTotals(state.items);
+        state.total = totals.total;
+        state.installmentTotal = totals.installmentTotal;
       });
   },
 });
@@ -403,6 +450,7 @@ export const {
   updateQuantity, 
   setItemInstallment,
   setItemPurchaseType,
+  setItemCompany,
   clearCart,
   resetSyncStatus,
   setLoading,

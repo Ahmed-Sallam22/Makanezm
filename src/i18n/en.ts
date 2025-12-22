@@ -213,14 +213,18 @@ export default {
         installmentFee: "Installment Fee",
         remove: "Remove item",
         // Purchase type options
+        orderOptions: "Order Options",
         purchaseType: "Choose purchase type",
         directPurchase: "Direct Purchase",
+        directPurchaseSelected: "Direct Purchase",
         investment: "Investment",
+        investmentSelected: "Investment Selected",
         directPurchaseNote: "Product will be shipped to you after purchase",
         // Company Selection
         deliveryPartner: "Company",
         selectDeliveryPartner: "Select company",
         selectDeliveryPartnerWarning: "Please select a company for each product in cart before checkout",
+        selectDeliveryPartnerHint: "Please select a delivery partner to complete the order",
         // Resale/Investment options
         selectResalePlan: "Select investment period",
         expectedReturn: "Expected Return",

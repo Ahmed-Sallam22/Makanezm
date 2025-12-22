@@ -211,14 +211,18 @@ export default {
         installmentFee: "رسوم التقسيط",
         remove: "إزالة المنتج",
         // خيارات نوع الشراء
+        orderOptions: "خيارات الطلب",
         purchaseType: "اختر نوع الشراء",
         directPurchase: "شراء مباشر",
+        directPurchaseSelected: "شراء مباشر",
         investment: "استثمار",
+        investmentSelected: "تم اختيار الاستثمار",
         directPurchaseNote: "سيتم شحن المنتج إليك بعد الشراء",
         // اختيار الشركة
         deliveryPartner: "شركة",
         selectDeliveryPartner: "اختر شركة",
         selectDeliveryPartnerWarning: "يرجى اختيار شركة لكل منتج في السلة قبل إتمام الطلب",
+        selectDeliveryPartnerHint: "يرجى اختيار شريك التوصيل لإتمام الطلب",
         // خيارات الاستثمار/إعادة البيع
         selectResalePlan: "اختر فترة الاستثمار",
         expectedReturn: "العائد المتوقع",

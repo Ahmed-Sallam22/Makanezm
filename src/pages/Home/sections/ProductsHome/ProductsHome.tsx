@@ -7,11 +7,12 @@ import {
   Check,
   Eye,
   Loader2,
+  Heart,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-import { addToCart, addToCartAsync } from "../../../../store/slices/cartSlice";
-import { getFeaturedProducts, type PublicProduct } from "../../../../services/productService";
+import { addToCartAsync } from "../../../../store/slices/cartSlice";
+import { getFeaturedProducts, toggleProductFavorite, type PublicProduct } from "../../../../services/productService";
 import test1 from "../../../../assets/images/test1.png";
 
 // Currency SVG Component
@@ -51,6 +52,12 @@ const ProductsHome = () => {
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // State for favorites
+  const [favoritedProducts, setFavoritedProducts] = useState<Set<number>>(new Set());
+
+  // State for login modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   // Fetch featured products from API (max 3 products)
   useEffect(() => {
     const fetchProducts = async () => {
@@ -58,6 +65,15 @@ const ProductsHome = () => {
         setLoading(true);
         const response = await getFeaturedProducts();
         setProducts(response.data);
+
+        // Initialize favorited products from API response
+        const favorited = new Set<number>();
+        response.data.forEach(product => {
+          if (product.is_favorited) {
+            favorited.add(product.id);
+          }
+        });
+        setFavoritedProducts(favorited);
       } catch (error) {
         console.error("Error fetching products:", error);
         toast.error(isRTL ? "فشل في تحميل المنتجات" : "Failed to load products");
@@ -69,37 +85,91 @@ const ProductsHome = () => {
     fetchProducts();
   }, [isRTL]);
 
-  const handleAddToCart = async (product: PublicProduct, e: React.MouseEvent) => {
+  const handleToggleFavorite = async (productId: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    const productName = isRTL ? product.nameAr : product.name;
 
-    if (isAuthenticated) {
-      try {
-        await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
-        setAddedProducts((prev) => [...prev, product.id]);
-        toast.success(t("products.addedToCart", { name: productName }), {
-          position: isRTL ? "top-left" : "top-right",
+    // Check authentication first
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    // Optimistic update: Toggle immediately
+    const isCurrentlyFavorited = favoritedProducts.has(productId);
+
+    setFavoritedProducts(prev => {
+      const newSet = new Set(prev);
+      if (isCurrentlyFavorited) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+
+    try {
+      const response = await toggleProductFavorite(productId);
+
+      // Sync with server response
+      setFavoritedProducts(prev => {
+        const newSet = new Set(prev);
+        if (response.data.is_favorited) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+
+      if (response.data.is_favorited) {
+        toast.success(isRTL ? "تمت الإضافة للمفضلة" : "Added to favorites", {
+          position: "top-right",
           autoClose: 2000,
         });
-      } catch (error) {
-        toast.error(String(error));
+      } else {
+        toast.success(isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites", {
+          position: "top-right",
+          autoClose: 2000,
+        });
       }
-    } else {
-      dispatch(
-        addToCart({
-          id: product.id,
-          name: productName,
-          price: product.price,
-          image: product.main_image_base64 || product.image || undefined,
-          allowInstallment: product.allowInstallment,
-          installmentOptions: product.installmentOptions,
-        })
-      );
+    } catch {
+      // Revert on error
+      setFavoritedProducts(prev => {
+        const newSet = new Set(prev);
+        if (isCurrentlyFavorited) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+
+      toast.error(isRTL ? "حدث خطأ" : "Something went wrong", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  };
+
+  const handleAddToCart = async (product: PublicProduct, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const productName = isRTL ? product.nameAr : product.name;
+
+    try {
+      await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
       setAddedProducts((prev) => [...prev, product.id]);
       toast.success(t("products.addedToCart", { name: productName }), {
         position: isRTL ? "top-left" : "top-right",
         autoClose: 2000,
       });
+    } catch (error) {
+      toast.error(String(error));
     }
 
     setTimeout(() => {
@@ -165,6 +235,7 @@ const ProductsHome = () => {
               >
                 {products.map((product, index) => {
                   const isFlipped = flippedCards.includes(product.id);
+                  const isFavorited = favoritedProducts.has(product.id);
                   return (
                     <motion.div
                       key={product.id}
@@ -203,6 +274,32 @@ const ProductsHome = () => {
                           className="absolute inset-0 w-full h-full bg-white rounded-xl shadow-lg overflow-hidden"
                           style={{ backfaceVisibility: "hidden" }}
                         >
+                          {/* Favorite Button */}
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => handleToggleFavorite(product.id, e)}
+                            className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${
+                              isFavorited
+                                ? "bg-[#F65331] text-white"
+                                : "bg-white/90 text-gray-400 hover:text-[#F65331]"
+                            } shadow-md backdrop-blur-sm`}
+                          >
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={isFavorited ? "favorited" : "not-favorited"}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                              >
+                                <Heart
+                                  className="w-5 h-5"
+                                  fill={isFavorited ? "currentColor" : "none"}
+                                />
+                              </motion.div>
+                            </AnimatePresence>
+                          </motion.button>
+
                           {/* Product Image */}
                           <div className="w-full h-48 flex items-center justify-center bg-gray-50">
                             <img
@@ -342,6 +439,32 @@ const ProductsHome = () => {
                             transform: "rotateY(180deg)",
                           }}
                         >
+                          {/* Favorite Button on back */}
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => handleToggleFavorite(product.id, e)}
+                            className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${
+                              isFavorited
+                                ? "bg-[#F65331] text-white"
+                                : "bg-white/20 text-white hover:bg-white/30"
+                            } shadow-md backdrop-blur-sm`}
+                          >
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={isFavorited ? "favorited" : "not-favorited"}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                              >
+                                <Heart
+                                  className="w-5 h-5"
+                                  fill={isFavorited ? "currentColor" : "none"}
+                                />
+                              </motion.div>
+                            </AnimatePresence>
+                          </motion.button>
+
                           {/* Product Name */}
                           <h3 className="text-2xl font-bold text-white mb-4 text-center">
                             {isRTL ? product.nameAr : product.name}
@@ -424,6 +547,67 @@ const ProductsHome = () => {
           </>
         )}
       </div>
+
+      {/* Login Required Modal */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowLoginModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+            >
+              <div className="text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                >
+                  <ShoppingCart className="w-10 h-10 text-white" />
+                </motion.div>
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  {isRTL ? "تسجيل الدخول مطلوب" : "Login Required"}
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  {isRTL
+                    ? "يجب تسجيل الدخول أولاً لإضافة المنتجات إلى السلة"
+                    : "Please login first to add products to your cart"}
+                </p>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowLoginModal(false)}
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                  >
+                    {isRTL ? "إلغاء" : "Cancel"}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/login")}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                  >
+                    {isRTL ? "تسجيل الدخول" : "Login"}
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.section>
   );
 };

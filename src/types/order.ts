@@ -44,15 +44,21 @@ export interface ResaleDetails {
 // Order type: sale = direct purchase, resale = investment
 export type OrderType = 'sale' | 'resale' | 'mixed';
 
-// Order status including investment statuses
+// Order status (simplified):
+// - pending: awaiting confirmation
+// - confirmed: final status for wallet/sale orders
+// - invested: status for resale/investment orders
+// - cancelled: order cancelled
+// Legacy statuses kept for backwards compatibility
 export type OrderStatus = 
   | 'pending' 
+  | 'confirmed'
+  | 'invested'
+  | 'cancelled'
+  // Legacy statuses (kept for backwards compatibility)
   | 'processing' 
   | 'shipped' 
   | 'delivered' 
-  | 'cancelled'
-  | 'confirmed'
-  | 'invested'
   | 'completed';
 
 export interface Order {

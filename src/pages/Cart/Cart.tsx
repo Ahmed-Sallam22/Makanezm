@@ -9,12 +9,14 @@ import {
   removeFromCart,
   updateQuantity,
   setItemPurchaseType,
+  setItemCompany,
   fetchCart,
+  addToCartAsync,
   increaseQuantityAsync,
   decreaseQuantityAsync,
   removeFromCartAsync,
+  updateCartOptionsAsync,
 } from "../../store/slices/cartSlice";
-import type { ResalePlan } from "../../services/cartService";
 import { initiatePayment, type PaymentPayload } from "../../services/paymentService";
 import { getActiveCompanies, type Company } from "../../services/companyService";
 import { validateDiscountCode } from "../../services/discountService";
@@ -28,9 +30,6 @@ const Cart = () => {
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart.items);
   const total = useAppSelector((state) => state.cart.total);
-  const installmentTotal = useAppSelector(
-    (state) => state.cart.installmentTotal
-  );
   const cartLoading = useAppSelector((state) => state.cart.loading);
   const cartSynced = useAppSelector((state) => state.cart.synced);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -38,19 +37,70 @@ const Cart = () => {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountLoading, setDiscountLoading] = useState(false);
 
-  // Fetch cart from backend if authenticated and not yet synced
-  useEffect(() => {
-    if (isAuthenticated && !cartSynced) {
-      dispatch(fetchCart());
-    }
-  }, [isAuthenticated, cartSynced, dispatch]);
+  // Global cart options - applies to all items
+  const [globalPurchaseType, setGlobalPurchaseType] = useState<'wallet' | 'resale'>('wallet');
+  const [globalCompanyId, setGlobalCompanyId] = useState<number | null>(null);
 
-  // Check if any item has resale (investment) selected
-  const hasResaleItems = cartItems.some(
-    (item) => item.purchaseType === 'resale' && item.selectedResalePlan
+  // Fetch cart from backend if authenticated and not yet synced
+  // Also sync local cart items to backend after login
+  useEffect(() => {
+    const syncCartAfterLogin = async () => {
+      if (isAuthenticated && !cartSynced) {
+        // If there are local cart items before login, add them to backend first
+        if (cartItems.length > 0) {
+          try {
+            // Add each local item to backend cart
+            for (const item of cartItems) {
+              await dispatch(addToCartAsync({ productId: item.id, quantity: item.quantity })).unwrap();
+              
+              // If item has specific options (purchase type, company, resale plan), update them
+              if (item.purchaseType || item.companyId || item.selectedResalePlan) {
+                await dispatch(updateCartOptionsAsync({
+                  productId: item.id,
+                  options: {
+                    purchase_type: item.purchaseType,
+                    company_id: item.companyId,
+                    resale_plan_id: item.selectedResalePlan?.id,
+                  }
+                })).unwrap();
+              }
+            }
+          } catch (error) {
+            console.error("Failed to sync local cart to backend:", error);
+          }
+        }
+        
+        // Then fetch the complete cart from backend (which now includes local items)
+        dispatch(fetchCart());
+      }
+    };
+    
+    syncCartAfterLogin();
+  }, [isAuthenticated, cartSynced, dispatch, cartItems]);
+
+  // Check if any item has resale plans available
+  const hasAnyResalePlans = cartItems.some(
+    (item) => item.resalePlans && item.resalePlans.length > 0
   );
-  // Calculate expected profit from resale items
-  const expectedProfit = hasResaleItems ? installmentTotal - total : 0;
+
+  // Check if global resale is selected
+  const hasResaleItems = globalPurchaseType === 'resale' && hasAnyResalePlans;
+
+  // Calculate expected profit from resale items (use selected plan or first plan for each item)
+  const calculateExpectedProfit = () => {
+    if (!hasResaleItems) return 0;
+    return cartItems.reduce((profit, item) => {
+      if (item.resalePlans && item.resalePlans.length > 0) {
+        // Use item's selected resale plan if available, otherwise use first plan
+        const plan = item.selectedResalePlan || item.resalePlans[0];
+        const itemTotal = item.price * item.quantity;
+        const expectedReturn = plan.expected_return * item.quantity;
+        return profit + (expectedReturn - itemTotal);
+      }
+      return profit;
+    }, 0);
+  };
+  const expectedProfit = calculateExpectedProfit();
 
   const handleRemoveItem = async (id: number, name: string) => {
     if (isAuthenticated) {
@@ -135,9 +185,9 @@ const Cart = () => {
   const finalTotal = effectiveTotal - discountAmount;
 
   // Check if cart has wallet items (requires shipping)
-  const hasWalletItems = cartItems.some(item => item.purchaseType === 'wallet');
+  const hasWalletItems = globalPurchaseType === 'wallet';
   // Check if cart has only investment items (no shipping needed)
-  const isPureInvestment = !hasWalletItems && hasResaleItems;
+  const isPureInvestment = globalPurchaseType === 'resale' && hasAnyResalePlans;
 
   // Modal states
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -148,10 +198,9 @@ const Cart = () => {
   const [additionalPhones, setAdditionalPhones] = useState<string[]>([]);
   const [shippingAddress, setShippingAddress] = useState("");
 
-  // Company selection state - each item needs a company
+  // Company selection state - load from companies API
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companiesLoading, setCompaniesLoading] = useState(false);
-  const [itemCompanies, setItemCompanies] = useState<Record<number, number>>({}); // productId -> companyId
 
   // Fetch companies on page load for cart item selection
   useEffect(() => {
@@ -173,13 +222,91 @@ const Cart = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update company selection for an item
-  const handleItemCompanyChange = (productId: number, companyId: number) => {
-    setItemCompanies(prev => ({ ...prev, [productId]: companyId }));
+  // Handle global company change
+  const handleGlobalCompanyChange = (companyId: number) => {
+    setGlobalCompanyId(companyId);
+    // Update all items with the selected company
+    cartItems.forEach(item => {
+      dispatch(setItemCompany({ id: item.id, companyId }));
+    });
+    
+    // Save to backend if authenticated
+    if (isAuthenticated) {
+      cartItems.forEach(async (item) => {
+        try {
+          await dispatch(updateCartOptionsAsync({
+            productId: item.id,
+            options: { company_id: companyId }
+          })).unwrap();
+        } catch (error) {
+          console.error("Failed to save company selection:", error);
+        }
+      });
+    }
   };
 
-  // Check if all items have companies selected
-  const allItemsHaveCompanies = cartItems.every(item => itemCompanies[item.id]);
+  // Handle global purchase type change
+  const handleGlobalPurchaseTypeChange = async (purchaseType: 'wallet' | 'resale') => {
+    setGlobalPurchaseType(purchaseType);
+    
+    // Update all items with the selected purchase type
+    cartItems.forEach(item => {
+      const resalePlan = purchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0
+        ? item.resalePlans[0]
+        : null;
+      dispatch(setItemPurchaseType({ id: item.id, purchaseType, resalePlan }));
+    });
+    
+    // Save to backend if authenticated
+    if (isAuthenticated) {
+      cartItems.forEach(async (item) => {
+        try {
+          const resalePlan = purchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0
+            ? item.resalePlans[0]
+            : null;
+          await dispatch(updateCartOptionsAsync({
+            productId: item.id,
+            options: {
+              purchase_type: purchaseType,
+              resale_plan_id: resalePlan ? resalePlan.id : null,
+            }
+          })).unwrap();
+        } catch (error) {
+          console.error("Failed to save purchase type:", error);
+        }
+      });
+    }
+  };
+
+  // Handle per-item resale plan selection (when global is resale)
+  const handleItemResalePlanChange = async (productId: number, planId: number) => {
+    const item = cartItems.find(i => i.id === productId);
+    if (!item || !item.resalePlans) return;
+    
+    const selectedPlan = item.resalePlans.find(p => p.id === planId);
+    if (!selectedPlan) return;
+    
+    // Update local state
+    dispatch(setItemPurchaseType({ id: productId, purchaseType: 'resale', resalePlan: selectedPlan }));
+    
+    // Save to backend if authenticated
+    if (isAuthenticated) {
+      try {
+        await dispatch(updateCartOptionsAsync({
+          productId,
+          options: {
+            purchase_type: 'resale',
+            resale_plan_id: planId,
+          }
+        })).unwrap();
+      } catch (error) {
+        console.error("Failed to save resale plan selection:", error);
+      }
+    }
+  };
+
+  // Check if global company is selected
+  const hasGlobalCompany = globalCompanyId !== null;
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
@@ -196,9 +323,9 @@ const Cart = () => {
   };
 
   const handleConfirmCheckout = async () => {
-    // Validate company selection for all items
-    if (!allItemsHaveCompanies) {
-      toast.error(t("checkout.selectCompanyForAll") || "Please select a company for each product");
+    // Validate company selection - global company
+    if (!hasGlobalCompany) {
+      toast.error(t("checkout.selectCompanyForAll") || "Please select a delivery partner");
       return;
     }
 
@@ -213,17 +340,21 @@ const Cart = () => {
     setCheckoutLoading(true);
 
     try {
-      // Build payment payload
+      // Build payment payload - apply global options to all items
       const payload: PaymentPayload = {
-        items: cartItems.map(item => ({
-          product_id: item.id,
-          quantity: item.quantity,
-          purchase_type: item.purchaseType,
-          resale_plan_id: item.purchaseType === 'resale' && item.selectedResalePlan 
-            ? item.selectedResalePlan.id 
-            : null,
-          company_id: itemCompanies[item.id],
-        })),
+        items: cartItems.map(item => {
+          // Use item's selected resale plan if available, otherwise use first plan
+          const resalePlan = globalPurchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0
+            ? (item.selectedResalePlan || item.resalePlans[0])
+            : null;
+          return {
+            product_id: item.id,
+            quantity: item.quantity,
+            purchase_type: globalPurchaseType,
+            resale_plan_id: resalePlan ? resalePlan.id : null,
+            company_id: globalCompanyId,
+          };
+        }),
         discount_percent: discountPercent,
         discount_code: discountCode || undefined,
       };
@@ -334,15 +465,150 @@ const Cart = () => {
           </motion.div>
         ) : !cartLoading && (
           <div className="space-y-6">
-            {/* Cart Items */}
+            {/* Global Cart Options - Purchase Type & Company */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-lg p-6"
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-4 text-right flex items-center justify-end gap-2">
+                <span>{t("cart.orderOptions") || "خيارات الطلب"}</span>
+                <ShoppingCart className="w-5 h-5 text-[#F65331]" />
+              </h3>
+
+              {/* Purchase Type Selection */}
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 text-right mb-3 font-medium">
+                  {t("cart.purchaseType")}
+                </p>
+                <div className="flex flex-wrap gap-3 justify-end">
+                  {/* Wallet (Direct Purchase) option */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleGlobalPurchaseTypeChange('wallet')}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all ${
+                      globalPurchaseType === 'wallet'
+                        ? "bg-[#384B97] text-white shadow-lg"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Wallet className="w-5 h-5" />
+                    {t("cart.directPurchase")}
+                  </motion.button>
+
+                  {/* Resale (Investment) option - only show if any item has resale plans */}
+                  {hasAnyResalePlans && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleGlobalPurchaseTypeChange('resale')}
+                      className={`flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all ${
+                        globalPurchaseType === 'resale'
+                          ? "bg-[#F65331] text-white shadow-lg"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <TrendingUp className="w-5 h-5" />
+                      {t("cart.investment")}
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Investment Info */}
+                {globalPurchaseType === 'resale' && hasAnyResalePlans && (
+                  <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
+                    <div className="flex items-center justify-end gap-2 mb-2">
+                      <span className="text-green-700 font-bold">{t("cart.investmentSelected") || "تم اختيار الاستثمار"}</span>
+                      <PiggyBank className="w-5 h-5 text-green-600" />
+                    </div>
+                    <p className="text-sm text-gray-600 text-right">
+                      {t("cart.investmentNote")}
+                    </p>
+                    {expectedProfit > 0 && (
+                      <div className="mt-3 pt-3 border-t border-green-200">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-green-700 font-bold">
+                            +{Math.round(expectedProfit)} {t("cart.riyal")}
+                          </span>
+                          <span className="text-gray-600">{t("cart.expectedProfitLabel")}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Direct Purchase Info */}
+                {globalPurchaseType === 'wallet' && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center justify-end gap-2 mb-2">
+                      <span className="text-[#384B97] font-bold">{t("cart.directPurchaseSelected") || "شراء مباشر"}</span>
+                      <Truck className="w-5 h-5 text-[#384B97]" />
+                    </div>
+                    <p className="text-sm text-gray-600 text-right">
+                      {t("cart.directPurchaseNote")}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Global Company/Delivery Partner Selection */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="relative flex-1">
+                    {companiesLoading ? (
+                      <div className="flex items-center justify-center py-3">
+                        <Loader2 className="w-6 h-6 animate-spin text-[#384B97]" />
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <select
+                          value={globalCompanyId || ""}
+                          onChange={(e) => handleGlobalCompanyChange(Number(e.target.value))}
+                          className={`w-full px-4 py-3 rounded-xl text-right appearance-none cursor-pointer transition-all duration-200 pr-4 pl-12 text-base ${
+                            globalCompanyId
+                              ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 text-green-800 font-medium"
+                              : "bg-gray-50 border-2 border-gray-200 text-gray-600 hover:border-[#384B97] hover:bg-blue-50"
+                          } focus:outline-none focus:ring-2 focus:ring-[#384B97]/20`}
+                        >
+                          <option value="">{t("cart.selectDeliveryPartner") || "اختر شريك التوصيل"}</option>
+                          {companies.map((company) => (
+                            <option key={company.id} value={company.id}>
+                              {company.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          {globalCompanyId ? (
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          ) : (
+                            <Building2 className="w-6 h-6 text-gray-400" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-right shrink-0">
+                    <span className="text-base font-medium text-gray-700">
+                      {t("cart.deliveryPartner") || "شريك التوصيل"}
+                    </span>
+                    <Truck className="w-6 h-6 text-[#384B97]" />
+                  </div>
+                </div>
+                
+                {!globalCompanyId && (
+                  <p className="text-sm text-amber-600 mt-2 text-right flex items-center justify-end gap-1">
+                    <span>{t("cart.selectDeliveryPartnerHint") || "يرجى اختيار شريك التوصيل لإتمام الطلب"}</span>
+                    <AlertCircle className="w-4 h-4" />
+                  </p>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Cart Items - Simplified */}
             <div className="space-y-4">
               {cartItems.map((item, index) => {
-                const hasResalePlans = item.resalePlans && item.resalePlans.length > 0;
                 const itemTotal = item.price * item.quantity;
-                const expectedReturn = item.selectedResalePlan 
-                  ? item.selectedResalePlan.expected_return * item.quantity
-                  : itemTotal;
-                const profitAmount = expectedReturn - itemTotal;
 
                 return (
                   <motion.div
@@ -378,167 +644,74 @@ const Cart = () => {
                         <h3 className="text-xl font-bold text-gray-800 mb-2 text-right">
                           {item.name}
                         </h3>
-
-                        {/* Purchase Type Options: Wallet (Direct) or Resale (Investment) */}
-                        <div className="mb-3">
-                          <p className="text-sm text-gray-500 text-right mb-2">
-                            {t("cart.purchaseType")}
-                          </p>
-                          <div className="flex flex-wrap gap-2 justify-end">
-                            {/* Wallet (Direct Purchase) option */}
-                            <button
-                              onClick={() =>
-                                dispatch(
-                                  setItemPurchaseType({
-                                    id: item.id,
-                                    purchaseType: 'wallet',
-                                  })
-                                )
-                              }
-                              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                item.purchaseType === 'wallet'
-                                  ? "bg-[#384B97] text-white shadow-md"
-                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                              }`}
-                            >
+                        
+                        {/* Show item type badge based on global selection */}
+                        <div className="flex items-center gap-2 justify-end">
+                          {globalPurchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                              <TrendingUp className="w-4 h-4" />
+                              {t("cart.investment")}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-[#384B97] rounded-full text-sm font-medium">
                               <Wallet className="w-4 h-4" />
                               {t("cart.directPurchase")}
-                            </button>
+                            </span>
+                          )}
+                        </div>
 
-                            {/* Resale (Investment) option - only show if has resale plans */}
-                            {hasResalePlans && (
-                              <button
-                                onClick={() => {
-                                  const firstPlan = item.resalePlans![0];
-                                  dispatch(
-                                    setItemPurchaseType({
-                                      id: item.id,
-                                      purchaseType: 'resale',
-                                      resalePlan: firstPlan,
-                                    })
-                                  );
-                                }}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                  item.purchaseType === 'resale'
-                                    ? "bg-[#F65331] text-white shadow-md"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                }`}
-                              >
-                                <TrendingUp className="w-4 h-4" />
-                                {t("cart.investment")}
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Resale Plan Selection - show only if resale is selected */}
-                          {item.purchaseType === 'resale' && hasResalePlans && (
-                            <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                              <p className="text-sm text-green-700 font-semibold text-right mb-2">
-                                {t("cart.selectResalePlan")}
-                              </p>
-                              <div className="flex flex-wrap gap-2 justify-end">
-                                {item.resalePlans?.map((plan: ResalePlan) => (
+                        {/* Resale Plan Selector - Show when global is resale and item has plans */}
+                        {globalPurchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0 && (
+                          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm text-green-700 font-semibold text-right mb-2">
+                              {t("cart.selectResalePlan") || "اختر خطة الاستثمار"}
+                            </p>
+                            <div className="flex flex-wrap gap-2 justify-end">
+                              {item.resalePlans.map((plan) => {
+                                const isSelected = item.selectedResalePlan?.id === plan.id || 
+                                  (!item.selectedResalePlan && plan.id === item.resalePlans![0].id);
+                                return (
                                   <button
                                     key={plan.id}
-                                    onClick={() =>
-                                      dispatch(
-                                        setItemPurchaseType({
-                                          id: item.id,
-                                          purchaseType: 'resale',
-                                          resalePlan: plan,
-                                        })
-                                      )
-                                    }
+                                    onClick={() => handleItemResalePlanChange(item.id, plan.id)}
                                     className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                                      item.selectedResalePlan?.id === plan.id
+                                      isSelected
                                         ? "bg-green-600 text-white shadow-md"
                                         : "bg-white text-gray-700 border border-green-300 hover:bg-green-100"
                                     }`}
                                   >
-                                    <span className="font-bold">{plan.months}</span> {t("cart.months")}
+                                    <span className="font-bold">{plan.months}</span> {t("cart.months") || "شهر"}
                                     <span className="mx-1">•</span>
-                                    <span className="text-black-600 font-semibold">+{plan.profit_percentage}%</span>
+                                    <span className="font-semibold">+{plan.profit_percentage}%</span>
                                   </button>
-                                ))}
-                              </div>
+                                );
+                              })}
+                            </div>
 
-                              {/* Show expected return */}
-                              {item.selectedResalePlan && (
+                            {/* Show expected return for this item */}
+                            {(() => {
+                              const selectedPlan = item.selectedResalePlan || item.resalePlans[0];
+                              const itemProfit = (selectedPlan.expected_return - item.price) * item.quantity;
+                              const expectedReturn = selectedPlan.expected_return * item.quantity;
+                              return (
                                 <div className="mt-3 pt-2 border-t border-green-200 text-right">
                                   <div className="flex justify-between items-center text-sm">
                                     <span className="text-green-700 font-bold">
                                       {Math.round(expectedReturn)} {t("cart.riyal")}
                                     </span>
-                                    <span className="text-gray-600">{t("cart.expectedReturn")}</span>
+                                    <span className="text-gray-600">{t("cart.expectedReturn") || "العائد المتوقع"}</span>
                                   </div>
                                   <div className="flex justify-between items-center text-sm mt-1">
                                     <span className="text-green-600 font-semibold">
-                                      +{Math.round(profitAmount)} {t("cart.riyal")}
+                                      +{Math.round(itemProfit)} {t("cart.riyal")}
                                     </span>
-                                    <span className="text-gray-500">{t("cart.yourProfit")}</span>
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-2 text-right">
-                                    {t("cart.investmentNote")}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Direct Purchase Info */}
-                          {item.purchaseType === 'wallet' && (
-                            <div className="mt-2 text-right text-sm text-[#384B97]">
-                              <span className="text-gray-600">
-                                {t("cart.directPurchaseNote")}
-                              </span>
-                            </div>
-                          )}
-
-                        {/* Delivery Partner Selection - Modern Dropdown */}
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="relative flex-1">
-                              {companiesLoading ? (
-                                <div className="flex items-center justify-center py-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-[#384B97]" />
-                                </div>
-                              ) : (
-                                <div className="relative">
-                                  <select
-                                    value={itemCompanies[item.id] || ""}
-                                    onChange={(e) => handleItemCompanyChange(item.id, Number(e.target.value))}
-                                    className={`w-full px-4 py-2.5 rounded-xl text-right appearance-none cursor-pointer transition-all duration-200 pr-4 pl-10 ${
-                                      itemCompanies[item.id]
-                                        ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 text-green-800 font-medium"
-                                        : "bg-gray-50 border-2 border-gray-200 text-gray-600 hover:border-[#384B97] hover:bg-blue-50"
-                                    } focus:outline-none focus:ring-2 focus:ring-[#384B97]/20`}
-                                  >
-                                    <option value="">{t("cart.selectDeliveryPartner") || "اختر شريك التوصيل"}</option>
-                                    {companies.map((company) => (
-                                      <option key={company.id} value={company.id}>
-                                        {company.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                    {itemCompanies[item.id] ? (
-                                      <CheckCircle className="w-5 h-5 text-green-500" />
-                                    ) : (
-                                      <Building2 className="w-5 h-5 text-gray-400" />
-                                    )}
+                                    <span className="text-gray-500">{t("cart.yourProfit") || "ربحك"}</span>
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-right shrink-0">
-                              <span className="text-sm font-medium text-gray-700">
-                                {t("cart.deliveryPartner") || "شريك التوصيل"}
-                              </span>
-                              <Truck className="w-5 h-5 text-[#384B97]" />
-                            </div>
+                              );
+                            })()}
                           </div>
-                        </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Price and Quantity - Left Side */}
@@ -550,13 +723,6 @@ const Cart = () => {
                           <span className="text-gray-600 mr-1">
                             {t("cart.riyal")}
                           </span>
-                          {/* Show investment badge if resale selected */}
-                          {item.purchaseType === 'resale' && item.selectedResalePlan && (
-                            <div className="text-xs text-green-600 font-semibold mt-1">
-                              <TrendingUp className="w-3 h-3 inline mr-1" />
-                              {t("cart.investment")}
-                            </div>
-                          )}
                         </div>
 
                         {/* Quantity Controls */}
@@ -664,10 +830,11 @@ const Cart = () => {
               {/* Action Buttons */}
               <div className="flex gap-3 mb-4">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: !hasGlobalCompany ? 1 : 1.02 }}
+                  whileTap={{ scale: !hasGlobalCompany ? 1 : 0.98 }}
                   onClick={handleCheckout}
-                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] transition-all"
+                  disabled={!hasGlobalCompany}
+                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t("cart.checkout")}
                 </motion.button>
@@ -680,6 +847,16 @@ const Cart = () => {
                   {t("cart.continueShopping")}
                 </motion.button>
               </div>
+
+              {/* Validation Messages */}
+              {!hasGlobalCompany && (
+                <div className="mb-4">
+                  <p className="text-sm text-amber-600 text-right flex items-center justify-end gap-1">
+                    <span>{t("cart.selectDeliveryPartnerHint") || "يرجى اختيار شريك التوصيل لإتمام الطلب"}</span>
+                    <AlertCircle className="w-4 h-4" />
+                  </p>
+                </div>
+              )}
 
               {/* Total */}
               <div className="border-t-2 border-gray-200 pt-4 flex justify-between text-2xl font-bold">
@@ -797,11 +974,11 @@ const Cart = () => {
                 </div>
               )}
 
-              {/* Warning if not all items have delivery partners selected */}
-              {!allItemsHaveCompanies && (
+              {/* Warning if delivery partner not selected */}
+              {!hasGlobalCompany && (
                 <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-yellow-800 text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-right flex-1">{t("cart.selectDeliveryPartnerWarning") || "يرجى اختيار شريك توصيل لكل منتج في السلة قبل إتمام الطلب"}</span>
+                  <span className="text-right flex-1">{t("cart.selectDeliveryPartnerWarning") || "يرجى اختيار شريك التوصيل قبل إتمام الطلب"}</span>
                 </div>
               )}
 
@@ -820,7 +997,7 @@ const Cart = () => {
                       </span>
                       <div className="text-right flex items-center gap-2">
                         <span>{item.name} × {item.quantity}</span>
-                        {item.purchaseType === 'resale' ? (
+                        {globalPurchaseType === 'resale' && item.resalePlans && item.resalePlans.length > 0 ? (
                           <TrendingUp className="w-4 h-4 text-green-600" />
                         ) : (
                           <Wallet className="w-4 h-4 text-[#384B97]" />
@@ -883,10 +1060,10 @@ const Cart = () => {
                   {t("checkout.cancel") || "إلغاء"}
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: (!allItemsHaveCompanies || checkoutLoading || companiesLoading) ? 1 : 1.02 }}
-                  whileTap={{ scale: (!allItemsHaveCompanies || checkoutLoading || companiesLoading) ? 1 : 0.98 }}
+                  whileHover={{ scale: (!hasGlobalCompany || checkoutLoading || companiesLoading) ? 1 : 1.02 }}
+                  whileTap={{ scale: (!hasGlobalCompany || checkoutLoading || companiesLoading) ? 1 : 0.98 }}
                   onClick={handleConfirmCheckout}
-                  disabled={checkoutLoading || companiesLoading || !allItemsHaveCompanies}
+                  disabled={checkoutLoading || companiesLoading || !hasGlobalCompany}
                   className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {checkoutLoading ? (

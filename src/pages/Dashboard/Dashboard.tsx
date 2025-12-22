@@ -29,7 +29,6 @@ import {
   BarChart3,
   Type,
   Loader2,
-  TrendingDown,
   CreditCard,
   Landmark,
   Plus,
@@ -272,7 +271,8 @@ const Dashboard = () => {
     }
   }, [activeTab, t]);
 
-  const tabs: Array<{
+  // User tabs - visible to all authenticated users
+  const userTabs: Array<{
     id: TabType;
     icon: React.ComponentType<{ className?: string }>;
     label: string;
@@ -282,65 +282,88 @@ const Dashboard = () => {
         icon: LayoutDashboard,
         label: t("dashboard.tabs.overview"),
       },
-      { id: "orders" as TabType, icon: ShoppingBag, label: t("dashboard.tabs.orders") },
-      { id: "investments" as TabType, icon: TrendingUp, label: t("dashboard.tabs.investments") },
-      { id: "products" as TabType, icon: Package, label: t("dashboard.tabs.products") },
       {
         id: "merchantOrders" as TabType,
         icon: DollarSign,
         label: t("dashboard.tabs.merchantOrders"),
       },
-      { id: "reports" as TabType, icon: BarChart3, label: t("dashboard.tabs.reports") },
-      { id: "profile" as TabType, icon: User, label: t("dashboard.tabs.profile") },
-      { id: "merchant" as TabType, icon: Building2, label: t("dashboard.tabs.merchant") },
+      { 
+        id: "investments" as TabType, 
+        icon: TrendingUp, 
+        label: t("dashboard.tabs.investments") 
+      },
+      { 
+        id: "profile" as TabType, 
+        icon: User, 
+        label: t("dashboard.tabs.profile") 
+      },
+      { 
+        id: "settings" as TabType, 
+        icon: Settings, 
+        label: t("dashboard.tabs.settings") 
+      },
+    ];
+
+  // Admin-only tabs - only visible to admins
+  const adminTabs: Array<{
+    id: TabType;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+  }> = [
+      { 
+        id: "orders" as TabType, 
+        icon: ShoppingBag, 
+        label: t("dashboard.tabs.orders") 
+      },
+      { 
+        id: "users" as TabType, 
+        icon: Users, 
+        label: t("dashboard.tabs.users") 
+      },
+      { 
+        id: "products" as TabType, 
+        icon: Shield, 
+        label: t("dashboard.tabs.products") 
+      },
       {
         id: "partnerships" as TabType,
         icon: Handshake,
         label: t("dashboard.tabs.partnerships"),
       },
-      { id: "seasonal" as TabType, icon: Calendar, label: t("dashboard.tabs.seasonal") },
-      { id: "deferred" as TabType, icon: DollarSign, label: t("dashboard.tabs.deferred") },
-      { id: "settings" as TabType, icon: Settings, label: t("dashboard.tabs.settings") },
+      { 
+        id: "sliders" as TabType, 
+        icon: Image, 
+        label: t("dashboard.tabs.sliders") 
+      },
+      { 
+        id: "marquee" as TabType, 
+        icon: Type, 
+        label: t("dashboard.tabs.marquee") 
+      },
+      { 
+        id: "payouts" as TabType, 
+        icon: DollarSign, 
+        label: t("dashboard.tabs.payouts") 
+      },
+      { 
+        id: "reports" as TabType, 
+        icon: BarChart3, 
+        label: t("dashboard.tabs.reports") 
+      },
+      { 
+        id: "contact" as TabType, 
+        icon: Mail, 
+        label: t("dashboard.tabs.contact") 
+      },
+      { 
+        id: "discounts" as TabType, 
+        icon: Percent, 
+        label: t("dashboard.tabs.discounts") 
+      },
     ];
 
-  // Admin-only tabs
-  if (user?.role === "ADMIN") {
-    tabs.push({
-      id: "payouts" as TabType,
-      icon: DollarSign,
-      label: t("dashboard.tabs.payouts"),
-    });
-    tabs.push({
-      id: "adminProducts" as TabType,
-      icon: Shield,
-      label: t("dashboard.tabs.adminProducts"),
-    });
-    tabs.push({
-      id: "users" as TabType,
-      icon: Users,
-      label: t("dashboard.tabs.users"),
-    });
-    tabs.push({
-      id: "sliders" as TabType,
-      icon: Image,
-      label: t("dashboard.tabs.sliders"),
-    });
-    tabs.push({
-      id: "marquee" as TabType,
-      icon: Type,
-      label: t("dashboard.tabs.marquee"),
-    });
-    tabs.push({
-      id: "contact" as TabType,
-      icon: Mail,
-      label: t("dashboard.tabs.contact"),
-    });
-    tabs.push({
-      id: "discounts" as TabType,
-      icon: Percent,
-      label: t("dashboard.tabs.discounts"),
-    });
-  }
+  // Combine tabs based on user role
+  const tabs = user?.role === "ADMIN" ? [...userTabs, ...adminTabs] : userTabs;
 
   const handleSaveProfile = async () => {
     try {
@@ -554,7 +577,7 @@ const Dashboard = () => {
               {t("dashboard.title")}
             </h1>
             <p className="text-gray-600">
-              {t("dashboard.welcome", { name: user?.name })}
+              {t("dashboard.welcome", { name: user?.email })}
             </p>
           </motion.div>
 
@@ -616,8 +639,8 @@ const Dashboard = () => {
                           {(stats?.revenue.total || 0).toFixed(2)} {t("common.currency")}
                         </p>
                         <div className="flex items-center justify-between text-sm text-green-100">
-                          <span>{isArabic ? "الأرباح" : "Profit"}: {(stats?.revenue.profit || 0).toFixed(2)}</span>
-                          <span className={`flex items-center gap-1 ${(stats?.growth.revenue || 0) >= 0 ? "" : "text-red-200"
+                          {/* <span>{isArabic ? "الأرباح" : "Profit"}: {(stats?.revenue.profit || 0).toFixed(2)}</span> */}
+                          {/* <span className={`flex items-center gap-1 ${(stats?.growth.revenue || 0) >= 0 ? "" : "text-red-200"
                             }`}>
                             {(stats?.growth.revenue || 0) >= 0 ? (
                               <TrendingUp className="w-4 h-4" />
@@ -625,7 +648,7 @@ const Dashboard = () => {
                               <TrendingDown className="w-4 h-4" />
                             )}
                             {stats?.growth.revenue || 0}%
-                          </span>
+                          </span> */}
                         </div>
                       </motion.div>
 
@@ -669,12 +692,13 @@ const Dashboard = () => {
                         </p>
                         <div className="flex items-center justify-between text-sm text-orange-100">
                           <span>{isArabic ? "الإيرادات" : "Revenue"}: {(stats?.investment_orders?.revenue || stats?.revenue.investment_revenue || 0).toFixed(2)}</span>
-                          <span>{isArabic ? "العوائد المتوقعة" : "Expected Returns"}: {(stats?.investments.expected_returns || 0).toFixed(2)}</span>
+                          {/* <span>{isArabic ? "العوائد المتوقعة" : "Expected Returns"}: {(stats?.investments.expected_returns || 0).toFixed(2)}</span> */}
                         </div>
                       </motion.div>
                     </div>
 
-                    {/* Smart Alerts */}
+                    {/* Smart Alerts - Admin Only */}
+                    {user?.role === "ADMIN" && (
                     <div className="bg-white rounded-xl shadow-md p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <Bell className="w-6 h-6 text-primary" />
@@ -723,6 +747,7 @@ const Dashboard = () => {
                         )}
                       </div>
                     </div>
+                    )}
 
                     {/* Recent Orders Summary */}
                     <div className="bg-white rounded-xl shadow-md p-6">

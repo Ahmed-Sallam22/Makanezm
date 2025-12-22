@@ -17,7 +17,7 @@ export interface PaymentPayload {
     quantity: number;
     purchase_type: 'wallet' | 'resale';
     resale_plan_id?: number | null;
-    company_id: number;
+    company_id?: number;
   }[];
   discount_code?: string;
   discount_percent?: number;
