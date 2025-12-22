@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store";
 import "./MarqueeBanner.css";
-import { getActiveMarquees, type Marquee } from "../../services/marqueeService";
+import type { Marquee } from "../../types/marquee";
 
 interface MarqueeItem {
   id: number;
@@ -9,8 +11,9 @@ interface MarqueeItem {
 }
 
 const MarqueeBanner = () => {
-  const [marqueeTexts, setMarqueeTexts] = useState<Marquee[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Read marquees from redux store so admin updates reflect immediately
+  const marqueeTexts = useSelector((state: RootState) => state.marquee.marquees) as Marquee[];
+  const [loading] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<MarqueeItem[]>([]);
@@ -19,30 +22,18 @@ const MarqueeBanner = () => {
   const animationRef = useRef<number | null>(null);
   const speedRef = useRef(1); // pixels per frame
 
-  // Fetch marquees from API
-  useEffect(() => {
-    const fetchMarquees = async () => {
-      try {
-        const response = await getActiveMarquees();
-        const activeMarquees = response.data.marquees || [];
-        setMarqueeTexts(activeMarquees);
-      } catch {
-        // Fallback to default text if API fails
-        setMarqueeTexts([{ id: 1, text: "subscribe & save 15%", is_active: true, order: 0, created_at: "", updated_at: "" }]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMarquees();
-  }, []);
+  // No local fetch here — component reads from store which is updated by admin actions or API sync elsewhere.
 
   // Measure item widths and initialize positions when texts are loaded
   useEffect(() => {
-    if (marqueeTexts.length === 0) return;
+    if (!marqueeTexts || marqueeTexts.length === 0) return;
 
-    // Sort marquees by order
-    const sortedMarquees = [...marqueeTexts].sort((a, b) => a.order - b.order);
+    // Sort marquees by updatedAt (or keep original order if available)
+    const sortedMarquees = [...marqueeTexts].sort((a, b) => {
+      const ta = new Date(a.updatedAt).getTime();
+      const tb = new Date(b.updatedAt).getTime();
+      return ta - tb;
+    });
     
     // Measure width of each individual marquee text + bullet
     const widths: number[] = [];
@@ -88,7 +79,11 @@ const MarqueeBanner = () => {
   useEffect(() => {
     if (totalWidth === 0 || items.length === 0 || itemWidths.length === 0) return;
 
-    const sortedMarquees = [...marqueeTexts].sort((a, b) => a.order - b.order);
+    const sortedMarquees = [...marqueeTexts].sort((a, b) => {
+      const ta = new Date(a.updatedAt).getTime();
+      const tb = new Date(b.updatedAt).getTime();
+      return ta - tb;
+    });
     const numTexts = sortedMarquees.length;
 
     const animate = () => {
