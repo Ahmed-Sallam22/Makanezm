@@ -44,22 +44,25 @@ const MarqueeTab = () => {
     try {
       setLoading(true);
       const response = await getAdminMarquees();
-  const apiList = response.data.marquees || [];
-  // map API shape to app Marquee shape
-  const list = apiList.map((m) => ({
-    id: String(m.id),
-    text: m.text,
-    isActive: Boolean(m.is_active),
-    createdAt: m.created_at,
-    updatedAt: m.updated_at,
-  }));
+      const apiList = response.data.marquees || [];
+      // map API shape to app Marquee shape
+      const list = apiList.map((m) => ({
+        id: String(m.id),
+        text: m.text,
+        isActive: Boolean(m.is_active),
+        createdAt: m.created_at,
+        updatedAt: m.updated_at,
+      }));
 
-  setLocalMarquees(list);
-  // update redux store so banner reflects changes immediately
-  dispatch(setMarquees(list));
+      setLocalMarquees(list);
+      // update redux store so banner reflects changes immediately
+      dispatch(setMarquees(list));
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل تحميل البيانات" : "Failed to load data"));
+      toast.error(
+        axiosError.response?.data?.message ||
+          (isRTL ? "فشل تحميل البيانات" : "Failed to load data")
+      );
     } finally {
       setLoading(false);
     }
@@ -69,8 +72,6 @@ const MarqueeTab = () => {
     fetchMarquees();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  
 
   const handleAddMarquee = async () => {
     if (!newMarqueeText.trim()) {
@@ -83,11 +84,16 @@ const MarqueeTab = () => {
       await createMarquee({ text: newMarqueeText.trim() });
       setNewMarqueeText("");
       setIsAdding(false);
-      toast.success(isRTL ? "تم إضافة النص بنجاح" : "Marquee text added successfully");
+      toast.success(
+        isRTL ? "تم إضافة النص بنجاح" : "Marquee text added successfully"
+      );
       fetchMarquees();
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل الإضافة" : "Failed to add"));
+      toast.error(
+        axiosError.response?.data?.message ||
+          (isRTL ? "فشل الإضافة" : "Failed to add")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -104,11 +110,16 @@ const MarqueeTab = () => {
       await updateMarqueeApi(Number(id), { text: editText.trim() });
       setEditingId(null);
       setEditText("");
-      toast.success(isRTL ? "تم تحديث النص بنجاح" : "Marquee text updated successfully");
+      toast.success(
+        isRTL ? "تم تحديث النص بنجاح" : "Marquee text updated successfully"
+      );
       fetchMarquees();
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل التحديث" : "Failed to update"));
+      toast.error(
+        axiosError.response?.data?.message ||
+          (isRTL ? "فشل التحديث" : "Failed to update")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -126,11 +137,16 @@ const MarqueeTab = () => {
 
     try {
       await deleteMarqueeApi(Number(id));
-      toast.success(isRTL ? "تم حذف النص بنجاح" : "Marquee text deleted successfully");
+      toast.success(
+        isRTL ? "تم حذف النص بنجاح" : "Marquee text deleted successfully"
+      );
       fetchMarquees();
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل الحذف" : "Failed to delete"));
+      toast.error(
+        axiosError.response?.data?.message ||
+          (isRTL ? "فشل الحذف" : "Failed to delete")
+      );
     }
   };
 
@@ -141,7 +157,10 @@ const MarqueeTab = () => {
       fetchMarquees();
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError.response?.data?.message || (isRTL ? "فشل التحديث" : "Failed to update"));
+      toast.error(
+        axiosError.response?.data?.message ||
+          (isRTL ? "فشل التحديث" : "Failed to update")
+      );
     }
   };
 
@@ -249,95 +268,95 @@ const MarqueeTab = () => {
           </div>
         ) : (
           marquees.map((marquee) => (
-          <motion.div
-            key={marquee.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
-          >
-                {editingId === marquee.id ? (
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && handleUpdateMarquee(marquee.id)
-                  }
-                />
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleUpdateMarquee(marquee.id)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                >
-                  <Save className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={cancelEditing}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                >
-                  <X className="w-4 h-4" />
-                </motion.button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
+            <motion.div
+              key={marquee.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
+            >
+              {editingId === marquee.id ? (
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleUpdateMarquee(marquee.id)
+                    }
+                  />
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleToggleStatus(marquee.id)}
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      marquee.isActive
-                        ? "bg-green-100 text-green-600"
-                        : "bg-gray-100 text-gray-400"
-                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleUpdateMarquee(marquee.id)}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                   >
-                    {marquee.isActive ? (
-                      <CheckCircle className="w-6 h-6" />
-                    ) : (
-                      <XCircle className="w-6 h-6" />
-                    )}
+                    <Save className="w-4 h-4" />
                   </motion.button>
-
-                  <div className="flex-1">
-                    <p className="text-lg font-medium text-gray-900">
-                      {marquee.text}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {isRTL ? "آخر تحديث: " : "Last updated: "}
-                      {new Date(marquee.updatedAt).toLocaleDateString(
-                        isRTL ? "ar-EG" : "en-US"
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={cancelEditing}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 flex-1">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleToggleStatus(marquee.id)}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        marquee.isActive
+                          ? "bg-green-100 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
+                      {marquee.isActive ? (
+                        <CheckCircle className="w-6 h-6" />
+                      ) : (
+                        <XCircle className="w-6 h-6" />
                       )}
-                    </p>
+                    </motion.button>
+
+                    <div className="flex-1">
+                      <p className="text-lg font-medium text-gray-900">
+                        {marquee.text}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {isRTL ? "آخر تحديث: " : "Last updated: "}
+                        {new Date(marquee.updatedAt).toLocaleDateString(
+                          isRTL ? "ar-EG" : "en-US"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => startEditing(marquee.id, marquee.text)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDeleteMarquee(marquee.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
                   </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => startEditing(marquee.id, marquee.text)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  >
-                    <Edit2 className="w-5 h-5" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleDeleteMarquee(marquee.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </motion.button>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ))
+              )}
+            </motion.div>
+          ))
         )}
       </div>
 
@@ -362,7 +381,8 @@ const MarqueeTab = () => {
                 },
               }}
             >
-              {[...marquees.filter((m) => m.isActive),
+              {[
+                ...marquees.filter((m) => m.isActive),
                 ...marquees.filter((m) => m.isActive),
                 ...marquees.filter((m) => m.isActive),
               ].map((marquee, index) => (

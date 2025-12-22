@@ -109,23 +109,72 @@ import { useSearchParams } from "react-router-dom";
 
 const Dashboard = () => {
   const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const isArabic = i18n.language === "ar";
   const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     // Check for tab query parameter
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "hero", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "footerLinks", "payouts", "contact", "discounts"].includes(tabParam)) {
+    if (
+      tabParam &&
+      [
+        "overview",
+        "orders",
+        "profile",
+        "merchant",
+        "partnerships",
+        "seasonal",
+        "deferred",
+        "products",
+        "users",
+        "sliders",
+        "hero",
+        "adminProducts",
+        "merchantOrders",
+        "settings",
+        "reports",
+        "marquee",
+        "footerLinks",
+        "payouts",
+        "contact",
+        "discounts",
+      ].includes(tabParam)
+    ) {
       return tabParam as TabType;
     }
     return "overview";
   });
   const user = useAppSelector((state) => state.auth.user);
+  console.log(user);
 
   // Update tab when query param changes
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "hero", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "footerLinks", "payouts", "contact", "discounts"].includes(tabParam)) {
+    if (
+      tabParam &&
+      [
+        "overview",
+        "orders",
+        "profile",
+        "merchant",
+        "partnerships",
+        "seasonal",
+        "deferred",
+        "products",
+        "users",
+        "sliders",
+        "hero",
+        "adminProducts",
+        "merchantOrders",
+        "settings",
+        "reports",
+        "marquee",
+        "footerLinks",
+        "payouts",
+        "contact",
+        "discounts",
+      ].includes(tabParam)
+    ) {
       setActiveTab(tabParam as TabType);
       // Clear the query param after setting tab
       setSearchParams({}, { replace: true });
@@ -165,7 +214,8 @@ const Dashboard = () => {
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    phone: user?.mobiles?.find((m) => m.is_primary)?.mobile || user?.phone || "",
+    phone:
+      user?.mobiles?.find((m) => m.is_primary)?.mobile || user?.phone || "",
     city: user?.city || "",
     national_id: user?.national_id || "",
     bank_name: user?.bank_name || "",
@@ -243,7 +293,10 @@ const Dashboard = () => {
           setProfileData({
             name: profileResponse.name || "",
             email: profileResponse.email || "",
-            phone: profileResponse.mobiles?.find((m: { is_primary: boolean }) => m.is_primary)?.mobile || "",
+            phone:
+              profileResponse.mobiles?.find(
+                (m: { is_primary: boolean }) => m.is_primary
+              )?.mobile || "",
             city: profileResponse.city || "",
             national_id: profileResponse.national_id || "",
             bank_name: profileResponse.bank_name || "",
@@ -251,7 +304,9 @@ const Dashboard = () => {
           });
         } catch (error) {
           console.error("Error fetching profile:", error);
-          toast.error(t("dashboard.profile.loadError") || "Failed to load profile data");
+          toast.error(
+            t("dashboard.profile.loadError") || "Failed to load profile data"
+          );
         }
       };
       fetchProfile();
@@ -283,32 +338,32 @@ const Dashboard = () => {
     icon: React.ComponentType<{ className?: string }>;
     label: string;
   }> = [
-      {
-        id: "overview" as TabType,
-        icon: LayoutDashboard,
-        label: t("dashboard.tabs.overview"),
-      },
-      {
-        id: "merchantOrders" as TabType,
-        icon: DollarSign,
-        label: t("dashboard.tabs.merchantOrders"),
-      },
-      { 
-        id: "investments" as TabType, 
-        icon: TrendingUp, 
-        label: t("dashboard.tabs.investments") 
-      },
-      { 
-        id: "profile" as TabType, 
-        icon: User, 
-        label: t("dashboard.tabs.profile") 
-      },
-      { 
-        id: "settings" as TabType, 
-        icon: Settings, 
-        label: t("dashboard.tabs.settings") 
-      },
-    ];
+    {
+      id: "overview" as TabType,
+      icon: LayoutDashboard,
+      label: t("dashboard.tabs.overview"),
+    },
+    {
+      id: "merchantOrders" as TabType,
+      icon: DollarSign,
+      label: t("dashboard.tabs.merchantOrders"),
+    },
+    {
+      id: "investments" as TabType,
+      icon: TrendingUp,
+      label: t("dashboard.tabs.investments"),
+    },
+    {
+      id: "profile" as TabType,
+      icon: User,
+      label: t("dashboard.tabs.profile"),
+    },
+    {
+      id: "settings" as TabType,
+      icon: Settings,
+      label: t("dashboard.tabs.settings"),
+    },
+  ];
 
   // Admin-only tabs - only visible to admins
   const adminTabs: Array<{
@@ -316,67 +371,67 @@ const Dashboard = () => {
     icon: React.ComponentType<{ className?: string }>;
     label: string;
   }> = [
-      { 
-        id: "orders" as TabType, 
-        icon: ShoppingBag, 
-        label: t("dashboard.tabs.orders") 
-      },
-      { 
-        id: "users" as TabType, 
-        icon: Users, 
-        label: t("dashboard.tabs.users") 
-      },
-      { 
-        id: "products" as TabType, 
-        icon: Shield, 
-        label: t("dashboard.tabs.products") 
-      },
-      {
-        id: "partnerships" as TabType,
-        icon: Handshake,
-        label: t("dashboard.tabs.partnerships"),
-      },
-      { 
-        id: "sliders" as TabType, 
-        icon: Image, 
-        label: t("dashboard.tabs.sliders") 
-      },
-      { 
-        id: "hero" as TabType, 
-        icon: Home, 
-        label: t("dashboard.tabs.hero") 
-      },
-      { 
-        id: "marquee" as TabType, 
-        icon: Type, 
-        label: t("dashboard.tabs.marquee") 
-      },
-      { 
-        id: "footerLinks" as TabType, 
-        icon: LinkIcon, 
-        label: t("dashboard.tabs.footerLinks") 
-      },
-      { 
-        id: "payouts" as TabType, 
-        icon: DollarSign, 
-        label: t("dashboard.tabs.payouts") 
-      },
-      { 
-        id: "reports" as TabType, 
-        icon: BarChart3, 
-        label: t("dashboard.tabs.reports") 
-      },
-      { 
-        id: "contact" as TabType, 
-        icon: Mail, 
-        label: t("dashboard.tabs.contact") 
-      },
-      { 
-        id: "discounts" as TabType, 
-        icon: Percent, 
-        label: t("dashboard.tabs.discounts") 
-      },
-    ];
+    {
+      id: "orders" as TabType,
+      icon: ShoppingBag,
+      label: t("dashboard.tabs.orders"),
+    },
+    {
+      id: "users" as TabType,
+      icon: Users,
+      label: t("dashboard.tabs.users"),
+    },
+    {
+      id: "products" as TabType,
+      icon: Shield,
+      label: t("dashboard.tabs.products"),
+    },
+    {
+      id: "partnerships" as TabType,
+      icon: Handshake,
+      label: t("dashboard.tabs.partnerships"),
+    },
+    {
+      id: "sliders" as TabType,
+      icon: Image,
+      label: t("dashboard.tabs.sliders"),
+    },
+    {
+      id: "hero" as TabType,
+      icon: Home,
+      label: t("dashboard.tabs.hero"),
+    },
+    {
+      id: "marquee" as TabType,
+      icon: Type,
+      label: t("dashboard.tabs.marquee"),
+    },
+    {
+      id: "footerLinks" as TabType,
+      icon: LinkIcon,
+      label: t("dashboard.tabs.footerLinks"),
+    },
+    {
+      id: "payouts" as TabType,
+      icon: DollarSign,
+      label: t("dashboard.tabs.payouts"),
+    },
+    {
+      id: "reports" as TabType,
+      icon: BarChart3,
+      label: t("dashboard.tabs.reports"),
+    },
+    {
+      id: "contact" as TabType,
+      icon: Mail,
+      label: t("dashboard.tabs.contact"),
+    },
+    {
+      id: "discounts" as TabType,
+      icon: Percent,
+      label: t("dashboard.tabs.discounts"),
+    },
+  ];
 
   // Combine tabs based on user role
   const tabs = user?.role === "ADMIN" ? [...userTabs, ...adminTabs] : userTabs;
@@ -393,12 +448,14 @@ const Dashboard = () => {
         bank_iban: profileData.bank_iban,
         mobile: profileData.phone,
       });
-      dispatch(updateUser({
-        ...user!,
-        ...profileData,
-        // Update legacy phone field as well
-        phone: profileData.phone,
-      }));
+      dispatch(
+        updateUser({
+          ...user!,
+          ...profileData,
+          // Update legacy phone field as well
+          phone: profileData.phone,
+        })
+      );
       setIsEditingProfile(false);
       toast.success(t("dashboard.profile.updateSuccess"));
     } catch (error) {
@@ -499,7 +556,11 @@ const Dashboard = () => {
       closeCompanyModal();
     } catch (error) {
       console.error("Error saving company:", error);
-      toast.error(editingCompany ? t("dashboard.partnerships.updateError") : t("dashboard.partnerships.createError"));
+      toast.error(
+        editingCompany
+          ? t("dashboard.partnerships.updateError")
+          : t("dashboard.partnerships.createError")
+      );
     } finally {
       setIsSubmittingPartnership(false);
     }
@@ -512,7 +573,7 @@ const Dashboard = () => {
 
     try {
       await deleteCompany(companyId);
-      setCompanies(prev => prev.filter(c => c.id !== companyId));
+      setCompanies((prev) => prev.filter((c) => c.id !== companyId));
       toast.success(t("dashboard.partnerships.deleteSuccess"));
     } catch (error) {
       console.error("Error deleting company:", error);
@@ -521,13 +582,14 @@ const Dashboard = () => {
   };
 
   // Handle deferred sale approval/rejection (Admin)
-  const handleDeferredSaleAction = async (id: number, status: "approved" | "rejected") => {
+  const handleDeferredSaleAction = async (
+    id: number,
+    status: "approved" | "rejected"
+  ) => {
     try {
       await updateDeferredSale(id, { status });
       setDeferredSales((prev) =>
-        prev.map((sale) =>
-          sale.id === id ? { ...sale, status } : sale
-        )
+        prev.map((sale) => (sale.id === id ? { ...sale, status } : sale))
       );
       toast.success(
         status === "approved"
@@ -593,7 +655,7 @@ const Dashboard = () => {
               {t("dashboard.title")}
             </h1>
             <p className="text-gray-600">
-              {t("dashboard.welcome", { name: user?.email })}
+              {t("dashboard.welcome")}, {user?.name}
             </p>
           </motion.div>
 
@@ -606,10 +668,11 @@ const Dashboard = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabType)}
-                    className={`flex items-center gap-2 px-4 py-3 font-semibold transition-all whitespace-nowrap ${activeTab === tab.id
+                    className={`flex items-center gap-2 px-4 py-3 font-semibold transition-all whitespace-nowrap ${
+                      activeTab === tab.id
                         ? "text-primary border-b-2 border-primary"
                         : "text-gray-600 hover:text-primary"
-                      }`}
+                    }`}
                   >
                     <Icon className="w-5 h-5" />
                     {tab.label}
@@ -652,7 +715,8 @@ const Dashboard = () => {
                           </div>
                         </div>
                         <p className="text-3xl font-bold mb-2">
-                          {(stats?.revenue.total || 0).toFixed(2)} {t("common.currency")}
+                          {(stats?.revenue.total || 0).toFixed(2)}{" "}
+                          {t("common.currency")}
                         </p>
                         <div className="flex items-center justify-between text-sm text-green-100">
                           {/* <span>{isArabic ? "الأرباح" : "Profit"}: {(stats?.revenue.profit || 0).toFixed(2)}</span> */}
@@ -675,18 +739,32 @@ const Dashboard = () => {
                       >
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-semibold text-blue-100">
-                            {isArabic ? "طلبات المحفظة (مباشر)" : "Wallet (Direct) Orders"}
+                            {isArabic
+                              ? "طلبات المحفظة (مباشر)"
+                              : "Wallet (Direct) Orders"}
                           </h3>
                           <div className="p-2 bg-white/20 rounded-lg">
                             <CreditCard className="w-6 h-6" />
                           </div>
                         </div>
                         <p className="text-3xl font-bold mb-2">
-                          {stats?.wallet_orders?.total || stats?.orders.sale_orders || 0}
+                          {stats?.wallet_orders?.total ||
+                            stats?.orders.sale_orders ||
+                            0}
                         </p>
                         <div className="flex items-center justify-between text-sm text-blue-100">
-                          <span>{isArabic ? "الإيرادات" : "Revenue"}: {(stats?.wallet_orders?.revenue || stats?.revenue.wallet_revenue || 0).toFixed(2)}</span>
-                          <span>{isArabic ? "مكتمل" : "Completed"}: {stats?.wallet_orders?.completed || 0}</span>
+                          <span>
+                            {isArabic ? "الإيرادات" : "Revenue"}:{" "}
+                            {(
+                              stats?.wallet_orders?.revenue ||
+                              stats?.revenue.wallet_revenue ||
+                              0
+                            ).toFixed(2)}
+                          </span>
+                          <span>
+                            {isArabic ? "مكتمل" : "Completed"}:{" "}
+                            {stats?.wallet_orders?.completed || 0}
+                          </span>
                         </div>
                       </motion.div>
 
@@ -697,17 +775,28 @@ const Dashboard = () => {
                       >
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-semibold text-orange-100">
-                            {isArabic ? "طلبات إعادة البيع (استثمار)" : "Resale (Investment) Orders"}
+                            {isArabic
+                              ? "طلبات إعادة البيع (أرباح)"
+                              : "Resale (Profit) Orders"}
                           </h3>
                           <div className="p-2 bg-white/20 rounded-lg">
                             <TrendingUp className="w-6 h-6" />
                           </div>
                         </div>
                         <p className="text-3xl font-bold mb-2">
-                          {stats?.investment_orders?.total || stats?.orders.resale_orders || 0}
+                          {stats?.investment_orders?.total ||
+                            stats?.orders.resale_orders ||
+                            0}
                         </p>
                         <div className="flex items-center justify-between text-sm text-orange-100">
-                          <span>{isArabic ? "الإيرادات" : "Revenue"}: {(stats?.investment_orders?.revenue || stats?.revenue.investment_revenue || 0).toFixed(2)}</span>
+                          <span>
+                            {isArabic ? "الإيرادات" : "Revenue"}:{" "}
+                            {(
+                              stats?.investment_orders?.revenue ||
+                              stats?.revenue.investment_revenue ||
+                              0
+                            ).toFixed(2)}
+                          </span>
                           {/* <span>{isArabic ? "العوائد المتوقعة" : "Expected Returns"}: {(stats?.investments.expected_returns || 0).toFixed(2)}</span> */}
                         </div>
                       </motion.div>
@@ -715,54 +804,56 @@ const Dashboard = () => {
 
                     {/* Smart Alerts - Admin Only */}
                     {user?.role === "ADMIN" && (
-                    <div className="bg-white rounded-xl shadow-md p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Bell className="w-6 h-6 text-primary" />
-                        <h2 className="text-xl font-bold text-gray-800">
-                          {t("dashboard.alerts.title")}
-                        </h2>
-                      </div>
-                      <div className="space-y-3">
-                        {alerts.length > 0 ? (
-                          alerts.map((alert, index) => (
-                            <div
-                              key={index}
-                              className={`flex items-start gap-3 p-4 rounded-lg ${alert.type === "warning"
-                                  ? "bg-yellow-50"
-                                  : alert.type === "error"
-                                    ? "bg-red-50"
-                                    : alert.type === "success"
-                                      ? "bg-green-50"
-                                      : "bg-blue-50"
-                                }`}
-                            >
-                              <AlertCircle
-                                className={`w-5 h-5 mt-0.5 ${alert.type === "warning"
-                                    ? "text-yellow-600"
+                      <div className="bg-white rounded-xl shadow-md p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Bell className="w-6 h-6 text-primary" />
+                          <h2 className="text-xl font-bold text-gray-800">
+                            {t("dashboard.alerts.title")}
+                          </h2>
+                        </div>
+                        <div className="space-y-3">
+                          {alerts.length > 0 ? (
+                            alerts.map((alert, index) => (
+                              <div
+                                key={index}
+                                className={`flex items-start gap-3 p-4 rounded-lg ${
+                                  alert.type === "warning"
+                                    ? "bg-yellow-50"
                                     : alert.type === "error"
-                                      ? "text-red-600"
+                                      ? "bg-red-50"
                                       : alert.type === "success"
-                                        ? "text-green-600"
-                                        : "text-blue-600"
+                                        ? "bg-green-50"
+                                        : "bg-blue-50"
+                                }`}
+                              >
+                                <AlertCircle
+                                  className={`w-5 h-5 mt-0.5 ${
+                                    alert.type === "warning"
+                                      ? "text-yellow-600"
+                                      : alert.type === "error"
+                                        ? "text-red-600"
+                                        : alert.type === "success"
+                                          ? "text-green-600"
+                                          : "text-blue-600"
                                   }`}
-                              />
-                              <div>
-                                <p className="font-semibold text-gray-800">
-                                  {alert.title}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {alert.message}
-                                </p>
+                                />
+                                <div>
+                                  <p className="font-semibold text-gray-800">
+                                    {alert.title}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {alert.message}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-600 text-center py-4">
-                            {t("dashboard.alerts.noAlerts")}
-                          </p>
-                        )}
+                            ))
+                          ) : (
+                            <p className="text-gray-600 text-center py-4">
+                              {t("dashboard.alerts.noAlerts")}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
                     )}
 
                     {/* Recent Orders Summary */}
@@ -786,12 +877,15 @@ const Dashboard = () => {
                                   {order.order_number}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {new Date(order.created_at).toLocaleDateString()}
+                                  {new Date(
+                                    order.created_at
+                                  ).toLocaleDateString()}
                                 </p>
                               </div>
                               <div className="flex items-center gap-3">
                                 <p className="font-bold text-gray-800">
-                                  {order.total_amount.toFixed(2)} {t("common.currency")}
+                                  {order.total_amount.toFixed(2)}{" "}
+                                  {t("common.currency")}
                                 </p>
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${getStatusColor(
@@ -1115,12 +1209,34 @@ const Dashboard = () => {
                       <table className="w-full">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className={`px-4 py-3 ${isArabic ? 'text-right' : 'text-left'} text-xs font-semibold text-gray-600 uppercase`}>{t("dashboard.partnerships.logo")}</th>
-                            <th className={`px-4 py-3 ${isArabic ? 'text-right' : 'text-left'} text-xs font-semibold text-gray-600 uppercase`}>{t("dashboard.partnerships.companyName")}</th>
-                            <th className={`px-4 py-3 ${isArabic ? 'text-right' : 'text-left'} text-xs font-semibold text-gray-600 uppercase`}>{t("dashboard.partnerships.businessActivity")}</th>
-                            <th className={`px-4 py-3 ${isArabic ? 'text-right' : 'text-left'} text-xs font-semibold text-gray-600 uppercase`}>{t("dashboard.partnerships.storeUrl")}</th>
-                            <th className={`px-4 py-3 ${isArabic ? 'text-right' : 'text-left'} text-xs font-semibold text-gray-600 uppercase`}>{t("dashboard.partnerships.status")}</th>
-                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">{t("dashboard.partnerships.actions")}</th>
+                            <th
+                              className={`px-4 py-3 ${isArabic ? "text-right" : "text-left"} text-xs font-semibold text-gray-600 uppercase`}
+                            >
+                              {t("dashboard.partnerships.logo")}
+                            </th>
+                            <th
+                              className={`px-4 py-3 ${isArabic ? "text-right" : "text-left"} text-xs font-semibold text-gray-600 uppercase`}
+                            >
+                              {t("dashboard.partnerships.companyName")}
+                            </th>
+                            <th
+                              className={`px-4 py-3 ${isArabic ? "text-right" : "text-left"} text-xs font-semibold text-gray-600 uppercase`}
+                            >
+                              {t("dashboard.partnerships.businessActivity")}
+                            </th>
+                            <th
+                              className={`px-4 py-3 ${isArabic ? "text-right" : "text-left"} text-xs font-semibold text-gray-600 uppercase`}
+                            >
+                              {t("dashboard.partnerships.storeUrl")}
+                            </th>
+                            <th
+                              className={`px-4 py-3 ${isArabic ? "text-right" : "text-left"} text-xs font-semibold text-gray-600 uppercase`}
+                            >
+                              {t("dashboard.partnerships.status")}
+                            </th>
+                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                              {t("dashboard.partnerships.actions")}
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -1132,13 +1248,24 @@ const Dashboard = () => {
                                   alt={company.name}
                                   className="w-12 h-12 object-cover rounded-lg"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="24">🏢</text></svg>';
+                                    (e.target as HTMLImageElement).src =
+                                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="24">🏢</text></svg>';
                                   }}
                                 />
                               </td>
-                              <td className={`px-4 py-4 font-medium text-gray-800 ${isArabic ? 'text-right' : 'text-left'}`}>{company.name}</td>
-                              <td className={`px-4 py-4 text-gray-600 ${isArabic ? 'text-right' : 'text-left'}`}>{company.activity || '-'}</td>
-                              <td className={`px-4 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                              <td
+                                className={`px-4 py-4 font-medium text-gray-800 ${isArabic ? "text-right" : "text-left"}`}
+                              >
+                                {company.name}
+                              </td>
+                              <td
+                                className={`px-4 py-4 text-gray-600 ${isArabic ? "text-right" : "text-left"}`}
+                              >
+                                {company.activity || "-"}
+                              </td>
+                              <td
+                                className={`px-4 py-4 ${isArabic ? "text-right" : "text-left"}`}
+                              >
                                 {company.store_url ? (
                                   <a
                                     href={company.store_url}
@@ -1152,27 +1279,42 @@ const Dashboard = () => {
                                   <span className="text-gray-400">-</span>
                                 )}
                               </td>
-                              <td className={`px-4 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${company.is_active
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-red-100 text-red-700'
-                                  }`}>
-                                  {company.is_active ? t("dashboard.partnerships.active") : t("dashboard.partnerships.inactive")}
+                              <td
+                                className={`px-4 py-4 ${isArabic ? "text-right" : "text-left"}`}
+                              >
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                    company.is_active
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-red-100 text-red-700"
+                                  }`}
+                                >
+                                  {company.is_active
+                                    ? t("dashboard.partnerships.active")
+                                    : t("dashboard.partnerships.inactive")}
                                 </span>
                               </td>
                               <td className="px-4 py-4">
                                 <div className="flex items-center justify-center gap-2">
                                   <button
-                                    onClick={() => openEditCompanyModal(company)}
+                                    onClick={() =>
+                                      openEditCompanyModal(company)
+                                    }
                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title={t("dashboard.partnerships.editCompany")}
+                                    title={t(
+                                      "dashboard.partnerships.editCompany"
+                                    )}
                                   >
                                     <Edit className="w-4 h-4" />
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteCompany(company.id)}
+                                    onClick={() =>
+                                      handleDeleteCompany(company.id)
+                                    }
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title={t("dashboard.partnerships.deleteCompany")}
+                                    title={t(
+                                      "dashboard.partnerships.deleteCompany"
+                                    )}
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -1205,7 +1347,9 @@ const Dashboard = () => {
                       >
                         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                           <h3 className="text-xl font-bold text-gray-800">
-                            {editingCompany ? t("dashboard.partnerships.editCompany") : t("dashboard.partnerships.addCompany")}
+                            {editingCompany
+                              ? t("dashboard.partnerships.editCompany")
+                              : t("dashboard.partnerships.addCompany")}
                           </h3>
                           <button
                             onClick={closeCompanyModal}
@@ -1215,7 +1359,10 @@ const Dashboard = () => {
                           </button>
                         </div>
 
-                        <form onSubmit={handleSubmitCompany} className="p-6 space-y-6">
+                        <form
+                          onSubmit={handleSubmitCompany}
+                          className="p-6 space-y-6"
+                        >
                           {/* Company Logo Upload */}
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
@@ -1243,7 +1390,9 @@ const Dashboard = () => {
                                   onChange={handleLogoChange}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Max size: 2MB. Recommended: 200x200px</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Max size: 2MB. Recommended: 200x200px
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -1258,7 +1407,10 @@ const Dashboard = () => {
                               type="text"
                               value={companyFormData.name}
                               onChange={(e) =>
-                                setCompanyFormData({ ...companyFormData, name: e.target.value })
+                                setCompanyFormData({
+                                  ...companyFormData,
+                                  name: e.target.value,
+                                })
                               }
                               required
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -1275,7 +1427,10 @@ const Dashboard = () => {
                               type="text"
                               value={companyFormData.activity}
                               onChange={(e) =>
-                                setCompanyFormData({ ...companyFormData, activity: e.target.value })
+                                setCompanyFormData({
+                                  ...companyFormData,
+                                  activity: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               placeholder="e.g., Electronics, Fashion, Food"
@@ -1292,7 +1447,10 @@ const Dashboard = () => {
                               type="url"
                               value={companyFormData.store_url}
                               onChange={(e) =>
-                                setCompanyFormData({ ...companyFormData, store_url: e.target.value })
+                                setCompanyFormData({
+                                  ...companyFormData,
+                                  store_url: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               placeholder="https://example.com"
@@ -1307,11 +1465,17 @@ const Dashboard = () => {
                               id="companyActive"
                               checked={companyFormData.is_active}
                               onChange={(e) =>
-                                setCompanyFormData({ ...companyFormData, is_active: e.target.checked })
+                                setCompanyFormData({
+                                  ...companyFormData,
+                                  is_active: e.target.checked,
+                                })
                               }
                               className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary"
                             />
-                            <label htmlFor="companyActive" className="text-sm font-medium text-gray-700">
+                            <label
+                              htmlFor="companyActive"
+                              className="text-sm font-medium text-gray-700"
+                            >
                               {t("dashboard.partnerships.activeCompanyLabel")}
                             </label>
                           </div>
@@ -1326,12 +1490,16 @@ const Dashboard = () => {
                               {isSubmittingPartnership ? (
                                 <>
                                   <Loader2 className="w-4 h-4 animate-spin" />
-                                  {editingCompany ? "Updating..." : "Creating..."}
+                                  {editingCompany
+                                    ? "Updating..."
+                                    : "Creating..."}
                                 </>
                               ) : (
                                 <>
                                   <Check className="w-4 h-4" />
-                                  {editingCompany ? t("dashboard.partnerships.editCompany") : t("dashboard.partnerships.addCompany")}
+                                  {editingCompany
+                                    ? t("dashboard.partnerships.editCompany")
+                                    : t("dashboard.partnerships.addCompany")}
                                 </>
                               )}
                             </button>
@@ -1434,7 +1602,10 @@ const Dashboard = () => {
                       </p>
                     ) : (
                       deferredSales.map((sale) => (
-                        <div key={sale.id} className="border border-gray-200 rounded-lg p-6">
+                        <div
+                          key={sale.id}
+                          className="border border-gray-200 rounded-lg p-6"
+                        >
                           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                             <div>
                               <h3 className="text-lg font-bold text-gray-800">
@@ -1446,14 +1617,15 @@ const Dashboard = () => {
                               </p>
                             </div>
                             <span
-                              className={`px-4 py-2 rounded-full text-sm font-semibold w-fit mt-2 md:mt-0 ${sale.status === "pending"
+                              className={`px-4 py-2 rounded-full text-sm font-semibold w-fit mt-2 md:mt-0 ${
+                                sale.status === "pending"
                                   ? "bg-yellow-100 text-yellow-800"
                                   : sale.status === "approved"
                                     ? "bg-green-100 text-green-800"
                                     : sale.status === "rejected"
                                       ? "bg-red-100 text-red-800"
                                       : "bg-blue-100 text-blue-800"
-                                }`}
+                              }`}
                             >
                               {t(`dashboard.status.${sale.status}`)}
                             </span>
@@ -1465,7 +1637,8 @@ const Dashboard = () => {
                                 {t("dashboard.deferred.originalPrice")}
                               </p>
                               <p className="text-lg font-bold text-gray-800">
-                                {sale.original_price.toFixed(2)} {t("common.currency")}
+                                {sale.original_price.toFixed(2)}{" "}
+                                {t("common.currency")}
                               </p>
                             </div>
                             <div>
@@ -1473,7 +1646,8 @@ const Dashboard = () => {
                                 {t("dashboard.deferred.requestedPrice")}
                               </p>
                               <p className="text-lg font-bold text-primary">
-                                {sale.requested_price.toFixed(2)} {t("common.currency")}
+                                {sale.requested_price.toFixed(2)}{" "}
+                                {t("common.currency")}
                               </p>
                             </div>
                             <div>
@@ -1481,7 +1655,8 @@ const Dashboard = () => {
                                 {t("dashboard.deferred.profit")}
                               </p>
                               <p className="text-lg font-bold text-green-600">
-                                {sale.profit_amount.toFixed(2)} {t("common.currency")}
+                                {sale.profit_amount.toFixed(2)}{" "}
+                                {t("common.currency")}
                               </p>
                             </div>
                             <div>
@@ -1494,22 +1669,33 @@ const Dashboard = () => {
                             </div>
                           </div>
 
-                          {user?.role === "ADMIN" && sale.status === "pending" && (
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => handleDeferredSaleAction(sale.id, "approved")}
-                                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold"
-                              >
-                                {t("dashboard.deferred.approve")}
-                              </button>
-                              <button
-                                onClick={() => handleDeferredSaleAction(sale.id, "rejected")}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-semibold"
-                              >
-                                {t("dashboard.deferred.reject")}
-                              </button>
-                            </div>
-                          )}
+                          {user?.role === "ADMIN" &&
+                            sale.status === "pending" && (
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() =>
+                                    handleDeferredSaleAction(
+                                      sale.id,
+                                      "approved"
+                                    )
+                                  }
+                                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold"
+                                >
+                                  {t("dashboard.deferred.approve")}
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeferredSaleAction(
+                                      sale.id,
+                                      "rejected"
+                                    )
+                                  }
+                                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-semibold"
+                                >
+                                  {t("dashboard.deferred.reject")}
+                                </button>
+                              </div>
+                            )}
                         </div>
                       ))
                     )}

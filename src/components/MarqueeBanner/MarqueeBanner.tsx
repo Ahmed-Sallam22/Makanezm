@@ -12,9 +12,11 @@ interface MarqueeItem {
 
 const MarqueeBanner = () => {
   // Read marquees from redux store so admin updates reflect immediately
-  const marqueeTexts = useSelector((state: RootState) => state.marquee.marquees) as Marquee[];
+  const marqueeTexts = useSelector(
+    (state: RootState) => state.marquee.marquees
+  ) as Marquee[];
   const [loading] = useState(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<MarqueeItem[]>([]);
   const [itemWidths, setItemWidths] = useState<number[]>([]);
@@ -34,14 +36,15 @@ const MarqueeBanner = () => {
       const tb = new Date(b.updatedAt).getTime();
       return ta - tb;
     });
-    
+
     // Measure width of each individual marquee text + bullet
     const widths: number[] = [];
     let total = 0;
-    
+
     sortedMarquees.forEach((marquee) => {
-      const measureElement = document.createElement('span');
-      measureElement.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:14px;font-weight:600;';
+      const measureElement = document.createElement("span");
+      measureElement.style.cssText =
+        "position:absolute;visibility:hidden;white-space:nowrap;font-size:14px;font-weight:600;";
       measureElement.innerHTML = `${marquee.text}<span style="margin:0 48px">•</span>`;
       document.body.appendChild(measureElement);
       const width = measureElement.offsetWidth;
@@ -49,18 +52,19 @@ const MarqueeBanner = () => {
       widths.push(width);
       total += width;
     });
-    
+
     setItemWidths(widths);
     setTotalWidth(total);
 
     // Create initial items - position each marquee text sequentially
-    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+    const containerWidth =
+      containerRef.current?.offsetWidth || window.innerWidth;
     const setsNeeded = Math.ceil(containerWidth / total) + 2;
-    
+
     const initialItems: MarqueeItem[] = [];
     let currentPosition = 0;
     let itemId = 0;
-    
+
     for (let set = 0; set < setsNeeded; set++) {
       sortedMarquees.forEach((marquee, idx) => {
         initialItems.push({
@@ -71,13 +75,14 @@ const MarqueeBanner = () => {
         currentPosition += widths[idx];
       });
     }
-    
+
     setItems(initialItems);
   }, [marqueeTexts]);
 
   // Animation loop - circular buffer logic
   useEffect(() => {
-    if (totalWidth === 0 || items.length === 0 || itemWidths.length === 0) return;
+    if (totalWidth === 0 || items.length === 0 || itemWidths.length === 0)
+      return;
 
     const sortedMarquees = [...marqueeTexts].sort((a, b) => {
       const ta = new Date(a.updatedAt).getTime();
@@ -87,18 +92,23 @@ const MarqueeBanner = () => {
     const numTexts = sortedMarquees.length;
 
     const animate = () => {
-      setItems(prevItems => {
+      setItems((prevItems) => {
         return prevItems.map((item, index) => {
           const textIndex = index % numTexts;
           const width = itemWidths[textIndex];
           let newPosition = item.position - speedRef.current;
-          
+
           // If item moves completely off the left edge, wrap it to the right
           if (newPosition < -width) {
-            const maxPosition = Math.max(...prevItems.map(i => i.position));
-            newPosition = maxPosition + itemWidths[(prevItems.findIndex(i => i.position === maxPosition) % numTexts)];
+            const maxPosition = Math.max(...prevItems.map((i) => i.position));
+            newPosition =
+              maxPosition +
+              itemWidths[
+                prevItems.findIndex((i) => i.position === maxPosition) %
+                  numTexts
+              ];
           }
-          
+
           return {
             ...item,
             position: newPosition,
@@ -121,9 +131,9 @@ const MarqueeBanner = () => {
   // Don't render until data is loaded
   if (loading || marqueeTexts.length === 0) {
     return (
-      <div 
-        className="marquee-wrapper py-2" 
-        style={{ backgroundColor: '#F65331' }}
+      <div
+        className="marquee-wrapper py-2"
+        style={{ backgroundColor: "#F65331" }}
       >
         <div className="h-6"></div>
       </div>
@@ -131,10 +141,10 @@ const MarqueeBanner = () => {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="marquee-wrapper py-2" 
-      style={{ backgroundColor: '#F65331' }}
+      className="marquee-wrapper py-2"
+      style={{ backgroundColor: "#F65331" }}
     >
       <div className="marquee-track-js">
         {items.map((item) => (
@@ -148,7 +158,12 @@ const MarqueeBanner = () => {
             <span className="text-sm md:text-base font-semibold text-white whitespace-nowrap">
               {item.text}
             </span>
-            <span className="text-white/80 whitespace-nowrap" style={{ margin: '0 48px' }}>•</span>
+            <span
+              className="text-white/80 whitespace-nowrap"
+              style={{ margin: "0 48px" }}
+            >
+              •
+            </span>
           </div>
         ))}
       </div>
