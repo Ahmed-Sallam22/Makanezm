@@ -1,7 +1,31 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import logo from "../../assets/images/Logo_Footer.png";
+import { getFooterLinks, type FooterLinks } from "../../services/footerService";
 
 const Footer = () => {
+  const [links, setLinks] = useState<FooterLinks>({
+    whatsapp: "https://wa.me/",
+    facebook: "https://facebook.com",
+    youtube: "https://youtube.com",
+    linkedin: "https://linkedin.com",
+    twitter: "https://twitter.com",
+  });
+
+  useEffect(() => {
+    const fetchLinks = async () => {
+      try {
+        const response = await getFooterLinks();
+        if (response.data?.links) {
+          setLinks((prev) => ({ ...prev, ...response.data.links }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch footer links:", error);
+      }
+    };
+    fetchLinks();
+  }, []);
+
   const socialLinks = [
     {
       name: "WhatsApp",
@@ -21,7 +45,7 @@ const Footer = () => {
           />
         </svg>
       ),
-      url: "https://wa.me/",
+      url: links.whatsapp || "https://wa.me/",
       color: "hover:text-green-500",
     },
     {
@@ -40,7 +64,7 @@ const Footer = () => {
           />
         </svg>
       ),
-      url: "https://facebook.com",
+      url: links.facebook || "https://facebook.com",
       color: "hover:text-blue-600",
     },
     {
@@ -59,7 +83,7 @@ const Footer = () => {
           />
         </svg>
       ),
-      url: "https://youtube.com",
+      url: links.youtube || "https://youtube.com",
       color: "hover:text-red-600",
     },
     {
@@ -78,7 +102,7 @@ const Footer = () => {
           />
         </svg>
       ),
-      url: "https://linkedin.com",
+      url: links.linkedin || "https://linkedin.com",
       color: "hover:text-blue-700",
     },
     {
@@ -97,7 +121,7 @@ const Footer = () => {
           />
         </svg>
       ),
-      url: "https://twitter.com",
+      url: links.twitter || "https://twitter.com",
       color: "hover:text-blue-400",
     },
   ];

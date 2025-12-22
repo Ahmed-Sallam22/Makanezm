@@ -7,6 +7,7 @@ import { ShoppingCart, Check, Eye, CreditCard, Star, Heart } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { addToCartAsync } from "../../store/slices/cartSlice";
 import { getPublicProducts, toggleProductFavorite, type PublicProduct } from "../../services/productService";
+import { getActiveHero } from "../../services/heroService";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import test1 from "../../assets/images/test1.png";
@@ -58,6 +59,24 @@ const Products = () => {
 
   // State for login modal
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // State for products cover image from API
+  const [productsCoverImage, setProductsCoverImage] = useState<string>(coverProduct);
+
+  // Fetch products cover image from API
+  useEffect(() => {
+    const fetchCoverImage = async () => {
+      try {
+        const response = await getActiveHero();
+        if (response.data.hero?.products_cover_image) {
+          setProductsCoverImage(response.data.hero.products_cover_image);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products cover image:", error);
+      }
+    };
+    fetchCoverImage();
+  }, []);
 
   // Fetch products from API
   useEffect(() => {
@@ -271,7 +290,7 @@ const Products = () => {
       >
         {/* Cover Image with Animation */}
         <motion.img
-          src={coverProduct}
+          src={productsCoverImage}
           className="w-[75%] mx-auto pb-6"
           alt="Products Cover"
           initial={{ opacity: 0, y: -30 }}

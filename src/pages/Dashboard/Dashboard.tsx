@@ -38,12 +38,16 @@ import {
   ExternalLink,
   Check,
   Percent,
+  Home,
+  Link as LinkIcon,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { updateUser } from "../../store/slices/authSlice";
 import SEO from "../../components/SEO";
 import { toast } from "react-toastify";
 import SliderTab from "./SlidersTab";
+import HeroTab from "./HeroTab";
+import FooterLinksTab from "./FooterLinksTab";
 import AdminProductsTab from "./AdminProductsTab";
 import MerchantOrdersTab from "./MerchantOrdersTab";
 import SettingsTab from "./SettingsTab";
@@ -90,11 +94,13 @@ type TabType =
   | "products"
   | "users"
   | "sliders"
+  | "hero"
   | "adminProducts"
   | "merchantOrders"
   | "settings"
   | "reports"
   | "marquee"
+  | "footerLinks"
   | "payouts"
   | "contact"
   | "discounts";
@@ -109,7 +115,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     // Check for tab query parameter
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "payouts", "contact", "discounts"].includes(tabParam)) {
+    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "hero", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "footerLinks", "payouts", "contact", "discounts"].includes(tabParam)) {
       return tabParam as TabType;
     }
     return "overview";
@@ -119,7 +125,7 @@ const Dashboard = () => {
   // Update tab when query param changes
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "payouts", "contact", "discounts"].includes(tabParam)) {
+    if (tabParam && ["overview", "orders", "profile", "merchant", "partnerships", "seasonal", "deferred", "products", "users", "sliders", "hero", "adminProducts", "merchantOrders", "settings", "reports", "marquee", "footerLinks", "payouts", "contact", "discounts"].includes(tabParam)) {
       setActiveTab(tabParam as TabType);
       // Clear the query param after setting tab
       setSearchParams({}, { replace: true });
@@ -336,9 +342,19 @@ const Dashboard = () => {
         label: t("dashboard.tabs.sliders") 
       },
       { 
+        id: "hero" as TabType, 
+        icon: Home, 
+        label: t("dashboard.tabs.hero") 
+      },
+      { 
         id: "marquee" as TabType, 
         icon: Type, 
         label: t("dashboard.tabs.marquee") 
+      },
+      { 
+        id: "footerLinks" as TabType, 
+        icon: LinkIcon, 
+        label: t("dashboard.tabs.footerLinks") 
       },
       { 
         id: "payouts" as TabType, 
@@ -798,9 +814,17 @@ const Dashboard = () => {
             {/* Sliders Tab (Admin Only) */}
             {activeTab === "sliders" && user?.role === "ADMIN" && <SliderTab />}
 
+            {/* Hero Tab (Admin Only) */}
+            {activeTab === "hero" && user?.role === "ADMIN" && <HeroTab />}
+
             {/* Marquee Tab (Admin Only) */}
             {activeTab === "marquee" && user?.role === "ADMIN" && (
               <MarqueeTab />
+            )}
+
+            {/* Footer Links Tab (Admin Only) */}
+            {activeTab === "footerLinks" && user?.role === "ADMIN" && (
+              <FooterLinksTab />
             )}
 
             {/* Investment Payouts Tab (Admin Only) */}

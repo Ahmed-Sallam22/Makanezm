@@ -1,10 +1,41 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import heroImage from "../../../../assets/images/Home.png";
+import defaultHeroImage from "../../../../assets/images/Home.png";
 import { Link } from "react-router-dom";
+import { getActiveHero, type HeroSetting } from "../../../../services/heroService";
 
 const Hero = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const [heroData, setHeroData] = useState<HeroSetting | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const response = await getActiveHero();
+        setHeroData(response.data.hero);
+      } catch (error) {
+        console.error("Failed to fetch hero data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHero();
+  }, []);
+
+  // Use API data if available, otherwise fall back to i18n translations
+  const title = heroData
+    ? (isArabic ? heroData.title_ar : heroData.title)
+    : t("home.heroTitle");
+  const description1 = heroData
+    ? (isArabic ? heroData.description1_ar : heroData.description1)
+    : t("home.heroDescription1");
+  const description2 = heroData
+    ? (isArabic ? heroData.description2_ar : heroData.description2)
+    : t("home.heroDescription2");
+  const heroImage = heroData?.image || defaultHeroImage;
 
   return (
     <motion.div
@@ -15,13 +46,13 @@ const Hero = () => {
     >
       <div className="flex flex-col space-y-4 sm:space-y-6 w-full md:w-[90%] lg:w-[80%] mx-auto order-2 md:order-1 px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-[#384B97]">
-          {t("home.heroTitle")}
+          {loading ? <span className="animate-pulse bg-gray-200 h-8 w-3/4 block rounded"></span> : title}
         </h2>
         <p className="text-justify sm:text-lg md:text-xl text-black">
-          {t("home.heroDescription1")}
+          {loading ? <span className="animate-pulse bg-gray-200 h-20 w-full block rounded"></span> : description1}
         </p>
         <p className="text-justify sm:text-lg md:text-xl text-black">
-          {t("home.heroDescription2")}
+          {loading ? <span className="animate-pulse bg-gray-200 h-6 w-2/3 block rounded"></span> : description2}
         </p>
         <Link to="/login">
           <motion.button
@@ -34,11 +65,15 @@ const Hero = () => {
         </Link>
       </div>
       <div className="order-1 md:order-2">
-        <img
-          src={heroImage}
-          alt="Hero Image"
-          className="w-full h-auto object-cover"
-        />
+        {loading ? (
+          <div className="animate-pulse bg-gray-200 w-full h-64 md:h-80 rounded-lg"></div>
+        ) : (
+          <img
+            src={heroImage}
+            alt="Hero Image"
+            className="w-full h-auto object-cover"
+          />
+        )}
       </div>
     </motion.div>
   );
