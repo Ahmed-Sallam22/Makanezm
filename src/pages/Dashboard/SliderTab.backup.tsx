@@ -158,7 +158,7 @@ const SliderTab = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={openAddModal}
-          className="flex items-center gap-2 bg-[#384B97] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
+          className="flex items-center gap-2 bg-[#3a4b95] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
         >
           <Plus className="w-5 h-5" />
           {isRTL ? "إضافة سلايدر" : "Add Slider"}
@@ -350,7 +350,7 @@ const SliderTab = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, image: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                     placeholder="https://example.com/image.jpg"
                     required
                   />
@@ -380,7 +380,7 @@ const SliderTab = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                     placeholder="Black Friday Sale"
                     required
                   />
@@ -397,7 +397,7 @@ const SliderTab = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, titleAr: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors text-right"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors text-right"
                     placeholder="تخفيضات الجمعة السوداء"
                     dir="rtl"
                     required
@@ -414,7 +414,7 @@ const SliderTab = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none"
                     rows={2}
                     placeholder="20% OFF SITEWIDE! Promotion valid through..."
                   />
@@ -433,7 +433,7 @@ const SliderTab = () => {
                         descriptionAr: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none text-right"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none text-right"
                     rows={2}
                     placeholder="خصم 20% على كل المنتجات..."
                     dir="rtl"
@@ -456,7 +456,7 @@ const SliderTab = () => {
                           order: parseInt(e.target.value) || 1,
                         })
                       }
-                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                     />
                   </div>
                   <div className="flex items-center justify-center">
@@ -470,7 +470,7 @@ const SliderTab = () => {
                             isActive: e.target.checked,
                           })
                         }
-                        className="w-5 h-5 rounded text-[#384B97] focus:ring-[#384B97]"
+                        className="w-5 h-5 rounded text-[#3a4b95] focus:ring-[#3a4b95]"
                       />
                       <span className="font-semibold text-gray-700">
                         {isRTL ? "نشط" : "Active"}
@@ -492,7 +492,7 @@ const SliderTab = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#384B97] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#3a4b95] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
                   >
                     <Save className="w-5 h-5" />
                     {editingSlider

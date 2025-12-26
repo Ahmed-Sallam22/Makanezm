@@ -150,8 +150,8 @@ const OrdersTab = () => {
         icon: <CheckCircle className="w-4 h-4" />,
       },
       invested: {
-        color: "text-orange-700",
-        bgColor: "bg-orange-100",
+        color: "text-[#8a5a3a]",
+        bgColor: "bg-[#c4886a]",
         icon: <TrendingUp className="w-4 h-4" />,
       },
       completed: {
@@ -181,8 +181,8 @@ const OrdersTab = () => {
         label: t("dashboard.orders.directPurchase"),
       },
       resale: {
-        color: "text-orange-700",
-        bgColor: "bg-orange-100",
+        color: "text-[#8a5a3a]",
+        bgColor: "bg-[#c4886a]",
         label: t("dashboard.orders.investment"),
       },
       mixed: {
@@ -348,12 +348,12 @@ const OrdersTab = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white"
+          className="bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-xl p-4 text-white"
         >
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 opacity-80" />
             <div>
-              <p className="text-orange-100 text-sm">
+              <p className="text-white text-sm">
                 {t("dashboard.orders.investments")}
               </p>
               <p className="text-2xl font-bold">{stats.resaleOrders}</p>
@@ -468,14 +468,14 @@ const OrdersTab = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05 }}
                   className={`bg-white rounded-xl shadow-md overflow-hidden border-2 ${
-                    isResale ? "border-orange-200" : "border-blue-200"
+                    isResale ? "border-[#c4886a]" : "border-blue-200"
                   }`}
                 >
                   {/* Order Header */}
                   <div className="p-4 bg-gray-50 border-b flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       {isResale ? (
-                        <TrendingUp className="w-5 h-5 text-orange-500" />
+                        <TrendingUp className="w-5 h-5 text-[#c4886a]" />
                       ) : (
                         <ShoppingBag className="w-5 h-5 text-blue-500" />
                       )}
@@ -532,7 +532,7 @@ const OrdersTab = () => {
                             <div
                               key={item.id}
                               className={`flex items-center justify-between py-2 border-b border-gray-100 last:border-0 ${
-                                item.isResale ? "bg-orange-50 rounded-lg px-2" : ""
+                                item.isResale ? "bg-[#c4886a] rounded-lg px-2" : ""
                               }`}
                             >
                               <div className="flex items-center gap-3">
@@ -553,7 +553,7 @@ const OrdersTab = () => {
                                       <span
                                         className={`px-2 py-0.5 rounded text-xs font-medium ${
                                           item.isResale
-                                            ? "bg-orange-100 text-orange-700"
+                                            ? "bg-[#c4886a] text-[#8a5a3a]"
                                             : "bg-blue-100 text-blue-700"
                                         }`}
                                       >
@@ -574,7 +574,7 @@ const OrdersTab = () => {
                                   {formatCurrency(item.totalPrice || item.price * item.quantity)}
                                 </p>
                                 {item.isResale && item.resale && (
-                                  <p className="text-sm text-orange-600">
+                                  <p className="text-sm text-[#c4886a]">
                                     +{item.resale.profitPercentage}%{" "}
                                     {t("dashboard.orders.profit")}
                                   </p>
@@ -594,10 +594,10 @@ const OrdersTab = () => {
 
                     {/* Investment Details - Show for orders with resale items */}
                     {isResale && order.resale && order.resale.expectedReturn > 0 && (
-                      <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="mt-4 p-4 bg-[#c4886a] rounded-lg border border-[#c4886a]">
                         <div className="flex items-center gap-2 mb-3">
-                          <TrendingUp className="w-5 h-5 text-orange-600" />
-                          <span className="font-bold text-orange-800">
+                          <TrendingUp className="w-5 h-5 text-[#c4886a]" />
+                          <span className="font-bold text-[#6a4a2a]">
                             {t("dashboard.orders.investmentDetails")}
                           </span>
                         </div>
@@ -630,7 +630,7 @@ const OrdersTab = () => {
                             <p className="text-gray-500">
                               {t("dashboard.orders.profit")}
                             </p>
-                            <p className="font-bold text-orange-600">
+                            <p className="font-bold text-[#c4886a]">
                               +{formatCurrency(order.resale.profitAmount)}
                             </p>
                           </div>
@@ -652,21 +652,21 @@ const OrdersTab = () => {
 
                         {/* Days Remaining */}
                         {!order.resale.returned && order.resale.returnDate && (
-                          <div className="mt-4 pt-4 border-t border-orange-200">
+                          <div className="mt-4 pt-4 border-t border-[#c4886a]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-orange-600" />
+                                <Calendar className="w-4 h-4 text-[#c4886a]" />
                                 <span className="text-sm text-gray-600">
                                   {t("dashboard.orders.daysRemaining")}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <div className="bg-orange-500 text-white px-3 py-1 rounded-lg font-bold">
+                                <div className="bg-[#c4886a] text-white px-3 py-1 rounded-lg font-bold">
                                   {daysRemaining}{" "}
                                   {t("dashboard.orders.days")}
                                 </div>
                                 {daysRemaining <= 7 && (
-                                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                                  <AlertCircle className="w-4 h-4 text-[#c4886a]" />
                                 )}
                               </div>
                             </div>
@@ -679,9 +679,9 @@ const OrdersTab = () => {
                                   {order.resale.returned ? "100%" : `${Math.max(0, Math.min(100, 100 - (daysRemaining / 30) * 100)).toFixed(0)}%`}
                                 </span>
                               </div>
-                              <div className="w-full bg-orange-200 rounded-full h-2">
+                              <div className="w-full bg-[#c4886a40] rounded-full h-2">
                                 <motion.div
-                                  className="bg-orange-500 h-2 rounded-full"
+                                  className="bg-[#c4886a] h-2 rounded-full"
                                   initial={{ width: 0 }}
                                   animate={{
                                     width: order.resale.returned
@@ -697,7 +697,7 @@ const OrdersTab = () => {
 
                         {/* Returned Status */}
                         {order.resale.returned && (
-                          <div className="mt-4 pt-4 border-t border-orange-200">
+                          <div className="mt-4 pt-4 border-t border-[#c4886a]">
                             <div className="flex items-center gap-2 text-green-600">
                               <CheckCircle className="w-5 h-5" />
                               <span className="font-bold">
@@ -912,7 +912,7 @@ const OrdersTab = () => {
                             {item.quantity} × {formatCurrency(item.price)}
                           </p>
                           {item.isResale && item.resale && (
-                            <p className="text-sm text-orange-600">
+                            <p className="text-sm text-[#c4886a]">
                               {t("dashboard.orders.investmentReturn")}:{" "}
                               {formatCurrency(item.resale.expectedReturn)} (+
                               {item.resale.profitPercentage}%)

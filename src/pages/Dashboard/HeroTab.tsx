@@ -262,7 +262,7 @@ const HeroTab = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-[#384B97]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#3a4b95]" />
       </div>
     );
   }
@@ -307,7 +307,7 @@ const HeroTab = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={startEditing}
-                className="flex items-center gap-2 bg-[#384B97] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
+                className="flex items-center gap-2 bg-[#3a4b95] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
               >
                 <Edit className="w-5 h-5" />
                 {isRTL ? "تعديل" : "Edit"}
@@ -333,7 +333,7 @@ const HeroTab = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsEditing(true)}
-            className="bg-[#384B97] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
+            className="bg-[#3a4b95] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors"
           >
             {isRTL ? "إضافة إعدادات البطل" : "Add Hero Settings"}
           </motion.button>
@@ -360,7 +360,7 @@ const HeroTab = () => {
               />
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#384B97] transition-colors"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#3a4b95] transition-colors"
               >
                 {imagePreview ? (
                   <div className="relative">
@@ -397,7 +397,7 @@ const HeroTab = () => {
               />
               <div
                 onClick={() => serviceFileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#384B97] transition-colors"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#3a4b95] transition-colors"
               >
                 {serviceImagePreview ? (
                   <div className="relative">
@@ -430,7 +430,7 @@ const HeroTab = () => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                   placeholder="Run your products now..."
                   required
                 />
@@ -443,7 +443,7 @@ const HeroTab = () => {
                   type="text"
                   value={formData.title_ar}
                   onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors text-right"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors text-right"
                   placeholder="شغل منتجاتك الآن..."
                   dir="rtl"
                   required
@@ -460,7 +460,7 @@ const HeroTab = () => {
                 <textarea
                   value={formData.description1}
                   onChange={(e) => setFormData({ ...formData, description1: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none"
                   rows={3}
                   placeholder="We are a modern, organized company..."
                 />
@@ -472,7 +472,7 @@ const HeroTab = () => {
                 <textarea
                   value={formData.description1_ar}
                   onChange={(e) => setFormData({ ...formData, description1_ar: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none text-right"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none text-right"
                   rows={3}
                   placeholder="هي شركة حديثة منظمة..."
                   dir="rtl"
@@ -489,7 +489,7 @@ const HeroTab = () => {
                 <textarea
                   value={formData.description2}
                   onChange={(e) => setFormData({ ...formData, description2: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none"
                   rows={2}
                   placeholder="Join today and start your journey..."
                 />
@@ -501,7 +501,7 @@ const HeroTab = () => {
                 <textarea
                   value={formData.description2_ar}
                   onChange={(e) => setFormData({ ...formData, description2_ar: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors resize-none text-right"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors resize-none text-right"
                   rows={2}
                   placeholder="انضم اليوم وابدأ رحلتك..."
                   dir="rtl"
@@ -516,7 +516,7 @@ const HeroTab = () => {
                 id="is_active"
                 checked={formData.is_active}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="w-5 h-5 rounded text-[#384B97] focus:ring-[#384B97]"
+                className="w-5 h-5 rounded text-[#3a4b95] focus:ring-[#3a4b95]"
               />
               <label htmlFor="is_active" className="font-semibold text-gray-700 cursor-pointer">
                 {isRTL ? "نشط (يظهر في الصفحة الرئيسية)" : "Active (Show on homepage)"}
@@ -538,7 +538,7 @@ const HeroTab = () => {
                 whileTap={{ scale: submitting ? 1 : 0.98 }}
                 type="submit"
                 disabled={submitting}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#384B97] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#3a4b95] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
               >
                 {submitting ? (
                   <>
@@ -661,7 +661,7 @@ const HeroTab = () => {
         className="bg-white rounded-xl shadow-md p-6"
       >
         <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-          <ShoppingBag className="w-5 h-5 text-[#384B97]" />
+          <ShoppingBag className="w-5 h-5 text-[#3a4b95]" />
           {isRTL ? "إعدادات صفحة المنتجات" : "Products Page Settings"}
         </h3>
         
@@ -673,7 +673,7 @@ const HeroTab = () => {
             </label>
             <div
               onClick={() => productsCoverFileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-[#384B97] transition-colors"
+              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-[#3a4b95] transition-colors"
             >
               <input
                 ref={productsCoverFileInputRef}
@@ -689,7 +689,7 @@ const HeroTab = () => {
                     alt="Products Cover Preview"
                     className="max-h-40 mx-auto rounded-lg"
                   />
-                  <p className="text-sm text-[#384B97] mt-2">
+                  <p className="text-sm text-[#3a4b95] mt-2">
                     {isRTL ? "اضغط لتغيير الصورة" : "Click to change image"}
                   </p>
                 </div>
@@ -709,7 +709,7 @@ const HeroTab = () => {
               whileTap={{ scale: productsCoverSubmitting ? 1 : 0.98 }}
               type="submit"
               disabled={productsCoverSubmitting}
-              className="flex items-center justify-center gap-2 bg-[#384B97] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-[#3a4b95] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
             >
               {productsCoverSubmitting ? (
                 <>

@@ -66,7 +66,7 @@ const FAQ = () => {
                     {faq.question}
                   </span>
                    <ChevronLeft
-                    className={`w-6 h-6 text-[#F65331] transition-transform flex-shrink-0 ${
+                    className={`w-6 h-6 text-[#c4886a] transition-transform flex-shrink-0 ${
                       openIndex === index ? "-rotate-90" : ""
                     }`}
                   />

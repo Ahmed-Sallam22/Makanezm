@@ -175,7 +175,7 @@ const MyInvestmentsTab = () => {
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                 statusFilter === status
-                  ? "bg-[#F65331] text-white shadow-md"
+                  ? "bg-[#c4886a] text-white shadow-md"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -196,7 +196,7 @@ const MyInvestmentsTab = () => {
       {/* Investments List */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-12 h-12 text-[#F65331] animate-spin" />
+          <Loader2 className="w-12 h-12 text-[#c4886a] animate-spin" />
         </div>
       ) : investments.length === 0 ? (
         <motion.div
@@ -332,7 +332,7 @@ const MyInvestmentsTab = () => {
               onClick={() => handlePageChange(page)}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                 currentPage === page
-                  ? "bg-[#F65331] text-white"
+                  ? "bg-[#c4886a] text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >

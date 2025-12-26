@@ -165,7 +165,7 @@ const SalesReport = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="order-2 lg:order-1"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#384B97] mb-6 text-center lg:text-right">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#3a4b95] mb-6 text-center lg:text-right">
               {t("home.salesReport.title")}
             </h2>
             <p className="text-base md:text-lg text-gray-700 leading-relaxed text-justify">
@@ -184,7 +184,7 @@ const SalesReport = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="order-1 lg:order-2"
           >
-            <h3 className="text-2xl md:text-3xl font-bold text-[#384B97] mb-6 text-center lg:text-right">
+            <h3 className="text-2xl md:text-3xl font-bold text-[#3a4b95] mb-6 text-center lg:text-right">
               {t("home.salesReport.chartTitle")}
             </h3>
             <div className="rounded-xl shadow-xl mx-auto p-3 min-h-[400px]">
@@ -194,7 +194,7 @@ const SalesReport = () => {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   >
-                    <Loader2 className="w-12 h-12 text-[#384B97]" />
+                    <Loader2 className="w-12 h-12 text-[#3a4b95]" />
                   </motion.div>
                 </div>
               ) : error && salesData.length === 0 ? (
@@ -230,13 +230,13 @@ const SalesReport = () => {
 
                     <Bar
                       dataKey="storeSales"
-                      fill="#F65331"
+                      fill="#c4886a"
                       radius={[4, 4, 0, 0]}
                       name={t("home.salesReport.storeSales")}
                     />
                     <Bar
                       dataKey="merchantSales"
-                      fill="#384B97"
+                      fill="#3a4b95"
                       radius={[4, 4, 0, 0]}
                       name={t("home.salesReport.merchantSales")}
                     />

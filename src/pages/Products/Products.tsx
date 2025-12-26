@@ -250,7 +250,7 @@ const Products = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-[#384B97] border-t-transparent rounded-full"
+          className="w-12 h-12 border-4 border-[#3a4b95] border-t-transparent rounded-full"
         />
       </div>
     );
@@ -264,7 +264,7 @@ const Products = () => {
           <p className="text-red-500 text-xl mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-[#384B97] text-white rounded-lg font-bold hover:bg-[#2a3a75]"
+            className="px-6 py-3 bg-[#3a4b95] text-white rounded-lg font-bold hover:bg-[#2a3a75]"
           >
             {isRTL ? "إعادة المحاولة" : "Try Again"}
           </button>
@@ -310,7 +310,7 @@ const Products = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="text-4xl font-bold text-[#384B97]"
+            className="text-4xl font-bold text-[#3a4b95]"
           >
             {t("products.title")}
           </motion.h1>
@@ -325,7 +325,7 @@ const Products = () => {
             <select
               onChange={handleCategoryChange}
               value={sortBy || selectedCategory}
-              className="px-6 py-3 rounded-lg border-2 border-gray-200 text-[#384B97] font-semibold bg-white cursor-pointer hover:border-[#F65331] transition-all appearance-none pr-12"
+              className="px-6 py-3 rounded-lg border-2 border-gray-200 text-[#3a4b95] font-semibold bg-white cursor-pointer hover:border-[#c4886a] transition-all appearance-none pr-12"
             >
               <option value="">{t("products.filter.label")}</option>
               <option value="meat">{t("products.filter.meat")}</option>
@@ -345,7 +345,7 @@ const Products = () => {
             >
               <path
                 d="M4 6L8 10L12 6"
-                stroke="#F65331"
+                stroke="#c4886a"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
@@ -404,13 +404,13 @@ const Products = () => {
                     {/* Badges */}
                     <div className="absolute top-3 left-3 z-10 flex flex-col gap-2 pointer-events-none">
                       {product.isFeatured && (
-                        <span className="bg-[#F65331] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="bg-[#c4886a] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3" />
                           {isRTL ? "مميز" : "Featured"}
                         </span>
                       )}
                       {product.allowInstallment && (
-                        <span className="bg-[#384B97] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="bg-[#3a4b95] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <CreditCard className="w-3 h-3" />
                           {isRTL ? "تقسيط" : "Installment"}
                         </span>
@@ -427,8 +427,8 @@ const Products = () => {
                         handleToggleFavorite(product.id, e);
                       }}
                       className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${isFavorited
-                        ? "bg-[#F65331] text-white"
-                        : "bg-white/90 text-gray-400 hover:text-[#F65331]"
+                        ? "bg-[#c4886a] text-white"
+                        : "bg-white/90 text-gray-400 hover:text-[#c4886a]"
                         } shadow-md backdrop-blur-sm`}
                     >
                       <AnimatePresence mode="wait">
@@ -471,7 +471,7 @@ const Products = () => {
 
                       {/* Installment price hint */}
                       {monthlyPrice && lowestInstallment && (
-                        <p className="text-xs text-[#384B97] mb-3">
+                        <p className="text-xs text-[#3a4b95] mb-3">
                           {isRTL
                             ? `عائد متوقع ${Math.round(monthlyPrice)} ريال بعد ${lowestInstallment.months} شهور (+${lowestInstallment.percentage}%)`
                             : `Expected return ${Math.round(monthlyPrice)} SAR after ${lowestInstallment.months} months (+${lowestInstallment.percentage}%)`}
@@ -481,7 +481,7 @@ const Products = () => {
                       {/* Stock Indicator */}
                       <div className="mb-3">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-semibold text-[#384B97]">
+                          <span className="text-xs font-semibold text-[#3a4b95]">
                             {product.stock > 0
                               ? isRTL
                                 ? `متوفر`
@@ -495,7 +495,7 @@ const Products = () => {
                             : product.stock_status === 'medium'
                               ? 'bg-yellow-100 text-yellow-700'
                               : product.stock_status === 'low'
-                                ? 'bg-orange-100 text-orange-700'
+                                ? 'bg-[#e5d4c8] text-[#8a5a3a]'
                                 : 'bg-red-100 text-red-700'
                             }`}>
                             {product.stock_status === 'high'
@@ -514,7 +514,7 @@ const Products = () => {
                               : product.stock_status === 'medium'
                                 ? "bg-yellow-500"
                                 : product.stock_status === 'low'
-                                  ? "bg-orange-500"
+                                  ? "bg-[#c4886a]"
                                   : "bg-red-500"
                               }`}
                             initial={{ width: 0 }}
@@ -541,7 +541,7 @@ const Products = () => {
 
                   {/* Back Side */}
                   <div
-                    className="absolute inset-0 w-full h-full bg-linear-to-br from-[#384B97] to-[#2a3a75] rounded-2xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 cursor-pointer"
+                    className="absolute inset-0 w-full h-full bg-linear-to-br from-[#3a4b95] to-[#2a3a75] rounded-2xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 cursor-pointer"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
@@ -550,7 +550,7 @@ const Products = () => {
                     {/* Badges on back */}
                     <div className="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none">
                       {product.isFeatured && (
-                        <span className="bg-[#F65331] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="bg-[#c4886a] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3" />
                           {isRTL ? "مميز" : "Featured"}
                         </span>
@@ -573,7 +573,7 @@ const Products = () => {
                         handleToggleFavorite(product.id, e);
                       }}
                       className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${isFavorited
-                        ? "bg-[#F65331] text-white"
+                        ? "bg-[#c4886a] text-white"
                         : "bg-white/20 text-white hover:bg-white/30"
                         } shadow-md backdrop-blur-sm`}
                     >
@@ -629,7 +629,7 @@ const Products = () => {
                           e.stopPropagation();
                           navigate(`/products/${product.id}`);
                         }}
-                        className="flex items-center justify-center gap-2 bg-white text-[#384B97] px-5 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all"
+                        className="flex items-center justify-center gap-2 bg-white text-[#3a4b95] px-5 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all"
                       >
                         <Eye className="w-5 h-5" />
                         {isRTL ? "عرض التفاصيل" : "View Details"}
@@ -643,7 +643,7 @@ const Products = () => {
                           e.stopPropagation();
                           handleAddToCart(product);
                         }}
-                        className="flex items-center justify-center gap-2 bg-[#F65331] text-white px-5 py-3 rounded-full font-bold shadow-lg hover:bg-[#e54525] transition-all"
+                        className="flex items-center justify-center gap-2 bg-[#c4886a] text-white px-5 py-3 rounded-full font-bold shadow-lg hover:bg-[#b47858] transition-all"
                       >
                         <AnimatePresence mode="wait">
                           {addedProducts.includes(product.id) ? (
@@ -692,7 +692,7 @@ const Products = () => {
               disabled={currentPage === 1}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${currentPage === 1
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-[#384B97] text-white hover:bg-[#2a3a75]"
+                : "bg-[#3a4b95] text-white hover:bg-[#2a3a75]"
                 }`}
             >
               {isRTL ? "السابق" : "Previous"}
@@ -704,7 +704,7 @@ const Products = () => {
                   key={page}
                   onClick={() => setCurrentPage(page)}
                   className={`w-10 h-10 rounded-lg font-semibold transition-all ${currentPage === page
-                    ? "bg-[#F65331] text-white"
+                    ? "bg-[#c4886a] text-white"
                     : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                     }`}
                 >
@@ -718,7 +718,7 @@ const Products = () => {
               disabled={currentPage === totalPages}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${currentPage === totalPages
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-[#384B97] text-white hover:bg-[#2a3a75]"
+                : "bg-[#3a4b95] text-white hover:bg-[#2a3a75]"
                 }`}
             >
               {isRTL ? "التالي" : "Next"}
@@ -759,7 +759,7 @@ const Products = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                  className="w-20 h-20 bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-full flex items-center justify-center mx-auto mb-6"
                 >
                   <ShoppingCart className="w-10 h-10 text-white" />
                 </motion.div>
@@ -786,7 +786,7 @@ const Products = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => navigate("/login")}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#c4886a] to-[#b47858] text-white rounded-xl font-bold hover:shadow-lg transition-all"
                   >
                     {isRTL ? "تسجيل الدخول" : "Login"}
                   </motion.button>

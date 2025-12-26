@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  Home,
+  ShoppingBag,
+  Phone,
+  HelpCircle,
+  Shield,
+  Info,
+} from "lucide-react";
 import logo from "../../assets/images/Logo_Footer.png";
 import { getFooterLinks, type FooterLinks } from "../../services/footerService";
 
 const Footer = () => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   const [links, setLinks] = useState<FooterLinks>({
     whatsapp: "https://wa.me/",
     facebook: "https://facebook.com",
@@ -25,6 +38,40 @@ const Footer = () => {
     };
     fetchLinks();
   }, []);
+
+  // Quick links for navigation
+  const quickLinks = [
+    {
+      name: isRTL ? "الرئيسية" : "Home",
+      path: "/",
+      icon: <Home className="w-5 h-5" />,
+    },
+    {
+      name: isRTL ? "المنتجات" : "Products",
+      path: "/products",
+      icon: <ShoppingBag className="w-5 h-5" />,
+    },
+    {
+      name: isRTL ? "من نحن" : "About Us",
+      path: "/about",
+      icon: <Info className="w-5 h-5" />,
+    },
+    {
+      name: isRTL ? "الأسئلة الشائعة" : "FAQ",
+      path: "/faq",
+      icon: <HelpCircle className="w-5 h-5" />,
+    },
+    {
+      name: isRTL ? "الشروط والخصوصية" : "Privacy",
+      path: "/privacy",
+      icon: <Shield className="w-5 h-5" />,
+    },
+    {
+      name: isRTL ? "اتصل بنا" : "Contact",
+      path: "/contact",
+      icon: <Phone className="w-5 h-5" />,
+    },
+  ];
 
   const socialLinks = [
     {
@@ -131,61 +178,133 @@ const Footer = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-primary text-white py-12 mt-auto"
+      className="bg-[#3a4b95] text-white py-12 mt-auto"
     >
       <div className="w-[95%] mx-auto px-4">
-        <div className="flex flex-col items-center justify-center space-y-8">
-          {/* Company Logo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* Company Logo & Description */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center  justify-center"
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex flex-col items-center md:items-start space-y-4"
           >
-            <img src={logo} alt="MeKanizm Logo" className="w-auto h-24" />
+            <img src={logo} alt="MeKanizm Logo" className="w-auto h-20" />
+            <p className="text-gray-300 text-sm text-center md:text-right leading-relaxed">
+              {isRTL
+                ? "منصة متكاملة لعرض منتجاتك وإدارة مبيعاتك بكل سهولة"
+                : "Complete platform to showcase your products and manage your sales easily"}
+            </p>
           </motion.div>
 
-          {/* Social Media Icons */}
+          {/* Quick Links */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex items-center gap-6"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col items-center md:items-start"
           >
-            {socialLinks.map((social) => {
-              return (
+            <h3 className="text-lg font-bold mb-4 text-[#c4886a]">
+              {isRTL ? "روابط سريعة" : "Quick Links"}
+            </h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.path}>
+                  <Link
+                    to={link.path}
+                    className="flex items-center gap-2 text-gray-300 hover:text-[#c4886a] transition-colors duration-300 group"
+                  >
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">
+                      {link.icon}
+                    </span>
+                    <span>{link.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Social Media */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col items-center md:items-start"
+          >
+            <h3 className="text-lg font-bold mb-4 text-[#c4886a]">
+              {isRTL ? "تواصل معنا" : "Follow Us"}
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {socialLinks.map((social) => (
                 <motion.a
                   key={social.name}
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.2, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`transition-colors ${social.color}`}
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`transition-all duration-300 ${social.color}`}
                   aria-label={social.name}
+                  title={social.name}
                 >
-                  <div className="w-14 h-14 flex items-center bg-[#F65331] p-1 rounded-full justify-center">
+                  <div className="w-12 h-12 flex items-center bg-[#c4886a] hover:bg-[#b47858] p-2 rounded-full justify-center transition-colors duration-300 shadow-lg hover:shadow-xl">
                     {social.icon}
                   </div>
                 </motion.a>
-              );
-            })}
+              ))}
+            </div>
           </motion.div>
 
-          {/* Copyright */}
+          {/* Contact Info */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="text-center text-sm text-gray-300"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex flex-col items-center md:items-start"
           >
-            <p>
-              &copy; {new Date().getFullYear()} MeKanizm. All rights reserved.
-            </p>
+            <h3 className="text-lg font-bold mb-4 text-[#c4886a]">
+              {isRTL ? "معلومات التواصل" : "Contact Info"}
+            </h3>
+            <div className="space-y-3 text-gray-300 text-sm">
+              <div className="flex items-center gap-2">
+                <Phone className="w-5 h-5 text-[#c4886a]" />
+                <a
+                  href={links.whatsapp}
+                  className="hover:text-[#c4886a] transition-colors"
+                >
+                  {isRTL ? "واتساب" : "WhatsApp"}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-[#c4886a]" />
+                <span>{isRTL ? "دعم فني متاح 24/7" : "24/7 Support"}</span>
+              </div>
+            </div>
           </motion.div>
         </div>
+
+        {/* Divider */}
+        <div className="border-t border-gray-600 my-6"></div>
+
+        {/* Copyright */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-center text-sm text-gray-300"
+        >
+          <p>
+            {isRTL ? (
+              <>
+                &copy; {new Date().getFullYear()} MeKanizm. جميع الحقوق محفوظة.
+              </>
+            ) : (
+              <>
+                &copy; {new Date().getFullYear()} MeKanizm. All rights reserved.
+              </>
+            )}
+          </p>
+        </motion.div>
       </div>
     </motion.footer>
   );

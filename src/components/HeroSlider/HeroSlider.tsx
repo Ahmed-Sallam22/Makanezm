@@ -29,7 +29,7 @@ const HeroSlider = () => {
 
   if (loading) {
     return (
-      <div className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-r from-[#384B97] to-[#F65331] animate-pulse" />
+      <div className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-r from-[#3a4b95] to-[#c4886a] animate-pulse" />
     );
   }
 

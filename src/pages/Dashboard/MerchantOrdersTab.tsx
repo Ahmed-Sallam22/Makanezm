@@ -249,12 +249,12 @@ const MerchantOrdersTab = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white"
+          className="bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-xl p-4 text-white"
         >
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 opacity-80" />
             <div>
-              <p className="text-orange-100 text-sm">
+              <p className="text-white text-sm">
                 {t("dashboard.merchantOrders.installmentProfit")}
               </p>
               <p className="text-2xl font-bold">
@@ -324,7 +324,7 @@ const MerchantOrdersTab = () => {
                 transition={{ delay: index * 0.05 }}
                 className={`bg-white rounded-xl shadow-md overflow-hidden border-2 ${
                   order.paymentType === "installment"
-                    ? "border-orange-200"
+                    ? "border-[#c4886a30]"
                     : "border-green-200"
                 }`}
               >
@@ -332,7 +332,7 @@ const MerchantOrdersTab = () => {
                 <div className="p-4 bg-gray-50 border-b flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     {order.paymentType === "installment" ? (
-                      <CreditCard className="w-5 h-5 text-orange-500" />
+                      <CreditCard className="w-5 h-5 text-[#c4886a]" />
                     ) : (
                       <Banknote className="w-5 h-5 text-green-500" />
                     )}
@@ -377,7 +377,7 @@ const MerchantOrdersTab = () => {
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold ${
                         order.paymentType === "installment"
-                          ? "bg-orange-100 text-orange-800"
+                          ? "bg-[#e5d4c8] text-[#6a4a2a]"
                           : "bg-green-100 text-green-800"
                       }`}
                     >
@@ -410,10 +410,10 @@ const MerchantOrdersTab = () => {
                   {/* Installment Details */}
                   {order.paymentType === "installment" &&
                     order.installmentDetails && (
-                      <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="mt-4 p-4 bg-[#c4886a20] rounded-lg border border-[#c4886a30]">
                         <div className="flex items-center gap-2 mb-3">
-                          <CreditCard className="w-5 h-5 text-orange-600" />
-                          <span className="font-bold text-orange-800">
+                          <CreditCard className="w-5 h-5 text-[#c4886a]" />
+                          <span className="font-bold text-[#6a4a2a]">
                             {t("dashboard.merchantOrders.installmentDetails")}
                           </span>
                         </div>
@@ -452,7 +452,7 @@ const MerchantOrdersTab = () => {
                             <p className="text-gray-500">
                               {t("dashboard.merchantOrders.yourProfit")}
                             </p>
-                            <p className="font-bold text-orange-600">
+                            <p className="font-bold text-[#c4886a]">
                               +${order.installmentDetails.profit}
                             </p>
                           </div>
@@ -460,22 +460,22 @@ const MerchantOrdersTab = () => {
 
                         {/* Countdown to next payment */}
                         {order.installmentDetails.remainingPayments > 0 && (
-                          <div className="mt-4 pt-4 border-t border-orange-200">
+                          <div className="mt-4 pt-4 border-t border-[#c4886a30]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-orange-600" />
+                                <Calendar className="w-4 h-4 text-[#c4886a]" />
                                 <span className="text-sm text-gray-600">
                                   {t("dashboard.merchantOrders.nextPayment")}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <div className="bg-orange-500 text-white px-3 py-1 rounded-lg font-bold">
+                                <div className="bg-[#c4886a] text-white px-3 py-1 rounded-lg font-bold">
                                   {getDaysRemaining(
                                     order.installmentDetails.nextPaymentDate
                                   )}{" "}
                                   {t("dashboard.merchantOrders.days")}
                                 </div>
-                                <AlertCircle className="w-4 h-4 text-orange-500" />
+                                <AlertCircle className="w-4 h-4 text-[#c4886a]" />
                               </div>
                             </div>
 
@@ -494,9 +494,9 @@ const MerchantOrdersTab = () => {
                                   %
                                 </span>
                               </div>
-                              <div className="w-full bg-orange-200 rounded-full h-2">
+                              <div className="w-full bg-[#c4886a40] rounded-full h-2">
                                 <motion.div
-                                  className="bg-orange-500 h-2 rounded-full"
+                                  className="bg-[#c4886a] h-2 rounded-full"
                                   initial={{ width: 0 }}
                                   animate={{
                                     width: `${

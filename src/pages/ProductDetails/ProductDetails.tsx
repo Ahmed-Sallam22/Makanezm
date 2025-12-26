@@ -174,7 +174,7 @@ const ProductDetails = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-[#384B97] border-t-transparent rounded-full"
+          className="w-12 h-12 border-4 border-[#3a4b95] border-t-transparent rounded-full"
         />
       </div>
     );
@@ -190,7 +190,7 @@ const ProductDetails = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/products")}
-            className="px-6 py-3 bg-[#F65331] text-white rounded-lg font-bold"
+            className="px-6 py-3 bg-[#c4886a] text-white rounded-lg font-bold"
           >
             {t("productDetails.backToProducts")}
           </motion.button>
@@ -211,7 +211,7 @@ const ProductDetails = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/products")}
-            className="px-6 py-3 bg-[#F65331] text-white rounded-lg font-bold"
+            className="px-6 py-3 bg-[#c4886a] text-white rounded-lg font-bold"
           >
             {t("productDetails.backToProducts")}
           </motion.button>
@@ -268,19 +268,19 @@ const ProductDetails = () => {
           >
             <button
               onClick={() => navigate("/")}
-              className="hover:text-[#384B97] transition-colors"
+              className="hover:text-[#3a4b95] transition-colors"
             >
               {t("nav.home")}
             </button>
             <span>/</span>
             <button
               onClick={() => navigate("/products")}
-              className="hover:text-[#384B97] transition-colors"
+              className="hover:text-[#3a4b95] transition-colors"
             >
               {t("nav.products")}
             </button>
             <span>/</span>
-            <span className="text-[#384B97] font-semibold">
+            <span className="text-[#3a4b95] font-semibold">
               {isRTL ? product.nameAr : product.name}
             </span>
           </motion.div>
@@ -299,13 +299,13 @@ const ProductDetails = () => {
                 {/* Badges */}
                 <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                   {product.isFeatured && (
-                    <span className="bg-[#F65331] text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                    <span className="bg-[#c4886a] text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
                       <Star className="w-3 h-3" />
                       {t("productDetails.featured")}
                     </span>
                   )}
                   {product.allowInstallment && (
-                    <span className="bg-[#384B97] text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                    <span className="bg-[#3a4b95] text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
                       <CreditCard className="w-3 h-3" />
                       {t("productDetails.installmentAvailable")}
                     </span>
@@ -364,7 +364,7 @@ const ProductDetails = () => {
                     onClick={() => setActiveImageIndex(index)}
                     className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                       activeImageIndex === index
-                        ? "border-[#384B97] shadow-md"
+                        ? "border-[#3a4b95] shadow-md"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -405,7 +405,7 @@ const ProductDetails = () => {
               {/* Price */}
               <div className="space-y-2">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-bold text-[#384B97]">
+                  <span className="text-4xl font-bold text-[#3a4b95]">
                     {selectedInstallment
                       ? Math.round(installmentTotal)
                       : baseTotal}
@@ -420,7 +420,7 @@ const ProductDetails = () => {
                   )}
                 </div>
                 {selectedInstallment && (
-                  <p className="text-[#F65331] font-semibold">
+                  <p className="text-[#c4886a] font-semibold">
                     {Math.round(monthlyPayment)} {t("common.currency")} /{" "}
                     {t("productDetails.month")} × {selectedInstallment.months}{" "}
                     {t("productDetails.months")}
@@ -464,7 +464,7 @@ const ProductDetails = () => {
               {/* Payment Options */}
               <div className="bg-white rounded-xl p-5 shadow-md space-y-4">
                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-[#384B97]" />
+                  <CreditCard className="w-5 h-5 text-[#3a4b95]" />
                   {t("productDetails.paymentOptions")}
                 </h3>
                 <div className="flex flex-wrap gap-3">
@@ -475,7 +475,7 @@ const ProductDetails = () => {
                     onClick={() => setSelectedInstallment(null)}
                     className={`flex items-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all ${
                       !selectedInstallment
-                        ? "bg-[#384B97] text-white shadow-md"
+                        ? "bg-[#3a4b95] text-white shadow-md"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
@@ -492,7 +492,7 @@ const ProductDetails = () => {
                       onClick={() => setSelectedInstallment(tier)}
                       className={`flex flex-col items-center px-4 py-3 rounded-lg font-semibold transition-all ${
                         selectedInstallment?.months === tier.months
-                          ? "bg-[#F65331] text-white shadow-md"
+                          ? "bg-[#c4886a] text-white shadow-md"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
@@ -558,7 +558,7 @@ const ProductDetails = () => {
                   className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${
                     product.stock === 0
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-[#F65331] text-white hover:bg-[#e54525] shadow-lg hover:shadow-xl"
+                      : "bg-[#c4886a] text-white hover:bg-[#b47858] shadow-lg hover:shadow-xl"
                   }`}
                 >
                   <AnimatePresence mode="wait">
@@ -592,7 +592,7 @@ const ProductDetails = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate("/cart")}
-                  className="px-6 py-4 border-2 border-[#384B97] text-[#384B97] rounded-xl font-bold hover:bg-[#384B97] hover:text-white transition-all"
+                  className="px-6 py-4 border-2 border-[#3a4b95] text-[#3a4b95] rounded-xl font-bold hover:bg-[#3a4b95] hover:text-white transition-all"
                 >
                   {t("productDetails.viewCart")}
                 </motion.button>
@@ -602,7 +602,7 @@ const ProductDetails = () => {
               <div className="grid grid-cols-2 gap-4 pt-6 border-t">
                 <div className="flex items-center gap-3 text-gray-600">
                   <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-[#384B97]" />
+                    <Truck className="w-5 h-5 text-[#3a4b95]" />
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800 text-sm">
@@ -627,8 +627,8 @@ const ProductDetails = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-gray-600">
-                  <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-[#F65331]" />
+                  <div className="w-10 h-10 bg-[#c4886a20] rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-[#c4886a]" />
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800 text-sm">
@@ -688,7 +688,7 @@ const ProductDetails = () => {
                       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-1">
                         {isRTL ? relatedProduct.nameAr : relatedProduct.name}
                       </h3>
-                      <p className="text-[#384B97] font-bold">
+                      <p className="text-[#3a4b95] font-bold">
                         {relatedProduct.price} {t("common.currency")}
                       </p>
                     </div>
@@ -743,7 +743,7 @@ const ProductDetails = () => {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                    className="w-20 h-20 bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-full flex items-center justify-center mx-auto mb-6"
                   >
                     <ShoppingCart className="w-10 h-10 text-white" />
                   </motion.div>
@@ -770,7 +770,7 @@ const ProductDetails = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => navigate("/login")}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-[#c4886a] to-[#b47858] text-white rounded-xl font-bold hover:shadow-lg transition-all"
                     >
                       {isRTL ? "تسجيل الدخول" : "Login"}
                     </motion.button>

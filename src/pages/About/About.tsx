@@ -48,7 +48,7 @@ const About = () => {
             alt="Makanizm Bridge"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#384B97]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#3a4b95]/30 to-transparent" />
         </motion.div>
 
         <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -65,9 +65,9 @@ const About = () => {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: "spring" }}
-                className="w-3 h-3 bg-[#384B97] rounded-full"
+                className="w-3 h-3 bg-[#3a4b95] rounded-full"
               />
-              <h1 className="text-3xl md:text-4xl font-bold text-[#384B97]">
+              <h1 className="text-3xl md:text-4xl font-bold text-[#3a4b95]">
                 {t("aboutPage.title")}
               </h1>
             </div>
@@ -95,8 +95,8 @@ const About = () => {
               >
                 <div className="relative">
                   {/* Decorative circles */}
-                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#384B97]/10 rounded-full" />
-                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#F65331]/10 rounded-full" />
+                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#3a4b95]/10 rounded-full" />
+                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#c4886a]/10 rounded-full" />
 
                   {/* Main illustration placeholder - using SVG */}
                   <svg
@@ -165,7 +165,7 @@ const About = () => {
 
                     {/* Person */}
                     <circle cx="100" cy="100" r="25" fill="#FFCC80" />
-                    <path d="M60 180 Q100 140 140 180" fill="#384B97" />
+                    <path d="M60 180 Q100 140 140 180" fill="#3a4b95" />
                     <rect
                       x="85"
                       y="120"
@@ -183,11 +183,11 @@ const About = () => {
                       height="50"
                       rx="5"
                       fill="white"
-                      stroke="#384B97"
+                      stroke="#3a4b95"
                       strokeWidth="2"
                     />
-                    <rect x="55" y="170" width="30" height="3" fill="#384B97" />
-                    <rect x="55" y="178" width="20" height="3" fill="#F65331" />
+                    <rect x="55" y="170" width="30" height="3" fill="#3a4b95" />
+                    <rect x="55" y="178" width="20" height="3" fill="#c4886a" />
                     <rect x="55" y="186" width="25" height="3" fill="#4CAF50" />
                   </svg>
                 </div>
@@ -226,7 +226,7 @@ const About = () => {
               initial="hidden"
               animate="visible"
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="bg-[#F65331] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+              className="bg-[#c4886a] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
@@ -251,8 +251,8 @@ const About = () => {
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
             >
               <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-[#F65331]/10 rounded-full flex items-center justify-center mb-4">
-                  <Eye className="w-7 h-7 text-[#F65331]" />
+                <div className="w-14 h-14 bg-[#c4886a]/10 rounded-full flex items-center justify-center mb-4">
+                  <Eye className="w-7 h-7 text-[#c4886a]" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
                   {t("aboutPage.vision.title")}

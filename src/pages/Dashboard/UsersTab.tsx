@@ -217,7 +217,7 @@ const UsersTab = () => {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[#F65331] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-[#c4886a] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium"
         >
           <Plus className="w-5 h-5" />
           {t("dashboard.users.addUser")}
@@ -266,7 +266,7 @@ const UsersTab = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t("dashboard.users.searchPlaceholder")}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
             />
           </div>
           
@@ -276,7 +276,7 @@ const UsersTab = () => {
               onClick={() => setRoleFilter("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
                 roleFilter === "all"
-                  ? "bg-[#F65331] text-white"
+                  ? "bg-[#c4886a] text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -310,7 +310,7 @@ const UsersTab = () => {
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F65331]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c4886a]"></div>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
@@ -347,7 +347,7 @@ const UsersTab = () => {
                   <tr key={user.id} className="hover:bg-gray-50 transition-all">
                     <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
                       <div className={`flex items-center gap-3 ${isArabic ? 'justify-end flex-row-reverse' : 'justify-start'}`}>
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F65331] to-[#ff7a5c] flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c4886a] to-[#ff7a5c] flex items-center justify-center text-white font-bold">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-semibold text-gray-800">{user.name}</span>
@@ -450,7 +450,7 @@ const UsersTab = () => {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.namePlaceholder")}
                       required
                     />
@@ -466,7 +466,7 @@ const UsersTab = () => {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.emailPlaceholder")}
                       required
                     />
@@ -482,7 +482,7 @@ const UsersTab = () => {
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent pr-10"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent pr-10"
                         placeholder={editingUser ? t("dashboard.users.leaveBlank") : t("dashboard.users.passwordPlaceholder")}
                         required={!editingUser}
                       />
@@ -505,7 +505,7 @@ const UsersTab = () => {
                       type={showPassword ? "text" : "password"}
                       value={formData.password_confirmation}
                       onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.confirmPasswordPlaceholder")}
                       required={!editingUser && formData.password !== ''}
                     />
@@ -520,7 +520,7 @@ const UsersTab = () => {
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value as 'USER' | 'ADMIN' })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                     >
                       <option value="USER">{t("dashboard.users.customer")}</option>
                       <option value="ADMIN">{t("dashboard.users.admin")}</option>
@@ -537,7 +537,7 @@ const UsersTab = () => {
                       type="text"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.cityPlaceholder")}
                     />
                   </div>
@@ -553,7 +553,7 @@ const UsersTab = () => {
                         type="tel"
                         value={formData.primary_mobile}
                         onChange={(e) => setFormData({ ...formData, primary_mobile: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                         placeholder={t("dashboard.users.phonePlaceholder")}
                       />
                     </div>
@@ -569,7 +569,7 @@ const UsersTab = () => {
                       type="text"
                       value={formData.national_id}
                       onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.nationalIdPlaceholder")}
                     />
                   </div>
@@ -584,7 +584,7 @@ const UsersTab = () => {
                       type="text"
                       value={formData.bank_name}
                       onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.bankNamePlaceholder")}
                     />
                   </div>
@@ -599,7 +599,7 @@ const UsersTab = () => {
                       type="text"
                       value={formData.bank_iban}
                       onChange={(e) => setFormData({ ...formData, bank_iban: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder={t("dashboard.users.bankIbanPlaceholder")}
                     />
                   </div>
@@ -610,7 +610,7 @@ const UsersTab = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 px-4 py-3 bg-[#F65331] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-[#c4886a] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <>

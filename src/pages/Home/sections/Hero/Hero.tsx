@@ -45,7 +45,7 @@ const Hero = () => {
       className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center py-8 md:py-12 lg:py-16"
     >
       <div className="flex flex-col space-y-4 sm:space-y-6 w-full md:w-[90%] lg:w-[80%] mx-auto order-2 md:order-1 px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#384B97]">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#3a4b95]">
           {loading ? <span className="animate-pulse bg-gray-200 h-8 w-3/4 block rounded"></span> : title}
         </h2>
         <p className="text-justify sm:text-lg md:text-xl text-black">

@@ -100,7 +100,7 @@ const OverviewStats = () => {
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{ duration: 0.6 }}
-      className="bg-[#384B97] py-6 "
+      className="bg-[#3a4b95] py-6 "
     >
       <div className="w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative">

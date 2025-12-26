@@ -171,7 +171,7 @@ const ContactMessagesTab = () => {
             onClick={() => setFilter("unread")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               filter === "unread"
-                ? "bg-[#F65331] text-white"
+                ? "bg-[#c4886a] text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -217,7 +217,7 @@ const ContactMessagesTab = () => {
                     {message.is_read ? (
                       <MailOpen className="w-5 h-5 text-gray-400" />
                     ) : (
-                      <Mail className="w-5 h-5 text-[#F65331]" />
+                      <Mail className="w-5 h-5 text-[#c4886a]" />
                     )}
                   </div>
 

@@ -133,7 +133,7 @@ const SettingsTab = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSaveSettings}
-          className="flex items-center gap-2 px-4 py-2 bg-[#384B97] text-white rounded-lg hover:bg-[#2d3c78] transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-[#3a4b95] text-white rounded-lg hover:bg-[#2d3c78] transition-all"
         >
           <Save className="w-4 h-4" />
           {t("dashboard.settings.saveAll")}
@@ -163,7 +163,7 @@ const SettingsTab = () => {
               onClick={() => handleLanguageChange("ar")}
               className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
                 settings.language === "ar"
-                  ? "border-[#384B97] bg-blue-50"
+                  ? "border-[#3a4b95] bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -172,14 +172,14 @@ const SettingsTab = () => {
                 <span className="font-semibold">العربية</span>
               </div>
               {settings.language === "ar" && (
-                <Check className="w-5 h-5 text-[#384B97]" />
+                <Check className="w-5 h-5 text-[#3a4b95]" />
               )}
             </button>
             <button
               onClick={() => handleLanguageChange("en")}
               className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
                 settings.language === "en"
-                  ? "border-[#384B97] bg-blue-50"
+                  ? "border-[#3a4b95] bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -188,7 +188,7 @@ const SettingsTab = () => {
                 <span className="font-semibold">English</span>
               </div>
               {settings.language === "en" && (
-                <Check className="w-5 h-5 text-[#384B97]" />
+                <Check className="w-5 h-5 text-[#3a4b95]" />
               )}
             </button>
           </div>
@@ -227,7 +227,7 @@ const SettingsTab = () => {
                 setSettings({ ...settings, darkMode: !settings.darkMode })
               }
               className={`relative w-14 h-7 rounded-full transition-all ${
-                settings.darkMode ? "bg-[#384B97]" : "bg-gray-300"
+                settings.darkMode ? "bg-[#3a4b95]" : "bg-gray-300"
               }`}
             >
               <div
@@ -259,7 +259,7 @@ const SettingsTab = () => {
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Bell className="w-5 h-5 text-orange-600" />
+              <Bell className="w-5 h-5 text-[#c4886a]" />
             </div>
             <h3 className="text-lg font-bold text-gray-800">
               {t("dashboard.settings.notifications")}
@@ -448,7 +448,7 @@ const SettingsTab = () => {
                       currentPassword: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3a4b95] focus:border-transparent"
                   placeholder="••••••••"
                 />
               </div>
@@ -467,7 +467,7 @@ const SettingsTab = () => {
                     newPassword: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3a4b95] focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -486,7 +486,7 @@ const SettingsTab = () => {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#384B97] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3a4b95] focus:border-transparent"
                   placeholder="••••••••"
                 />
                 <button
@@ -509,7 +509,7 @@ const SettingsTab = () => {
                 whileTap={{ scale: isChangingPassword ? 1 : 0.98 }}
                 type="submit"
                 disabled={isChangingPassword}
-                className="px-6 py-2 bg-[#F65331] text-white rounded-lg hover:bg-[#e54525] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2 bg-[#c4886a] text-white rounded-lg hover:bg-[#b47858] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isChangingPassword ? (
                   <>

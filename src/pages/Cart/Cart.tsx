@@ -507,7 +507,7 @@ const Cart = () => {
             <h1 className="text-4xl font-bold text-gray-800">
               {t("cart.title")}
             </h1>
-            <ShoppingCart className="w-10 h-10 text-[#F65331]" />
+            <ShoppingCart className="w-10 h-10 text-[#c4886a]" />
           </div>
           <p className="text-gray-600 text-lg">{t("cart.subtitle")}</p>
         </motion.div>
@@ -519,7 +519,7 @@ const Cart = () => {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-16"
           >
-            <Loader2 className="w-12 h-12 text-[#F65331] animate-spin mb-4" />
+            <Loader2 className="w-12 h-12 text-[#c4886a] animate-spin mb-4" />
             <p className="text-gray-600">
               {t("cart.loading") || "جاري تحميل السلة..."}
             </p>
@@ -541,7 +541,7 @@ const Cart = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleContinueShopping}
-              className="px-8 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] transition-all"
+              className="px-8 py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] transition-all"
             >
               {t("cart.continueShopping")}
             </motion.button>
@@ -557,7 +557,7 @@ const Cart = () => {
               >
                 <h3 className="text-lg font-bold text-gray-800 mb-4 text-right flex items-center justify-end gap-2">
                   <span>{t("cart.orderOptions") || "خيارات الطلب"}</span>
-                  <ShoppingCart className="w-5 h-5 text-[#F65331]" />
+                  <ShoppingCart className="w-5 h-5 text-[#c4886a]" />
                 </h3>
 
                 {/* Purchase Type Selection */}
@@ -573,7 +573,7 @@ const Cart = () => {
                       onClick={() => handleGlobalPurchaseTypeChange("wallet")}
                       className={`flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all ${
                         globalPurchaseType === "wallet"
-                          ? "bg-[#384B97] text-white shadow-lg"
+                          ? "bg-[#3a4b95] text-white shadow-lg"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
@@ -589,7 +589,7 @@ const Cart = () => {
                         onClick={() => handleGlobalPurchaseTypeChange("resale")}
                         className={`flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all ${
                           globalPurchaseType === "resale"
-                            ? "bg-[#F65331] text-white shadow-lg"
+                            ? "bg-[#c4886a] text-white shadow-lg"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
@@ -630,10 +630,10 @@ const Cart = () => {
                   {globalPurchaseType === "wallet" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
                       <div className="flex items-center justify-end gap-2 mb-2">
-                        <span className="text-[#384B97] font-bold">
+                        <span className="text-[#3a4b95] font-bold">
                           {t("cart.directPurchaseSelected") || "شراء مباشر"}
                         </span>
-                        <Truck className="w-5 h-5 text-[#384B97]" />
+                        <Truck className="w-5 h-5 text-[#3a4b95]" />
                       </div>
                       <p className="text-sm text-gray-600 text-right">
                         {t("cart.directPurchaseNote")}
@@ -648,7 +648,7 @@ const Cart = () => {
                     <div className="relative flex-1">
                       {companiesLoading ? (
                         <div className="flex items-center justify-center py-3">
-                          <Loader2 className="w-6 h-6 animate-spin text-[#384B97]" />
+                          <Loader2 className="w-6 h-6 animate-spin text-[#3a4b95]" />
                         </div>
                       ) : (
                         <div className="relative">
@@ -660,8 +660,8 @@ const Cart = () => {
                             className={`w-full px-4 py-3 rounded-xl text-right appearance-none cursor-pointer transition-all duration-200 pr-4 pl-12 text-base ${
                               globalCompanyId
                                 ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 text-green-800 font-medium"
-                                : "bg-gray-50 border-2 border-gray-200 text-gray-600 hover:border-[#384B97] hover:bg-blue-50"
-                            } focus:outline-none focus:ring-2 focus:ring-[#384B97]/20`}
+                                : "bg-gray-50 border-2 border-gray-200 text-gray-600 hover:border-[#3a4b95] hover:bg-blue-50"
+                            } focus:outline-none focus:ring-2 focus:ring-[#3a4b95]/20`}
                           >
                             <option value="">
                               {t("cart.selectDeliveryPartner") ||
@@ -687,7 +687,7 @@ const Cart = () => {
                       <span className="text-base font-medium text-gray-700">
                         {t("cart.deliveryPartner") || "شريك التوصيل"}
                       </span>
-                      <Truck className="w-6 h-6 text-[#384B97]" />
+                      <Truck className="w-6 h-6 text-[#3a4b95]" />
                     </div>
                   </div>
 
@@ -753,7 +753,7 @@ const Cart = () => {
                                 {t("cart.investment")}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-[#384B97] rounded-full text-sm font-medium">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-[#3a4b95] rounded-full text-sm font-medium">
                                 <Wallet className="w-4 h-4" />
                                 {t("cart.directPurchase")}
                               </span>
@@ -901,7 +901,7 @@ const Cart = () => {
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value)}
                     placeholder={t("cart.discountCode")}
-                    className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                    className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#c4886a] focus:outline-none"
                     disabled={discountLoading}
                   />
                   <motion.button
@@ -909,7 +909,7 @@ const Cart = () => {
                     whileTap={{ scale: discountLoading ? 1 : 0.98 }}
                     onClick={handleApplyDiscount}
                     disabled={discountLoading || !discountCode.trim()}
-                    className="px-8 py-3 border-2 border-[#F65331] text-[#F65331] rounded-lg font-bold hover:bg-[#F65331] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-8 py-3 border-2 border-[#c4886a] text-[#c4886a] rounded-lg font-bold hover:bg-[#c4886a] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {discountLoading && (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -965,7 +965,7 @@ const Cart = () => {
                     whileTap={{ scale: !hasGlobalCompany ? 1 : 0.98 }}
                     onClick={handleCheckout}
                     disabled={!hasGlobalCompany}
-                    className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("cart.checkout")}
                   </motion.button>
@@ -973,7 +973,7 @@ const Cart = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleContinueShopping}
-                    className="flex-1 py-3 border-2 border-[#F65331] text-[#F65331] rounded-lg font-bold hover:bg-gray-50 transition-all"
+                    className="flex-1 py-3 border-2 border-[#c4886a] text-[#c4886a] rounded-lg font-bold hover:bg-gray-50 transition-all"
                   >
                     {t("cart.continueShopping")}
                   </motion.button>
@@ -1012,7 +1012,7 @@ const Cart = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-white rounded-2xl p-8 max-w-lg w-full my-8"
             >
-              <h2 className="text-2xl font-bold text-[#384B97] mb-6 text-right">
+              <h2 className="text-2xl font-bold text-[#3a4b95] mb-6 text-right">
                 {t("checkout.title") || "إتمام الطلب"}
               </h2>
 
@@ -1032,7 +1032,7 @@ const Cart = () => {
                     </div>
                   </div>
                 ) : hasWalletItems && hasResaleItems ? (
-                  <div className="flex items-center gap-3 text-[#384B97]">
+                  <div className="flex items-center gap-3 text-[#3a4b95]">
                     <div className="flex">
                       <Truck className="w-5 h-5" />
                       <TrendingUp className="w-5 h-5 -ml-1" />
@@ -1048,7 +1048,7 @@ const Cart = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 text-[#F65331]">
+                  <div className="flex items-center gap-3 text-[#c4886a]">
                     <Truck className="w-6 h-6" />
                     <div className="text-right flex-1">
                       <p className="font-bold">
@@ -1079,7 +1079,7 @@ const Cart = () => {
                       value={shippingPhone}
                       onChange={(e) => setShippingPhone(e.target.value)}
                       placeholder={t("checkout.phone") || "رقم الجوال"}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#c4886a] focus:outline-none"
                     />
                   </div>
 
@@ -1108,7 +1108,7 @@ const Cart = () => {
                         placeholder={
                           t("checkout.additionalPhone") || "رقم جوال إضافي"
                         }
-                        className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none"
+                        className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#c4886a] focus:outline-none"
                       />
                     </div>
                   ))}
@@ -1118,7 +1118,7 @@ const Cart = () => {
                     onClick={() =>
                       setAdditionalPhones([...additionalPhones, ""])
                     }
-                    className="w-full px-4 py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-[#F65331] hover:text-[#F65331] transition-colors flex items-center justify-center gap-2"
+                    className="w-full px-4 py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-[#c4886a] hover:text-[#c4886a] transition-colors flex items-center justify-center gap-2"
                   >
                     <span>+</span>
                     <span>
@@ -1131,7 +1131,7 @@ const Cart = () => {
                     onChange={(e) => setShippingAddress(e.target.value)}
                     placeholder={t("checkout.address") || "العنوان التفصيلي"}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#F65331] focus:outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 text-right focus:border-[#c4886a] focus:outline-none resize-none"
                   />
                 </div>
               )}
@@ -1172,7 +1172,7 @@ const Cart = () => {
                         item.resalePlans.length > 0 ? (
                           <TrendingUp className="w-4 h-4 text-green-600" />
                         ) : (
-                          <Wallet className="w-4 h-4 text-[#384B97]" />
+                          <Wallet className="w-4 h-4 text-[#3a4b95]" />
                         )}
                       </div>
                     </div>
@@ -1259,7 +1259,7 @@ const Cart = () => {
                   disabled={
                     checkoutLoading || companiesLoading || !hasGlobalCompany
                   }
-                  className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {checkoutLoading ? (
                     <>

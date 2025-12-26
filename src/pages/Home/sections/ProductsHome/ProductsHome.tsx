@@ -196,7 +196,7 @@ const ProductsHome = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#384B97] text-center mb-8 md:mb-12"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#3a4b95] text-center mb-8 md:mb-12"
         >
           {t("home.productsHome.title")}
         </motion.h2>
@@ -208,7 +208,7 @@ const ProductsHome = () => {
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             >
-              <Loader2 className="w-12 h-12 text-[#384B97]" />
+              <Loader2 className="w-12 h-12 text-[#3a4b95]" />
             </motion.div>
           </div>
         )}
@@ -281,8 +281,8 @@ const ProductsHome = () => {
                             onClick={(e) => handleToggleFavorite(product.id, e)}
                             className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${
                               isFavorited
-                                ? "bg-[#F65331] text-white"
-                                : "bg-white/90 text-gray-400 hover:text-[#F65331]"
+                                ? "bg-[#c4886a] text-white"
+                                : "bg-white/90 text-gray-400 hover:text-[#c4886a]"
                             } shadow-md backdrop-blur-sm`}
                           >
                             <AnimatePresence mode="wait">
@@ -378,7 +378,7 @@ const ProductsHome = () => {
                                     : product.stock_status === 'medium'
                                       ? 'bg-yellow-100 text-yellow-700'
                                       : product.stock_status === 'low'
-                                        ? 'bg-orange-100 text-orange-700'
+                                        ? 'bg-[#e5d4c8] text-[#8a5a3a]'
                                         : 'bg-red-100 text-red-700'
                                   }`}>
                                   {product.stock_status === 'high'
@@ -407,7 +407,7 @@ const ProductsHome = () => {
                                       : product.stock_status === 'medium'
                                         ? "bg-yellow-500"
                                         : product.stock_status === 'low'
-                                          ? "bg-orange-500"
+                                          ? "bg-[#c4886a]"
                                           : "bg-red-500"
                                     }`}
                                 />
@@ -433,7 +433,7 @@ const ProductsHome = () => {
 
                         {/* Back Side */}
                         <div
-                          className="absolute inset-0 w-full h-full bg-linear-to-br from-[#384B97] to-[#2a3a75] rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6"
+                          className="absolute inset-0 w-full h-full bg-linear-to-br from-[#3a4b95] to-[#2a3a75] rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6"
                           style={{
                             backfaceVisibility: "hidden",
                             transform: "rotateY(180deg)",
@@ -446,7 +446,7 @@ const ProductsHome = () => {
                             onClick={(e) => handleToggleFavorite(product.id, e)}
                             className={`absolute top-3 right-3 z-50 p-2 rounded-full transition-all pointer-events-auto ${
                               isFavorited
-                                ? "bg-[#F65331] text-white"
+                                ? "bg-[#c4886a] text-white"
                                 : "bg-white/20 text-white hover:bg-white/30"
                             } shadow-md backdrop-blur-sm`}
                           >
@@ -494,7 +494,7 @@ const ProductsHome = () => {
                                 e.stopPropagation();
                                 handleProductClick(product.id);
                               }}
-                              className="flex items-center justify-center gap-2 bg-white text-[#384B97] px-5 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all"
+                              className="flex items-center justify-center gap-2 bg-white text-[#3a4b95] px-5 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all"
                             >
                               <Eye className="w-5 h-5" />
                               {isRTL ? "عرض التفاصيل" : "View Details"}
@@ -504,7 +504,7 @@ const ProductsHome = () => {
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={(e) => handleAddToCart(product, e)}
-                              className="flex items-center justify-center gap-2 bg-[#F65331] text-white px-5 py-3 rounded-full font-bold shadow-lg hover:bg-[#e54525] transition-all"
+                              className="flex items-center justify-center gap-2 bg-[#c4886a] text-white px-5 py-3 rounded-full font-bold shadow-lg hover:bg-[#b47858] transition-all"
                             >
                               <AnimatePresence mode="wait">
                                 {addedProducts.includes(product.id) ? (
@@ -571,7 +571,7 @@ const ProductsHome = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-20 h-20 bg-gradient-to-br from-[#F65331] to-[#e54525] rounded-full flex items-center justify-center mx-auto mb-6"
+                  className="w-20 h-20 bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-full flex items-center justify-center mx-auto mb-6"
                 >
                   <ShoppingCart className="w-10 h-10 text-white" />
                 </motion.div>
@@ -598,7 +598,7 @@ const ProductsHome = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => navigate("/login")}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F65331] to-[#e54525] text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#c4886a] to-[#b47858] text-white rounded-xl font-bold hover:shadow-lg transition-all"
                   >
                     {isRTL ? "تسجيل الدخول" : "Login"}
                   </motion.button>

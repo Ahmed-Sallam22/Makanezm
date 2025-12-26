@@ -202,7 +202,7 @@ const ReportsTab = () => {
                 disabled={loading}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all disabled:opacity-50 ${
                   dateRange === range
-                    ? "bg-[#384B97] text-white"
+                    ? "bg-[#3a4b95] text-white"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
@@ -228,7 +228,7 @@ const ReportsTab = () => {
             whileTap={{ scale: 0.98 }}
             onClick={handleExport}
             disabled={exporting || loading}
-            className="flex items-center gap-2 px-4 py-2 bg-[#F65331] text-white rounded-lg hover:bg-[#e54525] transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-[#c4886a] text-white rounded-lg hover:bg-[#b47858] transition-all disabled:opacity-50"
           >
             <Download className={`w-4 h-4 ${exporting ? "animate-pulse" : ""}`} />
             {t("dashboard.reports.export")}
@@ -341,14 +341,14 @@ const ReportsTab = () => {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white"
+          className="bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-xl p-5 text-white"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
               <Package className="w-6 h-6" />
             </div>
           </div>
-          <p className="text-orange-100 text-sm mb-1">
+          <p className="text-white text-sm mb-1">
             {t("dashboard.reports.activeProducts")}
           </p>
           <p className="text-3xl font-bold">
@@ -383,7 +383,7 @@ const ReportsTab = () => {
                   onClick={() => setSelectedChart(type)}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
                     selectedChart === type
-                      ? "bg-[#384B97] text-white"
+                      ? "bg-[#3a4b95] text-white"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
@@ -572,7 +572,7 @@ const ReportsTab = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-orange-500" />
+                  <TrendingUp className="w-4 h-4 text-[#c4886a]" />
                   <span className="text-gray-600">
                     {t("dashboard.orders.investment")}
                   </span>
@@ -586,7 +586,7 @@ const ReportsTab = () => {
                   initial={{ width: 0 }}
                   animate={{ width: `${orderTypes.resale.revenue_percentage}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="h-full bg-orange-500 rounded-full"
+                  className="h-full bg-[#c4886a] rounded-full"
                 />
               </div>
             </div>
@@ -600,9 +600,9 @@ const ReportsTab = () => {
                     {formatCurrency(orderTypes.resale.profit)}
                   </p>
                 </div>
-                <div className="p-3 bg-orange-50 rounded-lg">
+                <div className="p-3 bg-[#c4886a20] rounded-lg">
                   <p className="text-xs text-gray-500">{t("dashboard.reports.pendingReturns") || "Pending Returns"}</p>
-                  <p className="text-lg font-bold text-orange-600">
+                  <p className="text-lg font-bold text-[#c4886a]">
                     {orderTypes.resale.pending_returns}
                   </p>
                 </div>

@@ -66,7 +66,7 @@ const FooterLinksTab = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-[#384B97]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#3a4b95]" />
       </div>
     );
   }
@@ -103,7 +103,7 @@ const FooterLinksTab = () => {
                   type="url"
                   value={links[platform.key as keyof FooterLinks] || ""}
                   onChange={(e) => handleChange(platform.key, e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#384B97] focus:outline-none transition-colors"
+                  className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                   placeholder={platform.placeholder}
                   dir="ltr"
                 />
@@ -129,7 +129,7 @@ const FooterLinksTab = () => {
               whileTap={{ scale: submitting ? 1 : 0.98 }}
               type="submit"
               disabled={submitting}
-              className="flex items-center justify-center gap-2 bg-[#384B97] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-[#3a4b95] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2d3d7a] transition-colors disabled:opacity-50"
             >
               {submitting ? (
                 <>

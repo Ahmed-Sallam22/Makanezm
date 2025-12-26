@@ -133,7 +133,7 @@ const MarqueeBanner = () => {
     return (
       <div
         className="marquee-wrapper py-2"
-        style={{ backgroundColor: "#F65331" }}
+        style={{ backgroundColor: "#c4886a" }}
       >
         <div className="h-6"></div>
       </div>
@@ -144,7 +144,7 @@ const MarqueeBanner = () => {
     <div
       ref={containerRef}
       className="marquee-wrapper py-2"
-      style={{ backgroundColor: "#F65331" }}
+      style={{ backgroundColor: "#c4886a" }}
     >
       <div className="marquee-track-js">
         {items.map((item) => (

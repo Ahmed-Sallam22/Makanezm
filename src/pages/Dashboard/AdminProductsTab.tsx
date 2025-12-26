@@ -333,7 +333,7 @@ const AdminProductsTab = () => {
         </h2>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[#F65331] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-[#c4886a] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium"
         >
           <Plus className="w-5 h-5" />
           {t("dashboard.products.addProduct") || "Add Product"}
@@ -346,7 +346,7 @@ const AdminProductsTab = () => {
           onClick={() => setActiveFilter("all")}
           className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
             activeFilter === "all"
-              ? "bg-[#384B97] text-white"
+              ? "bg-[#3a4b95] text-white"
               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
@@ -458,7 +458,7 @@ const AdminProductsTab = () => {
 
                     {/* Price */}
                     <td className="px-6 py-4">
-                      <div className="font-bold text-[#F65331] text-lg">
+                      <div className="font-bold text-[#c4886a] text-lg">
                         {product.price} {t("common.currency")}
                       </div>
                     </td>
@@ -565,7 +565,7 @@ const AdminProductsTab = () => {
                       />
                     )}
                     <div className="flex-1">
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#F65331] transition-colors">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#c4886a] transition-colors">
                         <Upload className="w-8 h-8 text-gray-400 mb-2" />
                         <span className="text-sm text-gray-500">
                           {mainImagePreview ? t("dashboard.adminProducts.changeImage") : t("dashboard.adminProducts.uploadMainImage")}
@@ -663,7 +663,7 @@ const AdminProductsTab = () => {
                       type="text"
                       value={formData.title_ar}
                       onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="اسم المنتج بالعربية"
                       dir="rtl"
                     />
@@ -678,7 +678,7 @@ const AdminProductsTab = () => {
                       type="text"
                       value={formData.title_en}
                       onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="Product Title in English"
                     />
                   </div>
@@ -692,7 +692,7 @@ const AdminProductsTab = () => {
                       type="text"
                       value={formData.title_en}
                       onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="Product Title in English"
                     />
                   </div>
@@ -706,7 +706,7 @@ const AdminProductsTab = () => {
                       type="text"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="e.g., Electronics, Meat, Clothing"
                       required
                     />
@@ -723,7 +723,7 @@ const AdminProductsTab = () => {
                       step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="0.00"
                       required
                     />
@@ -739,7 +739,7 @@ const AdminProductsTab = () => {
                       min="0"
                       value={formData.stock_quantity}
                       onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent"
                       placeholder="0"
                     />
                   </div>
@@ -753,7 +753,7 @@ const AdminProductsTab = () => {
                   <textarea
                     value={formData.description_ar}
                     onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent resize-none"
                     rows={3}
                     placeholder="وصف المنتج بالعربية"
                     dir="rtl"
@@ -768,7 +768,7 @@ const AdminProductsTab = () => {
                   <textarea
                     value={formData.description_en}
                     onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F65331] focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c4886a] focus:border-transparent resize-none"
                     rows={3}
                     placeholder="Product Description in English"
                   />
@@ -874,7 +874,7 @@ const AdminProductsTab = () => {
                     type="checkbox"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="w-5 h-5 text-[#F65331] cursor-pointer"
+                    className="w-5 h-5 text-[#c4886a] cursor-pointer"
                   />
                   <label className="text-gray-700 font-semibold">
                     {t("dashboard.adminProducts.activeStatus")}
@@ -886,7 +886,7 @@ const AdminProductsTab = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 px-4 py-3 bg-[#F65331] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-[#c4886a] text-white rounded-lg hover:bg-opacity-90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <>

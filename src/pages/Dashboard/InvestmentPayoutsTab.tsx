@@ -134,7 +134,7 @@ const InvestmentPayoutsTab = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg"
+            className="bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-xl p-6 text-white shadow-lg"
           >
             <div className="flex items-center justify-between">
               <div className={isArabic ? "text-right" : "text-left"}>
@@ -263,7 +263,7 @@ const InvestmentPayoutsTab = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#384B97] to-[#2a3870] flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3a4b95] to-[#2a3870] flex items-center justify-center text-white font-bold">
                           {payout.user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -276,7 +276,7 @@ const InvestmentPayoutsTab = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-[#F65331]" />
+                        <Package className="w-5 h-5 text-[#c4886a]" />
                         <span className="font-medium text-gray-700 white:text-gray-300">
                           {getProductTitle(payout.product)}
                         </span>

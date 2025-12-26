@@ -735,7 +735,7 @@ const Dashboard = () => {
                       {/* Card 2: Wallet (Direct) Orders */}
                       <motion.div
                         whileHover={{ scale: 1.02 }}
-                        className="bg-gradient-to-br from-[#384B97] to-[#2a3a75] rounded-xl shadow-lg p-6 text-white"
+                        className="bg-gradient-to-br from-[#3a4b95] to-[#2a3a75] rounded-xl shadow-lg p-6 text-white"
                       >
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-semibold text-blue-100">
@@ -771,10 +771,10 @@ const Dashboard = () => {
                       {/* Card 3: Resale (Investment) Orders */}
                       <motion.div
                         whileHover={{ scale: 1.02 }}
-                        className="bg-gradient-to-br from-[#F65331] to-[#d94424] rounded-xl shadow-lg p-6 text-white"
+                        className="bg-gradient-to-br from-[#c4886a] to-[#b47858] rounded-xl shadow-lg p-6 text-white"
                       >
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-orange-100">
+                          <h3 className="font-semibold text-white">
                             {isArabic
                               ? "طلبات إعادة البيع (أرباح)"
                               : "Resale (Profit) Orders"}
@@ -788,7 +788,7 @@ const Dashboard = () => {
                             stats?.orders.resale_orders ||
                             0}
                         </p>
-                        <div className="flex items-center justify-between text-sm text-orange-100">
+                        <div className="flex items-center justify-between text-sm text-white">
                           <span>
                             {isArabic ? "الإيرادات" : "Revenue"}:{" "}
                             {(
@@ -1530,7 +1530,7 @@ const Dashboard = () => {
                     </h2>
                   </div>
 
-                  <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-8 text-white mb-6">
+                  <div className="bg-gradient-to-r from-[#c4886a] to-[#b47858] rounded-xl p-8 text-white mb-6">
                     <h3 className="text-2xl font-bold mb-2">
                       {t("dashboard.seasonal.comingSoon")}
                     </h3>
@@ -1557,7 +1557,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="mt-6 px-8 py-3 bg-white text-orange-600 rounded-lg font-bold hover:bg-opacity-90 transition-all">
+                    <button className="mt-6 px-8 py-3 bg-white text-[#c4886a] rounded-lg font-bold hover:bg-opacity-90 transition-all">
                       {t("dashboard.seasonal.register")}
                     </button>
                   </div>

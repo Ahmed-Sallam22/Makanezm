@@ -205,7 +205,7 @@ const Login = () => {
               onClick={() => setIsLogin(true)}
               className={`px-8 py-3 rounded-lg font-bold transition-all ${
                 isLogin
-                  ? "bg-[#384B97] text-white shadow-lg"
+                  ? "bg-[#3a4b95] text-white shadow-lg"
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -216,7 +216,7 @@ const Login = () => {
               onClick={() => setIsLogin(false)}
               className={`px-8 py-3 rounded-lg font-bold transition-all ${
                 !isLogin
-                  ? "bg-[#384B97] text-white shadow-lg"
+                  ? "bg-[#3a4b95] text-white shadow-lg"
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -235,7 +235,7 @@ const Login = () => {
               className="bg-white rounded-2xl shadow-xl p-8 space-y-6"
             >
               <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-[#384B97] mb-2">
+                <h1 className="text-3xl font-bold text-[#3a4b95] mb-2">
                   {t("loginPage.loginTitle")}
                 </h1>
                 <p className="text-gray-600">{t("loginPage.loginSubtitle")}</p>
@@ -280,7 +280,7 @@ const Login = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#c4886a] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "..." : t("loginPage.loginButton")}
               </motion.button>
@@ -296,7 +296,7 @@ const Login = () => {
               className="bg-white rounded-2xl shadow-xl p-8 space-y-6"
             >
               <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-[#384B97] mb-2">
+                <h1 className="text-3xl font-bold text-[#3a4b95] mb-2">
                   {t("loginPage.registerTitle")}
                 </h1>
                 <p className="text-gray-600">
@@ -473,7 +473,7 @@ const Login = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#F65331] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#c4886a] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "..." : t("loginPage.registerButton")}
               </motion.button>

@@ -59,8 +59,8 @@ const PaymentResult = () => {
       case "cancelled":
         return {
           icon: XCircle,
-          iconColor: "text-orange-600",
-          bgColor: "bg-orange-100",
+          iconColor: "text-[#c4886a]",
+          bgColor: "bg-[#c4886a]",
           title: t("payment.cancelled") || "تم إلغاء عملية الدفع",
           description: t("payment.cancelledDesc") || "قمت بإلغاء عملية الدفع. يمكنك المحاولة مرة أخرى.",
         };
@@ -170,7 +170,7 @@ const PaymentResult = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/dashboard")}
-                  className="w-full py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] flex items-center justify-center gap-2"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   {t("payment.viewOrders") || "عرض الطلبات"}
@@ -191,7 +191,7 @@ const PaymentResult = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/cart")}
-                  className="w-full py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] flex items-center justify-center gap-2"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   {t("payment.tryAgain") || "المحاولة مرة أخرى"}
@@ -212,7 +212,7 @@ const PaymentResult = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/dashboard")}
-                  className="w-full py-3 bg-[#384B97] text-white rounded-lg font-bold hover:bg-[#2d3d7a] flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#3a4b95] text-white rounded-lg font-bold hover:bg-[#2d3d7a] flex items-center justify-center gap-2"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   {t("payment.viewOrders") || "عرض الطلبات"}
@@ -239,7 +239,7 @@ const PaymentResult = () => {
               className="mt-6 text-sm text-gray-500"
             >
               {t("payment.needHelp") || "هل تحتاج مساعدة؟"}{" "}
-              <a href="/contact" className="text-[#F65331] hover:underline">
+              <a href="/contact" className="text-[#c4886a] hover:underline">
                 {t("payment.contactSupport") || "تواصل معنا"}
               </a>
             </motion.p>

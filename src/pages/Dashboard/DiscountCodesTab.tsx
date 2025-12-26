@@ -206,7 +206,7 @@ const DiscountCodesTab = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[#F65331] text-white rounded-lg hover:bg-[#e54525] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[#c4886a] text-white rounded-lg hover:bg-[#b47858] transition-colors"
         >
           <Plus className="w-5 h-5" />
           {t("dashboard.discountCodes.add")}
@@ -250,7 +250,7 @@ const DiscountCodesTab = () => {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <span className="text-[#F65331] font-bold">{code.discount_percent}%</span>
+                      <span className="text-[#c4886a] font-bold">{code.discount_percent}%</span>
                     </td>
                     <td className="px-4 py-4 text-center">
                       <button
@@ -375,7 +375,7 @@ const DiscountCodesTab = () => {
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                       placeholder="DISCOUNT20"
-                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#F65331] focus:outline-none font-mono uppercase"
+                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#c4886a] focus:outline-none font-mono uppercase"
                       required
                     />
                   </div>
@@ -394,7 +394,7 @@ const DiscountCodesTab = () => {
                       max="100"
                       value={formData.discount_percent}
                       onChange={(e) => setFormData({ ...formData, discount_percent: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#F65331] focus:outline-none"
+                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#c4886a] focus:outline-none"
                       required
                     />
                   </div>
@@ -411,7 +411,7 @@ const DiscountCodesTab = () => {
                       type="date"
                       value={formData.valid_from}
                       onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
-                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#F65331] focus:outline-none"
+                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#c4886a] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -427,7 +427,7 @@ const DiscountCodesTab = () => {
                       type="date"
                       value={formData.valid_until}
                       onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
-                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#F65331] focus:outline-none"
+                      className="w-full px-4 py-3 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#c4886a] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -443,7 +443,7 @@ const DiscountCodesTab = () => {
                     value={formData.usage_limit}
                     onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
                     placeholder={isRTL ? "غير محدود" : "Unlimited"}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#F65331] focus:outline-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#c4886a] focus:outline-none"
                   />
                 </div>
 
@@ -454,7 +454,7 @@ const DiscountCodesTab = () => {
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="w-5 h-5 text-[#F65331] border-gray-300 rounded focus:ring-[#F65331]"
+                    className="w-5 h-5 text-[#c4886a] border-gray-300 rounded focus:ring-[#c4886a]"
                   />
                   <label htmlFor="is_active" className="text-gray-700 font-medium">
                     {t("dashboard.discountCodes.isActive")}
@@ -477,7 +477,7 @@ const DiscountCodesTab = () => {
                     whileTap={{ scale: submitting ? 1 : 0.98 }}
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 py-3 bg-[#F65331] text-white rounded-lg font-bold hover:bg-[#e54525] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-[#c4886a] text-white rounded-lg font-bold hover:bg-[#b47858] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <Loader2 className="w-5 h-5 animate-spin" />

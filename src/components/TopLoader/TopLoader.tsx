@@ -71,8 +71,8 @@ const TopLoader = () => {
         className="h-full"
         style={{
           width: "0%",
-          background: "linear-gradient(90deg, #384B97, #F65331)",
-          boxShadow: "0 0 10px #384B97, 0 0 5px #F65331",
+          background: "linear-gradient(90deg, #3a4b95, #c4886a)",
+          boxShadow: "0 0 10px #3a4b95, 0 0 5px #c4886a",
         }}
       />
 
@@ -83,7 +83,7 @@ const TopLoader = () => {
       >
         <div
           className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: "#384B97", borderTopColor: "transparent" }}
+          style={{ borderColor: "#3a4b95", borderTopColor: "transparent" }}
         />
       </div>
     </div>

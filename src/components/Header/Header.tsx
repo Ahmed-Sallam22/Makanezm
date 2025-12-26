@@ -87,7 +87,7 @@ const Header = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#F65331]  shadow-sm "
+        className="bg-[#c4886a]  shadow-sm "
       >
         <div className="w-[95%] mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-16 sm:h-20">
@@ -151,7 +151,7 @@ const Header = () => {
                             onClick={handleProfileClick}
                             className="w-full px-4 py-3 text-right flex items-center gap-3 hover:bg-gray-50 transition-all"
                           >
-                            <UserCircle className="w-5 h-5 text-[#384B97]" />
+                            <UserCircle className="w-5 h-5 text-[#3a4b95]" />
                             <span className="font-semibold text-gray-800">
                               {t("common.profile")}
                             </span>

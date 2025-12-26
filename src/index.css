@@ -1,16 +1,22 @@
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-@theme {
-  --color-primary: #384b97;
-  --color-secondary: #f65331;
-  --color-black: #000000;
-  --color-primary-light: #384b97d9;
-  --font-sans: "Inter", sans-serif;
+@font-face {
+  font-family: 'DIN Next LT Arabic';
+  src: url('https://cdn.jsdelivr.net/gh/Mohelm97/DIN-Next-Font@main/DINNextLTArabic-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DIN Next LT Arabic';
+  src: url('https://cdn.jsdelivr.net/gh/Mohelm97/DIN-Next-Font@main/DINNextLTArabic-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: "DIN Next LT Arabic", "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

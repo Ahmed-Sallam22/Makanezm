@@ -39,8 +39,8 @@ const Privacy = () => {
           <div className="flex flex-col justify-start gap-5  w-1/2">
             <div className="flex items-center gap-3">
 
-                    <FileText className="w-10 h-10 text-[#F65331]" />
-          <h1 className="text-3xl md:text-4xl font-bold text-[#384B97]">
+                    <FileText className="w-10 h-10 text-[#c4886a]" />
+          <h1 className="text-3xl md:text-4xl font-bold text-[#3a4b95]">
             {t("privacy.title")}
           </h1>
             </div>
@@ -54,7 +54,7 @@ const Privacy = () => {
               <ul className="space-y-3 text-gray-700 text-lg text-justify leading-relaxed">
                 {intro.map((text, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="text-[#F65331] mt-2">•</span>
+                    <span className="text-[#c4886a] mt-2">•</span>
                     <span className="w-[70%]">
                       {text}
                     </span>
@@ -80,12 +80,12 @@ const Privacy = () => {
               transition={{ delay: 0.3 }}
             >
               <div className="flex items-center justify-start gap-3 mb-4">
-                <FileText className="w-6 h-6 text-[#384B97]" />
+                <FileText className="w-6 h-6 text-[#3a4b95]" />
                 <h2 className="text-2xl font-bold text-gray-800">
                   {t("privacy.sections.termsOfUse.title")}
                 </h2>
               </div>
-              <div className="border-r-4 border-[#F65331] p-4 rounded-lg bg-[#384B970A] ">
+              <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
                   {t("privacy.sections.termsOfUse.content")}
                 </p>
@@ -99,12 +99,12 @@ const Privacy = () => {
               transition={{ delay: 0.4 }}
             >
               <div className="flex items-center justify-start gap-3 mb-4">
-                <Shield className="w-6 h-6 text-[#F65331]" />
+                <Shield className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
                   {t("privacy.sections.privacyPolicy.title")}
                 </h2>
               </div>
-              <div className="border-r-4 border-[#F65331] p-4 rounded-lg bg-[#384B970A] ">
+              <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
                   {t("privacy.sections.privacyPolicy.content")}
                 </p>
@@ -118,12 +118,12 @@ const Privacy = () => {
               transition={{ delay: 0.5 }}
             >
               <div className="flex items-center justify-start gap-3 mb-4">
-                <Settings className="w-6 h-6 text-[#F65331]" />
+                <Settings className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
                   {t("privacy.sections.operationTerms.title")}
                 </h2>
               </div>
-              <div className="border-r-4 border-[#F65331] p-4 rounded-lg bg-[#384B970A] ">
+              <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
                   {t("privacy.sections.operationTerms.content")}
                 </p>
@@ -137,12 +137,12 @@ const Privacy = () => {
               transition={{ delay: 0.6 }}
             >
               <div className="flex items-center justify-start gap-3 mb-4">
-                <Copyright className="w-6 h-6 text-[#F65331]" />
+                <Copyright className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
                   {t("privacy.sections.copyright.title")}
                 </h2>
               </div>
-              <div className="border-r-4 border-[#F65331] p-4 rounded-lg bg-[#384B970A] ">
+              <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
                   {t("privacy.sections.copyright.content")}
                 </p>
