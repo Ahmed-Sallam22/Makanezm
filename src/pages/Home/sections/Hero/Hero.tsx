@@ -46,19 +46,31 @@ const Hero = () => {
     >
       <div className="flex flex-col space-y-4 sm:space-y-6 w-full md:w-[90%] lg:w-[80%] mx-auto order-2 md:order-1 px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-[#3a4b95]">
-          {loading ? <span className="animate-pulse bg-gray-200 h-8 w-3/4 block rounded"></span> : title}
+          {loading ? (
+            <span className="animate-pulse bg-gray-200 h-8 w-3/4 block rounded"></span>
+          ) : (
+            title
+          )}
         </h2>
         <p className="text-justify sm:text-lg md:text-xl text-black">
-          {loading ? <span className="animate-pulse bg-gray-200 h-20 w-full block rounded"></span> : description1}
+          {loading ? (
+            <span className="animate-pulse bg-gray-200 h-20 w-full block rounded"></span>
+          ) : (
+            description1
+          )}
         </p>
         <p className="text-justify sm:text-lg md:text-xl text-black">
-          {loading ? <span className="animate-pulse bg-gray-200 h-6 w-2/3 block rounded"></span> : description2}
+          {loading ? (
+            <span className="animate-pulse bg-gray-200 h-6 w-2/3 block rounded"></span>
+          ) : (
+            description2
+          )}
         </p>
         <Link to="/login">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-secondary text-base sm:text-lg md:text-xl text-white mt-6 sm:mt-8 md:mt-10 py-3 sm:py-4 md:py-5 w-full sm:w-[80%] md:w-[70%] lg:w-[60%] mx-auto rounded-xl font-semibold hover:bg-opacity-90 transition-all shadow-lg"
+            className="bg-[#3a4b95] text-base sm:text-lg md:text-xl text-white mt-6 sm:mt-8 md:mt-10 py-3 sm:py-4 md:py-5 w-full sm:w-[80%] md:w-[70%] lg:w-[60%] mx-auto rounded-xl font-semibold hover:bg-opacity-90 transition-all shadow-lg"
           >
             {t("home.registerButton")}
           </motion.button>

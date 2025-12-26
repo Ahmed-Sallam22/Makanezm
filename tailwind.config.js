@@ -19,7 +19,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"DIN Next LT Arabic"', 'Inter', 'sans-serif'],
+        sans: ['"DIN Next LT Arabic"', 'Poppins', 'sans-serif'],
+        en: ['Poppins', '"DIN Next LT Arabic"', 'sans-serif'],
+        ar: ['"DIN Next LT Arabic"', 'Poppins', 'sans-serif'],
       },
     },
   },
