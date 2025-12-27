@@ -3,7 +3,7 @@ import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import HeroSlider from "../../components/HeroSlider";
 import Hero from "./sections/Hero";
-// import OverviewStats from "./sections/OverviewStats";
+import OverviewStats from "./sections/OverviewStats";
 import ServiceImage from "./sections/ServiceImage";
 import ProductsHome from "./sections/ProductsHome";
 import SalesReport from "./sections/SalesReport";
@@ -25,7 +25,7 @@ const Home = () => {
       >
         <HeroSlider />
         <Hero />
-        {/* <OverviewStats /> */}
+        <OverviewStats />
         <ServiceImage />
         <ProductsHome />
         <SalesReport />

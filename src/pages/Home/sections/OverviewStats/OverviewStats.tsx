@@ -24,6 +24,7 @@ const OverviewStats = () => {
 
   const stats: StatItem[] = useMemo(
     () => [
+    //  عدد المنتجات   ، عدد الاشخاص المسجلين ، عدد الشركات  
       {
         title: t("home.stats.products"),
         value: 1500,
@@ -46,6 +47,7 @@ const OverviewStats = () => {
         iconColor: "text-green-500",
         delay: 0.3,
       },
+      
     ],
     [t]
   );
