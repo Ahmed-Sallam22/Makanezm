@@ -87,8 +87,8 @@ export default {
         },
         stats: {
           products: "المنتجات",
-          sales: "المبيعات",
-          earnings: "المكاسب",
+          users: "المستخدمين المسجلين",
+          companies: "الشركات",
         },
         productsHome: {
           title: "منتجاتنا",

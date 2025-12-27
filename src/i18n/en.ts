@@ -89,8 +89,8 @@ export default {
         },
         stats: {
           products: "Products",
-          sales: "Sales",
-          earnings: "Earnings",
+          users: "Registered Users",
+          companies: "Companies",
         },
         productsHome: {
           title: "Our Products",

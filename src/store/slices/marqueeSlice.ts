@@ -15,7 +15,8 @@ const loadMarqueesFromStorage = (): Marquee[] => {
   return [
     {
       id: "1",
-      text: "subscribe & save 15%",
+      text_ar: "اشترك ووفر 15%",
+      text_en: "subscribe & save 15%",
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -43,10 +44,11 @@ const marqueeSlice = createSlice({
   name: "marquee",
   initialState,
   reducers: {
-    addMarquee: (state, action: PayloadAction<{ text: string }>) => {
+    addMarquee: (state, action: PayloadAction<{ text_ar: string; text_en: string }>) => {
       const newMarquee: Marquee = {
         id: Date.now().toString(),
-        text: action.payload.text,
+        text_ar: action.payload.text_ar,
+        text_en: action.payload.text_en,
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -57,11 +59,12 @@ const marqueeSlice = createSlice({
 
     updateMarquee: (
       state,
-      action: PayloadAction<{ id: string; text: string }>
+      action: PayloadAction<{ id: string; text_ar: string; text_en: string }>
     ) => {
       const marquee = state.marquees.find((m) => m.id === action.payload.id);
       if (marquee) {
-        marquee.text = action.payload.text;
+        marquee.text_ar = action.payload.text_ar;
+        marquee.text_en = action.payload.text_en;
         marquee.updatedAt = new Date().toISOString();
         saveMarqueesToStorage(state.marquees);
       }

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, useInView } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Package, ShoppingCart, TrendingUp, DollarSign } from "lucide-react";
+import { Package, Users, Building2 } from "lucide-react";
+import { getOverviewStats, type OverviewStats as OverviewStatsType } from "../../../../services/dashboardService";
 
 interface StatItem {
   title: string;
@@ -16,45 +17,61 @@ const OverviewStats = () => {
   const { t } = useTranslation();
   const [countedValues, setCountedValues] = useState({
     products: 0,
-    sales: 0,
-    earnings: 0,
+    users: 0,
+    companies: 0,
   });
+  const [apiData, setApiData] = useState<OverviewStatsType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  // Fetch data from API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getOverviewStats();
+        setApiData(data);
+      } catch (error) {
+        console.error("Failed to fetch overview stats:", error);
+        // Fallback values if API fails
+        setApiData({ products: 0, users: 0, companies: 0 });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const stats: StatItem[] = useMemo(
     () => [
-    //  عدد المنتجات   ، عدد الاشخاص المسجلين ، عدد الشركات  
       {
         title: t("home.stats.products"),
-        value: 1500,
+        value: apiData?.products ?? 0,
         icon: Package,
         iconColor: "text-secondary",
         delay: 0.1,
       },
       {
-        title: t("home.stats.sales"),
-        value: 3500,
-        icon: ShoppingCart,
+        title: t("home.stats.users"),
+        value: apiData?.users ?? 0,
+        icon: Users,
         iconColor: "text-secondary",
         delay: 0.2,
       },
       {
-        title: t("home.stats.earnings"),
-        value: 2000,
-        suffix: "+",
-        icon: TrendingUp,
-        iconColor: "text-green-500",
+        title: t("home.stats.companies"),
+        value: apiData?.companies ?? 0,
+        icon: Building2,
+        iconColor: "text-secondary",
         delay: 0.3,
       },
-      
     ],
-    [t]
+    [t, apiData]
   );
 
   // Animate counting numbers
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || isLoading || !apiData) return;
 
     const duration = 2000; // 2 seconds
     const steps = 60;
@@ -78,7 +95,7 @@ const OverviewStats = () => {
 
         setCountedValues((prev) => {
           const key =
-            index === 0 ? "products" : index === 1 ? "sales" : "earnings";
+            index === 0 ? "products" : index === 1 ? "users" : "companies";
           return { ...prev, [key]: currentValue };
         });
 
@@ -94,7 +111,7 @@ const OverviewStats = () => {
     return () => {
       timers.forEach((timer) => clearInterval(timer));
     };
-  }, [isInView, stats]);
+  }, [isInView, isLoading, apiData, stats]);
 
   return (
     <motion.div
@@ -116,8 +133,8 @@ const OverviewStats = () => {
               index === 0
                 ? countedValues.products
                 : index === 1
-                  ? countedValues.sales
-                  : countedValues.earnings;
+                  ? countedValues.users
+                  : countedValues.companies;
 
             return (
               <motion.div
@@ -138,22 +155,13 @@ const OverviewStats = () => {
                 </h3>
 
                 <div className="flex items-center justify-center gap-3 md:gap-4">
-                  <div
-                    className={`${stat.iconColor} ${index === 2 ? "hidden" : ""}`}
-                  >
+                  <div className={stat.iconColor}>
                     <Icon className="w-6 h-6 md:w-8 md:h-8" />
                   </div>
-
-                  {index === 2 && (
-                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-secondary" />
-                  )}
                   <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
                     {stat.suffix}
                     {currentValue.toLocaleString()}
                   </span>
-                  {index === 2 && (
-                    <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-green-500" />
-                  )}
                 </div>
               </motion.div>
             );

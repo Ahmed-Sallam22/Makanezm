@@ -163,6 +163,22 @@ export interface DeferredSaleStats {
 
 // ==================== Dashboard API Calls ====================
 
+// Overview stats for public homepage
+export interface OverviewStats {
+  products: number;
+  users: number;
+  companies: number;
+}
+
+/**
+ * Get public overview statistics (no auth required)
+ * Used on homepage to display products, users, and companies counts
+ */
+export const getOverviewStats = async (): Promise<OverviewStats> => {
+  const response = await api.get('/overview-stats');
+  return response.data.data;
+};
+
 /**
  * Get dashboard statistics
  */
