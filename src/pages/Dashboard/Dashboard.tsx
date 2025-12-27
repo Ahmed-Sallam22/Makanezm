@@ -975,14 +975,10 @@ const Dashboard = () => {
             )}
 
             {/* FAQ Tab (Admin Only) */}
-            {activeTab === "faq" && user?.role === "ADMIN" && (
-              <FAQTab />
-            )}
+            {activeTab === "faq" && user?.role === "ADMIN" && <FAQTab />}
 
             {/* About Tab (Admin Only) */}
-            {activeTab === "about" && user?.role === "ADMIN" && (
-              <AboutTab />
-            )}
+            {activeTab === "about" && user?.role === "ADMIN" && <AboutTab />}
 
             {/* Privacy Tab (Admin Only) */}
             {activeTab === "privacy" && user?.role === "ADMIN" && (
@@ -1246,7 +1242,7 @@ const Dashboard = () => {
                     </div>
                     <button
                       onClick={openAddCompanyModal}
-                      className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#3a4b95] text-white rounded-lg hover:bg-opacity-90 transition-all"
                     >
                       <Plus className="w-4 h-4" />
                       {t("dashboard.partnerships.addCompany")}
