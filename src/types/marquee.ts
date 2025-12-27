@@ -1,6 +1,7 @@
 export interface Marquee {
   id: string;
-  text: string;
+  text_ar: string;
+  text_en: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

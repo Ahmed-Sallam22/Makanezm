@@ -118,6 +118,8 @@ export default {
       // FAQ Page
       faq: {
         title: "الأسئلة الشائعة",
+        loadError: "فشل في تحميل الأسئلة الشائعة",
+        noQuestions: "لا توجد أسئلة شائعة متاحة حالياً",
         questions: [
           {
             question: "هل يمكنني البيع عبر متجري الإلكتروني ؟",
@@ -361,6 +363,10 @@ export default {
           payouts: "مدفوعات الارباح",
           contact: "رسائل التواصل",
           discounts: "أكواد الخصم",
+          faq: "الأسئلة الشائعة",
+          about: "صفحة من نحن",
+          privacy: "صفحة الخصوصية",
+          contactSettings: "صفحة التواصل",
         },
         stats: {
           totalOrders: "إجمالي الطلبات",

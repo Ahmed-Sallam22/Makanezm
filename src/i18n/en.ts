@@ -120,6 +120,8 @@ export default {
       // FAQ Page
       faq: {
         title: "Frequently Asked Questions",
+        loadError: "Failed to load FAQs",
+        noQuestions: "No FAQs available",
         questions: [
           {
             question: "Can I sell through my online store?",
@@ -363,6 +365,10 @@ export default {
           payouts: "Profit Payouts",
           contact: "Contact Messages",
           discounts: "Discount Codes",
+          faq: "FAQ",
+          about: "About Page",
+          privacy: "Privacy Page",
+          contactSettings: "Contact Page",
         },
         stats: {
           totalOrders: "Total Orders",

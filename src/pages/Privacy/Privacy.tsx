@@ -1,12 +1,107 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { FileText, Shield, Settings, Copyright } from "lucide-react";
+import { FileText, Shield, Settings, Copyright, Loader2 } from "lucide-react";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
-import privacy from "../../assets/images/privacy.png";
+import privacyFallbackImage from "../../assets/images/privacy.png";
+import { getPrivacySettings, type PrivacySettings } from "../../services/privacyService";
+
 const Privacy = () => {
-  const { t } = useTranslation();
-  const intro = t("privacy.intro", { returnObjects: true }) as string[];
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const [loading, setLoading] = useState(true);
+  const [privacyData, setPrivacyData] = useState<PrivacySettings | null>(null);
+
+  // Fallback to translations if no backend data
+  const fallbackIntro = t("privacy.intro", { returnObjects: true }) as string[];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await getPrivacySettings();
+        setPrivacyData(data);
+      } catch (error) {
+        console.error("Error fetching privacy data:", error);
+        // Will use fallback translations
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Get content based on language, with fallback to translations
+  const title = privacyData
+    ? isArabic
+      ? privacyData.title_ar
+      : privacyData.title_en
+    : t("privacy.title");
+
+  const intro = privacyData
+    ? isArabic
+      ? privacyData.intro_ar || []
+      : privacyData.intro_en || []
+    : fallbackIntro;
+
+  const termsTitle = privacyData
+    ? isArabic
+      ? privacyData.terms_title_ar
+      : privacyData.terms_title_en
+    : t("privacy.sections.termsOfUse.title");
+
+  const termsContent = privacyData
+    ? isArabic
+      ? privacyData.terms_content_ar
+      : privacyData.terms_content_en
+    : t("privacy.sections.termsOfUse.content");
+
+  const privacyTitle = privacyData
+    ? isArabic
+      ? privacyData.privacy_title_ar
+      : privacyData.privacy_title_en
+    : t("privacy.sections.privacyPolicy.title");
+
+  const privacyContent = privacyData
+    ? isArabic
+      ? privacyData.privacy_content_ar
+      : privacyData.privacy_content_en
+    : t("privacy.sections.privacyPolicy.content");
+
+  const operationTitle = privacyData
+    ? isArabic
+      ? privacyData.operation_title_ar
+      : privacyData.operation_title_en
+    : t("privacy.sections.operationTerms.title");
+
+  const operationContent = privacyData
+    ? isArabic
+      ? privacyData.operation_content_ar
+      : privacyData.operation_content_en
+    : t("privacy.sections.operationTerms.content");
+
+  const copyrightTitle = privacyData
+    ? isArabic
+      ? privacyData.copyright_title_ar
+      : privacyData.copyright_title_en
+    : t("privacy.sections.copyright.title");
+
+  const copyrightContent = privacyData
+    ? isArabic
+      ? privacyData.copyright_content_ar
+      : privacyData.copyright_content_en
+    : t("privacy.sections.copyright.content");
+
+  const heroImage = privacyData?.hero_image || privacyFallbackImage;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#c4886a]" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -32,8 +127,8 @@ const Privacy = () => {
             className="flex items-center justify-center w-1/2"
           >
             <div className="w-full max-w-md">
-              {/* SVG Illustration Placeholder */}
-          <img src={privacy} alt="" />
+              {/* Dynamic Image */}
+          <img src={heroImage} alt="Privacy" className="w-full h-auto object-contain" />
             </div>
           </motion.div>
           <div className="flex flex-col justify-start gap-5  w-1/2">
@@ -41,7 +136,7 @@ const Privacy = () => {
 
                     <FileText className="w-10 h-10 text-[#c4886a]" />
           <h1 className="text-3xl md:text-4xl font-bold text-[#3a4b95]">
-            {t("privacy.title")}
+            {title}
           </h1>
             </div>
              {/* Introduction */}
@@ -82,12 +177,12 @@ const Privacy = () => {
               <div className="flex items-center justify-start gap-3 mb-4">
                 <FileText className="w-6 h-6 text-[#3a4b95]" />
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {t("privacy.sections.termsOfUse.title")}
+                  {termsTitle}
                 </h2>
               </div>
               <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
-                  {t("privacy.sections.termsOfUse.content")}
+                  {termsContent}
                 </p>
               </div>
             </motion.section>
@@ -101,12 +196,12 @@ const Privacy = () => {
               <div className="flex items-center justify-start gap-3 mb-4">
                 <Shield className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {t("privacy.sections.privacyPolicy.title")}
+                  {privacyTitle}
                 </h2>
               </div>
               <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
-                  {t("privacy.sections.privacyPolicy.content")}
+                  {privacyContent}
                 </p>
               </div>
             </motion.section>
@@ -120,12 +215,12 @@ const Privacy = () => {
               <div className="flex items-center justify-start gap-3 mb-4">
                 <Settings className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {t("privacy.sections.operationTerms.title")}
+                  {operationTitle}
                 </h2>
               </div>
               <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
-                  {t("privacy.sections.operationTerms.content")}
+                  {operationContent}
                 </p>
               </div>
             </motion.section>
@@ -139,12 +234,12 @@ const Privacy = () => {
               <div className="flex items-center justify-start gap-3 mb-4">
                 <Copyright className="w-6 h-6 text-[#c4886a]" />
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {t("privacy.sections.copyright.title")}
+                  {copyrightTitle}
                 </h2>
               </div>
               <div className="border-r-4 border-[#c4886a] p-4 rounded-lg bg-[#3a4b950A] ">
                 <p className="text-gray-700 text-lg text-right leading-relaxed">
-                  {t("privacy.sections.copyright.content")}
+                  {copyrightContent}
                 </p>
               </div>
             </motion.section>

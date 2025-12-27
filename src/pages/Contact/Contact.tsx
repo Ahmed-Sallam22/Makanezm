@@ -1,19 +1,64 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
 import { submitContactMessage } from "../../services/contactService";
+import {
+  getContactSettings,
+  type ContactSettings,
+} from "../../services/contactSettingService";
 
 const Contact = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [contactSettings, setContactSettings] = useState<ContactSettings | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setLoading(true);
+        const data = await getContactSettings();
+        setContactSettings(data);
+      } catch (error) {
+        console.error("Error fetching contact settings:", error);
+        // Will use fallback translations
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // Get content based on language, with fallback to translations
+  const title = contactSettings
+    ? isArabic
+      ? contactSettings.title_ar
+      : contactSettings.title_en
+    : t("contactPage.title");
+
+  const description1 = contactSettings
+    ? isArabic
+      ? contactSettings.description1_ar
+      : contactSettings.description1_en
+    : t("contactPage.description1");
+
+  const description2 = contactSettings
+    ? isArabic
+      ? contactSettings.description2_ar
+      : contactSettings.description2_en
+    : t("contactPage.description2");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +80,14 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#c4886a]" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -61,7 +114,7 @@ const Contact = () => {
             {/* Title with Icon */}
             <div className="flex items-center justify-start gap-3 mb-8">
               <h1 className="text-3xl md:text-4xl font-bold text-[#3a4b95]">
-                {t("contactPage.title")}
+                {title}
               </h1>
               <svg
                 width="50"
@@ -90,8 +143,8 @@ const Contact = () => {
 
             {/* Description Text */}
             <div className="text-gray-700 leading-relaxed text-lg space-y-4">
-              <p>{t("contactPage.description1")}</p>
-              <p>{t("contactPage.description2")}</p>
+              {description1 && <p>{description1}</p>}
+              {description2 && <p>{description2}</p>}
             </div>
           </motion.div>
           {/* Left Side - Contact Form */}

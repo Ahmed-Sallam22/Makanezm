@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import type { RootState } from "../../store";
 import "./MarqueeBanner.css";
 import type { Marquee } from "../../types/marquee";
@@ -11,6 +12,9 @@ interface MarqueeItem {
 }
 
 const MarqueeBanner = () => {
+  const { i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  
   // Read marquees from redux store so admin updates reflect immediately
   const marqueeTexts = useSelector(
     (state: RootState) => state.marquee.marquees
@@ -23,6 +27,11 @@ const MarqueeBanner = () => {
   const [totalWidth, setTotalWidth] = useState(0);
   const animationRef = useRef<number | null>(null);
   const speedRef = useRef(1); // pixels per frame
+
+  // Get the text based on current language
+  const getMarqueeText = useCallback((marquee: Marquee) => {
+    return isArabic ? marquee.text_ar : marquee.text_en;
+  }, [isArabic]);
 
   // No local fetch here — component reads from store which is updated by admin actions or API sync elsewhere.
 
@@ -45,7 +54,7 @@ const MarqueeBanner = () => {
       const measureElement = document.createElement("span");
       measureElement.style.cssText =
         "position:absolute;visibility:hidden;white-space:nowrap;font-size:14px;font-weight:600;";
-      measureElement.innerHTML = `${marquee.text}<span style="margin:0 48px">•</span>`;
+      measureElement.innerHTML = `${getMarqueeText(marquee)}<span style="margin:0 48px">•</span>`;
       document.body.appendChild(measureElement);
       const width = measureElement.offsetWidth;
       document.body.removeChild(measureElement);
@@ -69,7 +78,7 @@ const MarqueeBanner = () => {
       sortedMarquees.forEach((marquee, idx) => {
         initialItems.push({
           id: itemId++,
-          text: marquee.text,
+          text: getMarqueeText(marquee),
           position: currentPosition,
         });
         currentPosition += widths[idx];
@@ -77,7 +86,7 @@ const MarqueeBanner = () => {
     }
 
     setItems(initialItems);
-  }, [marqueeTexts]);
+  }, [marqueeTexts, isArabic, getMarqueeText]);
 
   // Animation loop - circular buffer logic
   useEffect(() => {

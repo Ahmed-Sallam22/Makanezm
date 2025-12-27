@@ -1,15 +1,44 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Target, Eye, Award } from "lucide-react";
+import { Target, Eye, Award, Loader2 } from "lucide-react";
 import SEO from "../../components/SEO";
 import { pageSEO } from "../../types/seo";
+import { getAboutSettings, type AboutSettings } from "../../services/aboutService";
 
-// Import the about hero image (using Home image for now)
+// Import the about hero image (fallback)
 import aboutHeroImg from "../../assets/images/Home.png";
 
 const About = () => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+
+  const [aboutData, setAboutData] = useState<AboutSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const data = await getAboutSettings();
+        setAboutData(data);
+      } catch (error) {
+        console.error("Failed to fetch about data:", error);
+        // Will use fallback translations
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutData();
+  }, []);
+
+  // Helper function to get localized content
+  const getLocalizedContent = (arContent: string | undefined, enContent: string | undefined, fallbackKey: string) => {
+    if (isRTL) {
+      return arContent || t(fallbackKey);
+    }
+    return enContent || t(fallbackKey);
+  };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -22,6 +51,14 @@ const About = () => {
       },
     }),
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#c4886a]" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -44,7 +81,7 @@ const About = () => {
           className="relative w-full h-[300px] md:h-[400px] overflow-hidden rounded-b-3xl"
         >
           <img
-            src={aboutHeroImg}
+            src={aboutData?.hero_image || aboutHeroImg}
             alt="Makanizm Bridge"
             className="w-full h-full object-cover"
           />
@@ -68,7 +105,7 @@ const About = () => {
                 className="w-3 h-3 bg-[#3a4b95] rounded-full"
               />
               <h1 className="text-3xl md:text-4xl font-bold text-[#3a4b95]">
-                {t("aboutPage.title")}
+                {getLocalizedContent(aboutData?.title_ar, aboutData?.title_en, "aboutPage.title")}
               </h1>
             </div>
 
@@ -82,8 +119,8 @@ const About = () => {
                 className="space-y-6 text-gray-700 text-lg leading-relaxed"
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                <p>{t("aboutPage.description1")}</p>
-                <p>{t("aboutPage.description2")}</p>
+                <p>{getLocalizedContent(aboutData?.description1_ar, aboutData?.description1_en, "aboutPage.description1")}</p>
+                <p>{getLocalizedContent(aboutData?.description2_ar, aboutData?.description2_en, "aboutPage.description2")}</p>
               </motion.div>
 
               {/* Illustration */}
@@ -93,104 +130,48 @@ const About = () => {
                 transition={{ delay: 0.6 }}
                 className="flex justify-center"
               >
-                <div className="relative">
-                  {/* Decorative circles */}
-                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#3a4b95]/10 rounded-full" />
-                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#c4886a]/10 rounded-full" />
-
-                  {/* Main illustration placeholder - using SVG */}
-                  <svg
-                    width="300"
-                    height="250"
-                    viewBox="0 0 300 250"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="relative z-10"
-                  >
-                    {/* Background shape */}
-                    <ellipse
-                      cx="150"
-                      cy="200"
-                      rx="120"
-                      ry="30"
-                      fill="#E8F4E8"
+                {aboutData?.hero_image ? (
+                  // Show backend image if available
+                  <div className="relative">
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#3a4b95]/10 rounded-full" />
+                    <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#c4886a]/10 rounded-full" />
+                    <img
+                      src={aboutData.hero_image}
+                      alt="About Makanizm"
+                      className="relative z-10 w-full max-w-[300px] h-auto rounded-2xl shadow-lg object-cover"
                     />
-
-                    {/* Person with magnifying glass */}
-                    <circle
-                      cx="180"
-                      cy="80"
-                      r="60"
-                      fill="#E8F4E8"
-                      stroke="#4CAF50"
-                      strokeWidth="2"
-                    />
-                    <circle
-                      cx="180"
-                      cy="80"
-                      r="45"
-                      fill="white"
-                      stroke="#4CAF50"
-                      strokeWidth="2"
-                    />
-                    <line
-                      x1="220"
-                      y1="120"
-                      x2="250"
-                      y2="150"
-                      stroke="#4CAF50"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                    />
-
-                    {/* Gears */}
-                    <circle
-                      cx="240"
-                      cy="40"
-                      r="25"
-                      fill="#FFF3E0"
-                      stroke="#FF9800"
-                      strokeWidth="2"
-                    />
-                    <circle cx="240" cy="40" r="15" fill="white" />
-                    <circle
-                      cx="270"
-                      cy="70"
-                      r="18"
-                      fill="#FFF3E0"
-                      stroke="#FF9800"
-                      strokeWidth="2"
-                    />
-                    <circle cx="270" cy="70" r="10" fill="white" />
-
-                    {/* Person */}
-                    <circle cx="100" cy="100" r="25" fill="#FFCC80" />
-                    <path d="M60 180 Q100 140 140 180" fill="#3a4b95" />
-                    <rect
-                      x="85"
-                      y="120"
-                      width="30"
-                      height="40"
-                      rx="5"
-                      fill="#FF7043"
-                    />
-
-                    {/* Chart/Document */}
-                    <rect
-                      x="50"
-                      cy="160"
-                      width="40"
-                      height="50"
-                      rx="5"
-                      fill="white"
-                      stroke="#3a4b95"
-                      strokeWidth="2"
-                    />
-                    <rect x="55" y="170" width="30" height="3" fill="#3a4b95" />
-                    <rect x="55" y="178" width="20" height="3" fill="#c4886a" />
-                    <rect x="55" y="186" width="25" height="3" fill="#4CAF50" />
-                  </svg>
-                </div>
+                  </div>
+                ) : (
+                  // Fallback SVG illustration
+                  <div className="relative">
+                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#3a4b95]/10 rounded-full" />
+                    <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#c4886a]/10 rounded-full" />
+                    <svg
+                      width="300"
+                      height="250"
+                      viewBox="0 0 300 250"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="relative z-10"
+                    >
+                      <ellipse cx="150" cy="200" rx="120" ry="30" fill="#E8F4E8" />
+                      <circle cx="180" cy="80" r="60" fill="#E8F4E8" stroke="#4CAF50" strokeWidth="2" />
+                      <circle cx="180" cy="80" r="45" fill="white" stroke="#4CAF50" strokeWidth="2" />
+                      <line x1="220" y1="120" x2="250" y2="150" stroke="#4CAF50" strokeWidth="8" strokeLinecap="round" />
+                      <circle cx="240" cy="40" r="25" fill="#FFF3E0" stroke="#FF9800" strokeWidth="2" />
+                      <circle cx="240" cy="40" r="15" fill="white" />
+                      <circle cx="270" cy="70" r="18" fill="#FFF3E0" stroke="#FF9800" strokeWidth="2" />
+                      <circle cx="270" cy="70" r="10" fill="white" />
+                      <circle cx="100" cy="100" r="25" fill="#FFCC80" />
+                      <path d="M60 180 Q100 140 140 180" fill="#3a4b95" />
+                      <rect x="85" y="120" width="30" height="40" rx="5" fill="#FF7043" />
+                      <rect x="50" cy="160" width="40" height="50" rx="5" fill="white" stroke="#3a4b95" strokeWidth="2" />
+                      <rect x="55" y="170" width="30" height="3" fill="#3a4b95" />
+                      <rect x="55" y="178" width="20" height="3" fill="#c4886a" />
+                      <rect x="55" y="186" width="25" height="3" fill="#4CAF50" />
+                    </svg>
+                  </div>
+                )}
               </motion.div>
             </div>
           </motion.div>
@@ -211,10 +192,10 @@ const About = () => {
                   <Target className="w-7 h-7 text-gray-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  {t("aboutPage.mission.title")}
+                  {getLocalizedContent(aboutData?.mission_title_ar, aboutData?.mission_title_en, "aboutPage.mission.title")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-sm">
-                  {t("aboutPage.mission.description")}
+                  {getLocalizedContent(aboutData?.mission_description_ar, aboutData?.mission_description_en, "aboutPage.mission.description")}
                 </p>
               </div>
             </motion.div>
@@ -233,10 +214,10 @@ const About = () => {
                   <Award className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">
-                  {t("aboutPage.values.title")}
+                  {getLocalizedContent(aboutData?.values_title_ar, aboutData?.values_title_en, "aboutPage.values.title")}
                 </h3>
                 <p className="text-white/90 leading-relaxed text-sm">
-                  {t("aboutPage.values.description")}
+                  {getLocalizedContent(aboutData?.values_description_ar, aboutData?.values_description_en, "aboutPage.values.description")}
                 </p>
               </div>
             </motion.div>
@@ -255,10 +236,10 @@ const About = () => {
                   <Eye className="w-7 h-7 text-[#c4886a]" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  {t("aboutPage.vision.title")}
+                  {getLocalizedContent(aboutData?.vision_title_ar, aboutData?.vision_title_en, "aboutPage.vision.title")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-sm">
-                  {t("aboutPage.vision.description")}
+                  {getLocalizedContent(aboutData?.vision_description_ar, aboutData?.vision_description_en, "aboutPage.vision.description")}
                 </p>
               </div>
             </motion.div>

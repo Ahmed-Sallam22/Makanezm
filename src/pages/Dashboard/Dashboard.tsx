@@ -40,6 +40,8 @@ import {
   Percent,
   Home,
   Link as LinkIcon,
+  HelpCircle,
+  Info,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { updateUser } from "../../store/slices/authSlice";
@@ -59,6 +61,10 @@ import ContactMessagesTab from "./ContactMessagesTab";
 import InvestmentPayoutsTab from "./InvestmentPayoutsTab";
 import MyInvestmentsTab from "./MyInvestmentsTab";
 import DiscountCodesTab from "./DiscountCodesTab";
+import FAQTab from "./FAQTab";
+import AboutTab from "./AboutTab";
+import PrivacyTab from "./PrivacyTab";
+import ContactSettingTab from "./ContactSettingTab";
 import {
   getDashboardStats,
   getRecentOrders,
@@ -103,7 +109,11 @@ type TabType =
   | "footerLinks"
   | "payouts"
   | "contact"
-  | "discounts";
+  | "discounts"
+  | "faq"
+  | "about"
+  | "privacy"
+  | "contactSettings";
 
 import { useSearchParams } from "react-router-dom";
 
@@ -138,6 +148,10 @@ const Dashboard = () => {
         "payouts",
         "contact",
         "discounts",
+        "faq",
+        "about",
+        "privacy",
+        "contactSettings",
       ].includes(tabParam)
     ) {
       return tabParam as TabType;
@@ -173,6 +187,10 @@ const Dashboard = () => {
         "payouts",
         "contact",
         "discounts",
+        "faq",
+        "about",
+        "privacy",
+        "contactSettings",
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam as TabType);
@@ -430,6 +448,26 @@ const Dashboard = () => {
       id: "discounts" as TabType,
       icon: Percent,
       label: t("dashboard.tabs.discounts"),
+    },
+    {
+      id: "faq" as TabType,
+      icon: HelpCircle,
+      label: t("dashboard.tabs.faq"),
+    },
+    {
+      id: "about" as TabType,
+      icon: Info,
+      label: t("dashboard.tabs.about"),
+    },
+    {
+      id: "privacy" as TabType,
+      icon: Shield,
+      label: t("dashboard.tabs.privacy"),
+    },
+    {
+      id: "contactSettings" as TabType,
+      icon: Mail,
+      label: t("dashboard.tabs.contactSettings"),
     },
   ];
 
@@ -934,6 +972,26 @@ const Dashboard = () => {
             {/* Discount Codes Tab (Admin Only) */}
             {activeTab === "discounts" && user?.role === "ADMIN" && (
               <DiscountCodesTab />
+            )}
+
+            {/* FAQ Tab (Admin Only) */}
+            {activeTab === "faq" && user?.role === "ADMIN" && (
+              <FAQTab />
+            )}
+
+            {/* About Tab (Admin Only) */}
+            {activeTab === "about" && user?.role === "ADMIN" && (
+              <AboutTab />
+            )}
+
+            {/* Privacy Tab (Admin Only) */}
+            {activeTab === "privacy" && user?.role === "ADMIN" && (
+              <PrivacyTab />
+            )}
+
+            {/* Contact Settings Tab (Admin Only) */}
+            {activeTab === "contactSettings" && user?.role === "ADMIN" && (
+              <ContactSettingTab />
             )}
 
             {/* Orders Tab - Integrated with Backend API */}

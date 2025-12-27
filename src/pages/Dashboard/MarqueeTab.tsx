@@ -34,9 +34,11 @@ const MarqueeTab = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [newMarqueeText, setNewMarqueeText] = useState("");
+  const [newMarqueeTextAr, setNewMarqueeTextAr] = useState("");
+  const [newMarqueeTextEn, setNewMarqueeTextEn] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editText, setEditText] = useState("");
+  const [editTextAr, setEditTextAr] = useState("");
+  const [editTextEn, setEditTextEn] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -48,7 +50,8 @@ const MarqueeTab = () => {
       // map API shape to app Marquee shape
       const list = apiList.map((m) => ({
         id: String(m.id),
-        text: m.text,
+        text_ar: m.text_ar,
+        text_en: m.text_en,
         isActive: Boolean(m.is_active),
         createdAt: m.created_at,
         updatedAt: m.updated_at,
@@ -74,15 +77,16 @@ const MarqueeTab = () => {
   }, []);
 
   const handleAddMarquee = async () => {
-    if (!newMarqueeText.trim()) {
-      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+    if (!newMarqueeTextAr.trim() || !newMarqueeTextEn.trim()) {
+      toast.error(isRTL ? "الرجاء إدخال النص بالعربية والإنجليزية" : "Please enter text in both Arabic and English");
       return;
     }
 
     try {
       setSubmitting(true);
-      await createMarquee({ text: newMarqueeText.trim() });
-      setNewMarqueeText("");
+      await createMarquee({ text_ar: newMarqueeTextAr.trim(), text_en: newMarqueeTextEn.trim() });
+      setNewMarqueeTextAr("");
+      setNewMarqueeTextEn("");
       setIsAdding(false);
       toast.success(
         isRTL ? "تم إضافة النص بنجاح" : "Marquee text added successfully"
@@ -100,16 +104,17 @@ const MarqueeTab = () => {
   };
 
   const handleUpdateMarquee = async (id: string) => {
-    if (!editText.trim()) {
-      toast.error(isRTL ? "الرجاء إدخال نص" : "Please enter text");
+    if (!editTextAr.trim() || !editTextEn.trim()) {
+      toast.error(isRTL ? "الرجاء إدخال النص بالعربية والإنجليزية" : "Please enter text in both Arabic and English");
       return;
     }
 
     try {
       setSubmitting(true);
-      await updateMarqueeApi(Number(id), { text: editText.trim() });
+      await updateMarqueeApi(Number(id), { text_ar: editTextAr.trim(), text_en: editTextEn.trim() });
       setEditingId(null);
-      setEditText("");
+      setEditTextAr("");
+      setEditTextEn("");
       toast.success(
         isRTL ? "تم تحديث النص بنجاح" : "Marquee text updated successfully"
       );
@@ -164,14 +169,16 @@ const MarqueeTab = () => {
     }
   };
 
-  const startEditing = (id: string, text: string) => {
+  const startEditing = (id: string, text_ar: string, text_en: string) => {
     setEditingId(id);
-    setEditText(text);
+    setEditTextAr(text_ar);
+    setEditTextEn(text_en);
   };
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditText("");
+    setEditTextAr("");
+    setEditTextEn("");
   };
 
   return (
@@ -219,37 +226,58 @@ const MarqueeTab = () => {
             <h3 className="text-lg font-semibold mb-4">
               {isRTL ? "إضافة نص جديد" : "Add New Marquee Text"}
             </h3>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={newMarqueeText}
-                onChange={(e) => setNewMarqueeText(e.target.value)}
-                placeholder={isRTL ? "أدخل النص هنا..." : "Enter text here..."}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                onKeyPress={(e) => e.key === "Enter" && handleAddMarquee()}
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleAddMarquee}
-                disabled={submitting}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" />
-                {isRTL ? "حفظ" : "Save"}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewMarqueeText("");
-                }}
-                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center gap-2"
-              >
-                <X className="w-4 h-4" />
-                {isRTL ? "إلغاء" : "Cancel"}
-              </motion.button>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {isRTL ? "النص بالعربية" : "Arabic Text"}
+                </label>
+                <input
+                  type="text"
+                  value={newMarqueeTextAr}
+                  onChange={(e) => setNewMarqueeTextAr(e.target.value)}
+                  placeholder={isRTL ? "أدخل النص بالعربية..." : "Enter Arabic text..."}
+                  dir="rtl"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {isRTL ? "النص بالإنجليزية" : "English Text"}
+                </label>
+                <input
+                  type="text"
+                  value={newMarqueeTextEn}
+                  onChange={(e) => setNewMarqueeTextEn(e.target.value)}
+                  placeholder={isRTL ? "أدخل النص بالإنجليزية..." : "Enter English text..."}
+                  dir="ltr"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleAddMarquee}
+                  disabled={submitting}
+                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  {isRTL ? "حفظ" : "Save"}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setIsAdding(false);
+                    setNewMarqueeTextAr("");
+                    setNewMarqueeTextEn("");
+                  }}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  {isRTL ? "إلغاء" : "Cancel"}
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -275,32 +303,51 @@ const MarqueeTab = () => {
               className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
             >
               {editingId === marquee.id ? (
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleUpdateMarquee(marquee.id)
-                    }
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleUpdateMarquee(marquee.id)}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                  >
-                    <Save className="w-4 h-4" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={cancelEditing}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </motion.button>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isRTL ? "النص بالعربية" : "Arabic Text"}
+                    </label>
+                    <input
+                      type="text"
+                      value={editTextAr}
+                      onChange={(e) => setEditTextAr(e.target.value)}
+                      dir="rtl"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isRTL ? "النص بالإنجليزية" : "English Text"}
+                    </label>
+                    <input
+                      type="text"
+                      value={editTextEn}
+                      onChange={(e) => setEditTextEn(e.target.value)}
+                      dir="ltr"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleUpdateMarquee(marquee.id)}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      {isRTL ? "حفظ" : "Save"}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={cancelEditing}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      {isRTL ? "إلغاء" : "Cancel"}
+                    </motion.button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
@@ -323,10 +370,17 @@ const MarqueeTab = () => {
                     </motion.button>
 
                     <div className="flex-1">
-                      <p className="text-lg font-medium text-gray-900">
-                        {marquee.text}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-lg font-medium text-gray-900" dir="rtl">
+                          <span className="text-xs text-gray-500 ml-2">AR:</span>
+                          {marquee.text_ar}
+                        </p>
+                        <p className="text-lg font-medium text-gray-900" dir="ltr">
+                          <span className="text-xs text-gray-500 mr-2">EN:</span>
+                          {marquee.text_en}
+                        </p>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">
                         {isRTL ? "آخر تحديث: " : "Last updated: "}
                         {new Date(marquee.updatedAt).toLocaleDateString(
                           isRTL ? "ar-EG" : "en-US"
@@ -339,7 +393,7 @@ const MarqueeTab = () => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => startEditing(marquee.id, marquee.text)}
+                      onClick={() => startEditing(marquee.id, marquee.text_ar, marquee.text_en)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                     >
                       <Edit2 className="w-5 h-5" />
@@ -391,7 +445,7 @@ const MarqueeTab = () => {
                   className="inline-flex items-center px-8"
                 >
                   <span className="text-sm md:text-base font-medium text-gray-800">
-                    {marquee.text}
+                    {isRTL ? marquee.text_ar : marquee.text_en}
                   </span>
                   <span className="mx-4 text-gray-600">•</span>
                 </div>

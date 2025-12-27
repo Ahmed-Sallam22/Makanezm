@@ -2,7 +2,8 @@ import api from './api';
 
 export interface Marquee {
   id: number;
-  text: string;
+  text_ar: string;
+  text_en: string;
   is_active: boolean;
   order: number;
   created_at: string;
@@ -24,13 +25,15 @@ export interface MarqueeResponse {
 }
 
 export interface CreateMarqueeData {
-  text: string;
+  text_ar: string;
+  text_en: string;
   is_active?: boolean;
   order?: number;
 }
 
 export interface UpdateMarqueeData {
-  text?: string;
+  text_ar?: string;
+  text_en?: string;
   is_active?: boolean;
   order?: number;
 }
