@@ -42,7 +42,7 @@ const Hero = () => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.7, delay: 0.6 }}
-      className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center py-8 md:py-12 lg:py-16"
+      className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center py-8 md:py-12 lg:py-16 bg-white"
     >
       <div className="flex flex-col space-y-4 sm:space-y-6 w-full md:w-[90%] lg:w-[80%] mx-auto order-2 md:order-1 px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-[#3a4b95]">
@@ -78,7 +78,7 @@ const Hero = () => {
       </div>
       <div className="order-1 md:order-2">
         {loading ? (
-          <div className="animate-pulse bg-gray-200 w-full h-64 md:h-80 rounded-lg"></div>
+          <div className="animate-pulse  w-full h-64 md:h-80 rounded-lg"></div>
         ) : (
           <img
             src={heroImage}

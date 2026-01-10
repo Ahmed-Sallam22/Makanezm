@@ -6,7 +6,7 @@ import Hero from "./sections/Hero";
 import OverviewStats from "./sections/OverviewStats";
 import ServiceImage from "./sections/ServiceImage";
 import ProductsHome from "./sections/ProductsHome";
-import SalesReport from "./sections/SalesReport";
+// import SalesReport from "./sections/SalesReport";
 
 const Home = () => {
   return (
@@ -25,10 +25,10 @@ const Home = () => {
       >
         <HeroSlider />
         <Hero />
-        <OverviewStats />
         <ServiceImage />
         <ProductsHome />
-        <SalesReport />
+        <OverviewStats />
+        {/* <SalesReport /> */}
       </motion.div>
     </>
   );
