@@ -14,7 +14,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/slices/authSlice";
 import logo from "../../assets/images/Logo.png";
-import MarqueeBanner from "../MarqueeBanner";
+// import MarqueeBanner from "../MarqueeBanner";
 import { logoutUser } from "../../services/authService";
 
 const Header = () => {
@@ -82,7 +82,7 @@ const Header = () => {
 
   return (
     <>
-      <MarqueeBanner />
+      {/* <MarqueeBanner /> */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}

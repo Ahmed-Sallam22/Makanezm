@@ -51,13 +51,13 @@ const HeroSlider = () => {
           style={{ backgroundImage: `url(${activeSlider.image})` }}
         >
           {/* Gradient Overlay - Blue and Orange theme */}
-          <div
+          {/* <div
             className="absolute inset-0"
             style={{
               background:
                 "linear-gradient(135deg, rgba(56, 75, 151, 0.9) 0%, rgba(100, 120, 180, 0.85) 40%, rgba(246, 83, 49, 0.85) 100%)",
             }}
-          />
+          /> */}
         </div>
 
         {/* Content */}

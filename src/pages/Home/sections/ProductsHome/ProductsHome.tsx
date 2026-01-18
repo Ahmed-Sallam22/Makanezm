@@ -2,17 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import {
-  ShoppingCart,
-  Check,
-  Eye,
-  Loader2,
-  Heart,
-} from "lucide-react";
+import { ShoppingCart, Check, Eye, Loader2, Heart } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { addToCartAsync } from "../../../../store/slices/cartSlice";
-import { getFeaturedProducts, toggleProductFavorite, type PublicProduct } from "../../../../services/productService";
+import {
+  getFeaturedProducts,
+  toggleProductFavorite,
+  type PublicProduct,
+} from "../../../../services/productService";
 import test1 from "../../../../assets/images/test1.png";
 
 // Currency SVG Component
@@ -53,7 +51,9 @@ const ProductsHome = () => {
   const [loading, setLoading] = useState(true);
 
   // State for favorites
-  const [favoritedProducts, setFavoritedProducts] = useState<Set<number>>(new Set());
+  const [favoritedProducts, setFavoritedProducts] = useState<Set<number>>(
+    new Set()
+  );
 
   // State for login modal
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -68,7 +68,7 @@ const ProductsHome = () => {
 
         // Initialize favorited products from API response
         const favorited = new Set<number>();
-        response.data.forEach(product => {
+        response.data.forEach((product) => {
           if (product.is_favorited) {
             favorited.add(product.id);
           }
@@ -76,7 +76,9 @@ const ProductsHome = () => {
         setFavoritedProducts(favorited);
       } catch (error) {
         console.error("Error fetching products:", error);
-        toast.error(isRTL ? "فشل في تحميل المنتجات" : "Failed to load products");
+        toast.error(
+          isRTL ? "فشل في تحميل المنتجات" : "Failed to load products"
+        );
       } finally {
         setLoading(false);
       }
@@ -85,7 +87,10 @@ const ProductsHome = () => {
     fetchProducts();
   }, [isRTL]);
 
-  const handleToggleFavorite = async (productId: number, e: React.MouseEvent) => {
+  const handleToggleFavorite = async (
+    productId: number,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
 
     // Check authentication first
@@ -97,7 +102,7 @@ const ProductsHome = () => {
     // Optimistic update: Toggle immediately
     const isCurrentlyFavorited = favoritedProducts.has(productId);
 
-    setFavoritedProducts(prev => {
+    setFavoritedProducts((prev) => {
       const newSet = new Set(prev);
       if (isCurrentlyFavorited) {
         newSet.delete(productId);
@@ -111,7 +116,7 @@ const ProductsHome = () => {
       const response = await toggleProductFavorite(productId);
 
       // Sync with server response
-      setFavoritedProducts(prev => {
+      setFavoritedProducts((prev) => {
         const newSet = new Set(prev);
         if (response.data.is_favorited) {
           newSet.add(productId);
@@ -127,14 +132,17 @@ const ProductsHome = () => {
           autoClose: 2000,
         });
       } else {
-        toast.success(isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+        toast.success(
+          isRTL ? "تمت الإزالة من المفضلة" : "Removed from favorites",
+          {
+            position: "top-right",
+            autoClose: 2000,
+          }
+        );
       }
     } catch {
       // Revert on error
-      setFavoritedProducts(prev => {
+      setFavoritedProducts((prev) => {
         const newSet = new Set(prev);
         if (isCurrentlyFavorited) {
           newSet.add(productId);
@@ -151,9 +159,12 @@ const ProductsHome = () => {
     }
   };
 
-  const handleAddToCart = async (product: PublicProduct, e: React.MouseEvent) => {
+  const handleAddToCart = async (
+    product: PublicProduct,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
@@ -162,7 +173,9 @@ const ProductsHome = () => {
     const productName = isRTL ? product.nameAr : product.name;
 
     try {
-      await dispatch(addToCartAsync({ productId: product.id, quantity: 1 })).unwrap();
+      await dispatch(
+        addToCartAsync({ productId: product.id, quantity: 1 })
+      ).unwrap();
       setAddedProducts((prev) => [...prev, product.id]);
       toast.success(t("products.addedToCart", { name: productName }), {
         position: isRTL ? "top-left" : "top-right",
@@ -181,14 +194,17 @@ const ProductsHome = () => {
     navigate(`/products/${productId}`);
   };
 
-
   return (
     <motion.section
       ref={ref}
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{ duration: 0.6 }}
-      className="my-12 md:my-16 lg:my-20"
+      className=" py-5"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(58,75,149,0.02) 0%, rgba(196,136,106,0.03) 100%)",
+      }}
     >
       <div className="w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
@@ -229,7 +245,9 @@ const ProductsHome = () => {
             <div className="overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                animate={
+                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
+                }
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
@@ -287,7 +305,9 @@ const ProductsHome = () => {
                           >
                             <AnimatePresence mode="wait">
                               <motion.div
-                                key={isFavorited ? "favorited" : "not-favorited"}
+                                key={
+                                  isFavorited ? "favorited" : "not-favorited"
+                                }
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
@@ -303,7 +323,11 @@ const ProductsHome = () => {
                           {/* Product Image */}
                           <div className="w-full h-48 flex items-center justify-center bg-gray-50">
                             <img
-                              src={product.main_image_base64 || product.image || test1}
+                              src={
+                                product.main_image_base64 ||
+                                product.image ||
+                                test1
+                              }
                               alt={isRTL ? product.nameAr : product.name}
                               className="w-[60%] h-full object-contain"
                               onError={(e) => {
@@ -327,18 +351,26 @@ const ProductsHome = () => {
 
                             {/* Price Buttons */}
                             <div className="flex gap-3 mb-3">
-                              {product.installmentOptions && product.installmentOptions.length > 0 ? (
+                              {product.installmentOptions &&
+                              product.installmentOptions.length > 0 ? (
                                 <>
                                   <div className="bg-secondary text-white p-2 rounded-lg flex-1 text-center">
                                     <p className="text-xs font-semibold mb-1">
                                       {t("home.productsHome.installmentSale")}
                                     </p>
                                     <p className="text-sm font-bold flex items-center justify-center gap-1">
-                                      {Math.round(product.price * (1 + product.installmentOptions[0].percentage / 100))}
+                                      {Math.round(
+                                        product.price *
+                                          (1 +
+                                            product.installmentOptions[0]
+                                              .percentage /
+                                              100)
+                                      )}
                                       <CurrencyIcon color="white" size={20} />
                                     </p>
                                     <p className="text-[10px] opacity-80">
-                                      {product.installmentOptions[0].months} {isRTL ? "شهر" : "months"}
+                                      {product.installmentOptions[0].months}{" "}
+                                      {isRTL ? "شهر" : "months"}
                                     </p>
                                   </div>
                                   <div className="bg-secondary text-white p-2 rounded-lg flex-1 text-center">
@@ -346,11 +378,18 @@ const ProductsHome = () => {
                                       {t("home.productsHome.expectedProfit")}
                                     </p>
                                     <p className="text-sm font-bold flex items-center justify-center gap-1">
-                                      {Math.round(product.price * (product.installmentOptions[0].percentage / 100))}
+                                      {Math.round(
+                                        product.price *
+                                          (product.installmentOptions[0]
+                                            .percentage /
+                                            100)
+                                      )}
                                       <CurrencyIcon color="white" size={20} />
                                     </p>
                                     <p className="text-[10px] opacity-80">
-                                      +{product.installmentOptions[0].percentage}%
+                                      +
+                                      {product.installmentOptions[0].percentage}
+                                      %
                                     </p>
                                   </div>
                                 </>
@@ -373,21 +412,32 @@ const ProductsHome = () => {
                                 <p className="text-xs font-semibold text-gray-700">
                                   {isRTL ? "الحالة" : "Status"}
                                 </p>
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${product.stock_status === 'high'
-                                    ? 'bg-green-100 text-green-700'
-                                    : product.stock_status === 'medium'
-                                      ? 'bg-yellow-100 text-yellow-700'
-                                      : product.stock_status === 'low'
-                                        ? 'bg-[#e5d4c8] text-[#8a5a3a]'
-                                        : 'bg-red-100 text-red-700'
-                                  }`}>
-                                  {product.stock_status === 'high'
-                                    ? (isRTL ? 'متوفر' : 'In Stock')
-                                    : product.stock_status === 'medium'
-                                      ? (isRTL ? 'متاح' : 'Available')
-                                      : product.stock_status === 'low'
-                                        ? (isRTL ? 'محدود' : 'Limited')
-                                        : (isRTL ? 'نفذ' : 'Out')}
+                                <span
+                                  className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                    product.stock_status === "high"
+                                      ? "bg-green-100 text-green-700"
+                                      : product.stock_status === "medium"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : product.stock_status === "low"
+                                          ? "bg-[#e5d4c8] text-[#8a5a3a]"
+                                          : "bg-red-100 text-red-700"
+                                  }`}
+                                >
+                                  {product.stock_status === "high"
+                                    ? isRTL
+                                      ? "متوفر"
+                                      : "In Stock"
+                                    : product.stock_status === "medium"
+                                      ? isRTL
+                                        ? "متاح"
+                                        : "Available"
+                                      : product.stock_status === "low"
+                                        ? isRTL
+                                          ? "محدود"
+                                          : "Limited"
+                                        : isRTL
+                                          ? "نفذ"
+                                          : "Out"}
                                 </span>
                               </div>
                               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -395,29 +445,34 @@ const ProductsHome = () => {
                                   initial={{ width: 0 }}
                                   animate={
                                     isInView
-                                      ? { width: `${product.stock_percentage}%` }
+                                      ? {
+                                          width: `${product.stock_percentage}%`,
+                                        }
                                       : { width: 0 }
                                   }
                                   transition={{
                                     duration: 1,
                                     delay: 0.5 + index * 0.1,
                                   }}
-                                  className={`h-full rounded-full ${product.stock_status === 'high'
+                                  className={`h-full rounded-full ${
+                                    product.stock_status === "high"
                                       ? "bg-green-500"
-                                      : product.stock_status === 'medium'
+                                      : product.stock_status === "medium"
                                         ? "bg-yellow-500"
-                                        : product.stock_status === 'low'
+                                        : product.stock_status === "low"
                                           ? "bg-[#c4886a]"
                                           : "bg-red-500"
-                                    }`}
+                                  }`}
                                 />
                               </div>
                               <p className="text-xs text-gray-500 mt-1">
-                                {product.in_stock ? (
-                                  isRTL ? `${product.stock} من ${product.max_stock}` : `${product.stock} of ${product.max_stock}`
-                                ) : (
-                                  isRTL ? "غير متوفر" : "Out of stock"
-                                )}
+                                {product.in_stock
+                                  ? isRTL
+                                    ? `${product.stock} من ${product.max_stock}`
+                                    : `${product.stock} of ${product.max_stock}`
+                                  : isRTL
+                                    ? "غير متوفر"
+                                    : "Out of stock"}
                               </p>
                             </div>
 
@@ -452,7 +507,9 @@ const ProductsHome = () => {
                           >
                             <AnimatePresence mode="wait">
                               <motion.div
-                                key={isFavorited ? "favorited" : "not-favorited"}
+                                key={
+                                  isFavorited ? "favorited" : "not-favorited"
+                                }
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
@@ -472,7 +529,9 @@ const ProductsHome = () => {
 
                           {/* Description */}
                           <p className="text-white/90 text-center text-sm mb-6 leading-relaxed">
-                            {isRTL ? product.descriptionAr : product.description}
+                            {isRTL
+                              ? product.descriptionAr
+                              : product.description}
                           </p>
 
                           {/* Price */}
@@ -613,4 +672,3 @@ const ProductsHome = () => {
 };
 
 export default ProductsHome;
-

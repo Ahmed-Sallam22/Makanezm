@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  Search,
+  // Search,
   Menu,
   X
 } from "lucide-react";
@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Navbar = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isRTL = i18n.language === "ar";
 
@@ -57,11 +57,11 @@ const Navbar = () => {
     { key: "contact", path: "/contact" },
   ];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Searching for:", searchQuery);
-    // Implement search logic
-  };
+  // const handleSearch = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("Searching for:", searchQuery);
+  //   // Implement search logic
+  // };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -82,7 +82,7 @@ const Navbar = () => {
         <div className="w-[95%] mx-auto px-4">
           <div className="flex items-center justify-between py-4 gap-6">
             {/* Search Bar - Hidden on mobile */}
-            <form onSubmit={handleSearch} className="hidden md:flex shrink-0">
+            {/* <form onSubmit={handleSearch} className="hidden md:flex shrink-0">
               <div className="relative">
                 <input
                   type="text"
@@ -98,7 +98,7 @@ const Navbar = () => {
                   <Search className="w-4 h-4" />
                 </button>
               </div>
-            </form>
+            </form> */}
 
             {/* Navigation Links - Hidden on mobile */}
             <div className="hidden lg:flex items-center gap-8 flex-wrap justify-center flex-1">
@@ -182,7 +182,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Search Bar in Mobile Menu */}
-                <div className="p-6 border-b border-white/20">
+                {/* <div className="p-6 border-b border-white/20">
                   <form onSubmit={handleSearch}>
                     <div className="relative">
                       <input
@@ -200,7 +200,7 @@ const Navbar = () => {
                       </button>
                     </div>
                   </form>
-                </div>
+                </div> */}
 
                 {/* Navigation Links in Mobile Menu */}
                 <div className="flex flex-col p-6 flex-1">

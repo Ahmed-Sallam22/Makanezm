@@ -38,7 +38,7 @@ const ServiceImage = () => {
         duration: 0.8,
         ease: "easeOut",
       }}
-      className="w-full my-8 md:my-12 lg:my-16"
+      className="w-full py-8 md:py-12 lg:py-16 bg-[#3a4b95]"
     >
       {loading ? (
         <div className="animate-pulse bg-gray-200 w-full h-64 md:h-80 rounded-lg"></div>
@@ -46,7 +46,7 @@ const ServiceImage = () => {
         <motion.img
           src={serviceImage}
           alt="Service Image"
-          className="w-full h-auto object-cover"
+          className="w-[90%] mx-auto h-auto object-cover"
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
         />
