@@ -112,12 +112,6 @@ const SliderTab = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.title || !formData.title_ar) {
-      toast.error(isRTL ? "يرجى ملء جميع الحقول المطلوبة" : "Please fill all required fields");
-      return;
-    }
-
     if (!editingSlider && !imageFile) {
       toast.error(isRTL ? "يرجى اختيار صورة" : "Please select an image");
       return;
@@ -439,7 +433,7 @@ const SliderTab = () => {
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors"
                     placeholder="Black Friday Sale"
-                    required
+                    // required
                   />
                 </div>
 
@@ -455,7 +449,7 @@ const SliderTab = () => {
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#3a4b95] focus:outline-none transition-colors text-right"
                     placeholder="تخفيضات الجمعة السوداء"
                     dir="rtl"
-                    required
+                    // required
                   />
                 </div>
 

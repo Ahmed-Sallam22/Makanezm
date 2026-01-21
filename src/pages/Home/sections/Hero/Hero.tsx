@@ -84,14 +84,14 @@ const Hero = () => {
           </motion.button>
         </Link>
       </div> */}
-      <div className="">
+      <div className="w-full">
         {loading ? (
           <div className="animate-pulse  w-full h-64 md:h-80 rounded-lg"></div>
         ) : (
           <img
             src={heroImage}
             alt="Hero Image"
-            className="w-[80%] mx-auto   h-auto object-cover"
+            className="w-full mx-auto   h-auto object-cover"
           />
         )}
       </div>

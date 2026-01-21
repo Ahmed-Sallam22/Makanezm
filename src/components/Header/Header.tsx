@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/slices/authSlice";
-import logo from "../../assets/images/Logo.png";
+import logo from "../../assets/images/logo.png";
 // import MarqueeBanner from "../MarqueeBanner";
 import { logoutUser } from "../../services/authService";
 
